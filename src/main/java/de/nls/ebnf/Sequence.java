@@ -2,6 +2,8 @@ package de.nls.ebnf;
 
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
+import de.nls.core.ParsedNode;
+import de.nls.core.Production;
 import de.nls.core.Symbol;
 
 class Sequence extends Rule {
@@ -11,6 +13,7 @@ class Sequence extends Rule {
 	}
 
 	public void createBNF(BNF g) {
-		addProduction(g, this, tgt, children);
+		Production p = addProduction(g, this, tgt, children);
+		p.setAstBuilder((ParsedNode::addChildren));
 	}
 }

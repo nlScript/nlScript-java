@@ -21,6 +21,10 @@ public class ParsedNode {
 		return symbol;
 	}
 
+	public Production getProduction() {
+		return production;
+	}
+
 	public void setProduction(Production p) {
 		this.production = p;
 	}
@@ -41,7 +45,11 @@ public class ParsedNode {
 		return children.toArray(new ParsedNode[0]);
 	}
 
-	void addChildren(ParsedNode... children) {
+	public ParsedNode getChild(int i) {
+		return children.get(i);
+	}
+
+	public void addChildren(ParsedNode... children) {
 		this.children.addAll(Arrays.asList(children));
 		for(ParsedNode child : children)
 			child.parent = this;

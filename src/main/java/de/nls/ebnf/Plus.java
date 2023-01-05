@@ -2,6 +2,7 @@ package de.nls.ebnf;
 
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
+import de.nls.core.Production;
 import de.nls.core.Symbol;
 
 class Plus extends Rule {
@@ -10,7 +11,17 @@ class Plus extends Rule {
 	}
 
 	public void createBNF(BNF grammar) {
-		addProduction(grammar, this, tgt, children[0], tgt);
-		addProduction(grammar, this, tgt, children[0]);
+		Production p1 = addProduction(grammar, this, tgt, children[0], tgt);
+		Production p2 = addProduction(grammar, this, tgt, children[0]);
+
+		p1.setAstBuilder((parent, children) -> {
+			// collect the ParsedNode from the first child and add all children of the 2nd child
+			parent.addChildren(children[0]);
+			parent.addChildren(children[1].getChildren());
+		});
+		//noinspection CodeBlock2Expr
+		p2.setAstBuilder((parent, children) -> {
+			parent.addChildren(children[0]);
+		});
 	}
 }

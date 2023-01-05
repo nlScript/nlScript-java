@@ -10,6 +10,12 @@ public class Production {
 	private final NonTerminal left;
 	private final Symbol[] right;
 
+	private AstBuilder astBuilder = null;
+
+	public interface AstBuilder {
+		void buildAST(ParsedNode parent, ParsedNode... children);
+	}
+
 	public Production(NonTerminal left, Symbol... right) {
 		this.left = left;
 		this.right = removeEpsilon(right);
@@ -30,6 +36,18 @@ public class Production {
 
 	public Symbol[] getRight() {
 		return right;
+	}
+
+	public void setAstBuilder(AstBuilder astBuilder) {
+		this.astBuilder = astBuilder;
+	}
+
+	public void builtAST(ParsedNode parent, ParsedNode... children) {
+		if(astBuilder != null) {
+			astBuilder.buildAST(parent, children);
+			return;
+		}
+		parent.addChildren(children);
 	}
 
 	@Override

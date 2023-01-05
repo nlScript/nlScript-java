@@ -20,6 +20,18 @@ public class RDParser {
 		return ret;
 	}
 
+	public ParsedNode buildAst(ParsedNode pn) {
+		ParsedNode[] children = new ParsedNode[pn.numChildren()];
+		for(int i = 0; i < pn.numChildren(); i++) {
+			children[i] = buildAst(pn.getChild(i));
+		}
+		pn.removeAllChildren();
+		if(pn.getProduction() != null)
+			pn.getProduction().builtAST(pn, children);
+
+		return pn;
+	}
+
 	/**
 	 * algorithm:
 	 *
