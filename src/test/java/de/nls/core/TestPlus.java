@@ -12,19 +12,22 @@ public class TestPlus {
 
 	private static BNF makeGrammar() {
 		EBNFCore grammar = new EBNFCore();
-		Rule rule = grammar.plus("plus", Named.n(BNF.DIGIT));
+		Rule rule = grammar.plus("plus",
+				Named.n("seq", grammar.sequence("seq",
+						Named.n(BNF.DIGIT),
+						Named.n(BNF.LETTER))));
 		grammar.setWhatToMatch(rule.getTarget());
 		return grammar.createBNF();
 	}
 
 	@Test
 	public void test01() {
-		testSuccess("123");
+		testSuccess("1a2b3c");
 	}
 
 	@Test
 	public void test02() {
-		testSuccess("1");
+		testSuccess("1a");
 	}
 
 	@Test
@@ -45,17 +48,22 @@ public class TestPlus {
 		ParsedNode root = test.parse();
 		root = test.buildAst(root);
 
-		if(root.getMatcher().state != SUCCESSFUL)
-			throw new RuntimeException();
+		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
 		ParsedNode parsedStar = root.getChildren()[0];
-		assertEquals(input.length(), parsedStar.numChildren());
+		assertEquals(input.length() / 2, parsedStar.numChildren());
 
 		int i = 0;
 		for(ParsedNode child : parsedStar.getChildren()) {
-			assertEquals(Character.toString(input.charAt(i++)), child.getParsedString());
-			assertEquals(0, child.numChildren());
+			assertEquals(input.substring(i, i + 2), child.getParsedString());
+			assertEquals(2, child.numChildren());
+			i += 2;
 		}
+
+		// test evaluate
+		Object[] evaluated = (Object[]) parsedStar.evaluate();
+		for(i = 0; i < evaluated.length; i++)
+			assertEquals(input.substring(2 * i, 2 * i + 2), evaluated[i]);
 	}
 
 	private static void testFailure(String input) {

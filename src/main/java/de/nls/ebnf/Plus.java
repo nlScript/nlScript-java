@@ -1,13 +1,16 @@
 package de.nls.ebnf;
 
+import de.nls.Evaluator;
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
 import de.nls.core.Production;
 import de.nls.core.Symbol;
 
 class Plus extends Rule {
+
 	public Plus(NonTerminal tgt, Symbol child) {
 		super("plus", tgt, child);
+		setEvaluator(Evaluator.ALL_CHILDREN_EVALUATOR);
 	}
 
 	public void createBNF(BNF grammar) {

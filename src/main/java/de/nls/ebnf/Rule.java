@@ -1,5 +1,6 @@
 package de.nls.ebnf;
 
+import de.nls.Evaluator;
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
 import de.nls.core.Symbol;
@@ -9,6 +10,8 @@ public abstract class Rule {
 	protected final NonTerminal tgt;
 	protected final Symbol[] children;
 	protected String[] parsedChildNames;
+
+	private Evaluator evaluator;
 
 	public Rule(String type, NonTerminal tgt, Symbol... children) {
 		this.type = type;
@@ -20,6 +23,15 @@ public abstract class Rule {
 
 	public NonTerminal getTarget() {
 		return tgt;
+	}
+
+	public Evaluator getEvaluator() {
+		return evaluator;
+	}
+
+	public Rule setEvaluator(Evaluator evaluator) {
+		this.evaluator = evaluator;
+		return this;
 	}
 
 	public static EBNFProduction addProduction(BNF grammar, Rule rule, NonTerminal left, Symbol... right) {

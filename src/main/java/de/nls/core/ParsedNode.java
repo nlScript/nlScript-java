@@ -1,5 +1,8 @@
 package de.nls.core;
 
+import de.nls.ebnf.EBNFProduction;
+import de.nls.ebnf.Rule;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -27,6 +30,12 @@ public class ParsedNode {
 
 	public void setProduction(Production p) {
 		this.production = p;
+	}
+
+	public Rule getRule() {
+		if(production != null && production instanceof EBNFProduction)
+			return ((EBNFProduction) production).getRule();
+		return null;
 	}
 
 	public Matcher getMatcher() {
@@ -74,6 +83,18 @@ public class ParsedNode {
 		for(ParsedNode child : children)
 			child.parent = null;
 		children.clear();
+	}
+
+	public Object evaluate() {
+		Rule rule = getRule();
+		if(rule != null && rule.getEvaluator() != null) {
+			return rule.getEvaluator().evaluate(this);
+		}
+		return getParsedString();
+	}
+
+	public Object evaluate(int child) {
+		return children.get(child).evaluate();
 	}
 
 	public String getParsedString() {
