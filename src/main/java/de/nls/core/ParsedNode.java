@@ -33,6 +33,10 @@ public class ParsedNode {
 		this.matcher = matcher;
 	}
 
+	public int numChildren() {
+		return children.size();
+	}
+
 	public final ParsedNode[] getChildren() {
 		return children.toArray(new ParsedNode[0]);
 	}
@@ -62,5 +66,14 @@ public class ParsedNode {
 		for(ParsedNode child : children)
 			child.parent = null;
 		children.clear();
+	}
+
+	public String getParsedString() {
+		return matcher.parsed;
+	}
+
+	@Override
+	public String toString() {
+		return getParsedString();
 	}
 }

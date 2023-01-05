@@ -8,6 +8,8 @@ public class BNF {
 	public static final NonTerminal ARTIFICIAL_START_SYMBOL = new NonTerminal("S'");
 	public static final Terminal    ARTIFICIAL_STOP_SYMBOL  = new Terminal.EndOfInput();
 	public static final Terminal    EPSILON                 = new Terminal.Epsilon();
+	public static final Terminal    DIGIT                   = new Terminal.Digit();
+	public static final Terminal    LETTER                  = new Terminal.Letter();
 
 	private final HashMap<String, Symbol> symbols = new HashMap<>();
 

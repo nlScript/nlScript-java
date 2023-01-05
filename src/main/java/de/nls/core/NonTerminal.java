@@ -15,7 +15,7 @@ public class NonTerminal extends Symbol {
 		return "<" + getSymbol() + ">";
 	}
 
-	private static String makeRandomSymbol() {
+	public static String makeRandomSymbol() {
 		return rs.nextString();
 	}
 }

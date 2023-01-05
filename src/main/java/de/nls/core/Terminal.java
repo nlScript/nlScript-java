@@ -42,7 +42,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Digit extends Terminal {
-		public Digit() {
+		Digit() {
 			super("digit");
 		}
 
@@ -83,7 +83,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Letter extends Terminal {
-		public Letter() {
+		Letter() {
 			super("letter");
 		}
 

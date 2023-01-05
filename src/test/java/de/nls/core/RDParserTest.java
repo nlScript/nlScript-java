@@ -16,7 +16,7 @@ public class RDParserTest {
 		bnf.addProduction(new Production(new NonTerminal("TERM"),
 				new NonTerminal("FACTOR")));
 		bnf.addProduction(new Production(new NonTerminal("FACTOR"),
-				new Terminal.Digit()));
+				BNF.DIGIT));
 
 		bnf.addProduction(new Production(BNF.ARTIFICIAL_START_SYMBOL,
 				new NonTerminal("EXPR"), BNF.ARTIFICIAL_STOP_SYMBOL));
