@@ -45,6 +45,23 @@ public class EBNFCore {
 		return optional;
 	}
 
+	public Rule repeat(String type, Named child, int from, int to) {
+		NonTerminal tgt = newOrExistingNonTerminal(type);
+		Repeat repeat = new Repeat(tgt, child.getSymbol(), from, to);
+		repeat.setParsedChildNames(child.getName());
+		addRule(repeat);
+		return repeat;
+	}
+
+	public Rule repeat(String type, Named child, String... names) {
+		NonTerminal tgt = newOrExistingNonTerminal(type);
+		int n = names.length;
+		Repeat repeat = new Repeat(tgt, child.getSymbol(), n, n);
+		repeat.setParsedChildNames(names);
+		addRule(repeat);
+		return repeat;
+	}
+
 	public Rule sequence(String type, Named... children) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		Sequence sequence = new Sequence(tgt, getSymbols(children));
