@@ -3,6 +3,7 @@ package de.nls.ebnf;
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
 import de.nls.core.Symbol;
+import de.nls.util.Range;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,6 +61,33 @@ public class EBNFCore {
 		repeat.setParsedChildNames(names);
 		addRule(repeat);
 		return repeat;
+	}
+
+	public Rule join(String type, Named child, Symbol open, Symbol close, Symbol delimiter, Range cardinality) {
+		return join(type, child, open, close, delimiter, true, cardinality);
+	}
+
+	public Rule join(String type, Named child, Symbol open, Symbol close, Symbol delimiter, boolean onlyKeepEntries, Range cardinality) {
+		NonTerminal tgt = newOrExistingNonTerminal(type);
+		Join join = new Join(tgt, child.getSymbol(), open, close, delimiter, cardinality);
+		join.setOnlyKeepEntries(onlyKeepEntries);
+		join.setParsedChildNames(child.getName());
+		addRule(join);
+		return join;
+	}
+
+	public Rule join(String type, Named child, Symbol open, Symbol close, Symbol delimiter, String... names) {
+		return join(type, child, open, close, delimiter, true, names);
+	}
+
+	public Rule join(String type, Named child, Symbol open, Symbol close, Symbol delimiter, boolean onlyKeepEntries, String... names) {
+		NonTerminal tgt = newOrExistingNonTerminal(type);
+		int n = names.length;
+		Join join = new Join(tgt, child.getSymbol(), open, close, delimiter, new Range(n, n));
+		join.setOnlyKeepEntries(onlyKeepEntries);
+		join.setParsedChildNames(names);
+		addRule(join);
+		return join;
 	}
 
 	public Rule sequence(String type, Named... children) {
