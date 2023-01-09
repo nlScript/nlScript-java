@@ -22,6 +22,14 @@ public class EBNFCore {
 		return plus;
 	}
 
+	public Rule star(String type, Named child) {
+		NonTerminal tgt = newOrExistingNonTerminal(type);
+		Star star = new Star(tgt, child.getSymbol());
+		star.setParsedChildNames(child.getName());
+		addRule(star);
+		return star;
+	}
+
 	public Rule sequence(String type, Named... children) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		Sequence sequence = new Sequence(tgt, getSymbols(children));
