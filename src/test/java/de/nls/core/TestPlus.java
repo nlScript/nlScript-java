@@ -50,18 +50,18 @@ public class TestPlus {
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
-		ParsedNode parsedStar = root.getChildren()[0];
-		assertEquals(input.length() / 2, parsedStar.numChildren());
+		ParsedNode parsed = root.getChildren()[0];
+		assertEquals(input.length() / 2, parsed.numChildren());
 
 		int i = 0;
-		for(ParsedNode child : parsedStar.getChildren()) {
+		for(ParsedNode child : parsed.getChildren()) {
 			assertEquals(input.substring(i, i + 2), child.getParsedString());
 			assertEquals(2, child.numChildren());
 			i += 2;
 		}
 
 		// test evaluate
-		Object[] evaluated = (Object[]) parsedStar.evaluate();
+		Object[] evaluated = (Object[]) parsed.evaluate();
 		for(i = 0; i < evaluated.length; i++)
 			assertEquals(input.substring(2 * i, 2 * i + 2), evaluated[i]);
 	}
