@@ -37,6 +37,14 @@ public class EBNFCore {
 		return or;
 	}
 
+	public Rule optional(String type, Named child) {
+		NonTerminal tgt = newOrExistingNonTerminal(type);
+		Optional optional = new Optional(tgt, child.getSymbol());
+		optional.setParsedChildNames(child.getName());
+		addRule(optional);
+		return optional;
+	}
+
 	public Rule sequence(String type, Named... children) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		Sequence sequence = new Sequence(tgt, getSymbols(children));
