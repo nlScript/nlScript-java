@@ -59,7 +59,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Literal extends Terminal {
-		public Literal(String symbol) {
+		Literal(String symbol) {
 			super(symbol);
 		}
 

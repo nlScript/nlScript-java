@@ -27,6 +27,10 @@ public class BNF {
 		return p;
 	}
 
+	public static Terminal literal(String s) {
+		return new Terminal.Literal(s);
+	}
+
 	public Symbol getSymbol(String symbol) {
 		Symbol ret = symbols.get(symbol);
 		if(ret == null)

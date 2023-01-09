@@ -13,7 +13,6 @@ public class EBNFCore {
 
 	private final ArrayList<Rule> rules = new ArrayList<>();
 
-
 	public Rule plus(String type, Named child) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		Plus plus = new Plus(tgt, child.getSymbol());
@@ -28,6 +27,14 @@ public class EBNFCore {
 		star.setParsedChildNames(child.getName());
 		addRule(star);
 		return star;
+	}
+
+	public Rule or(String type, Named... options) {
+		NonTerminal tgt = newOrExistingNonTerminal(type);
+		Or or = new Or(tgt, getSymbols(options));
+		or.setParsedChildNames(getNames(options));
+		addRule(or);
+		return or;
 	}
 
 	public Rule sequence(String type, Named... children) {
