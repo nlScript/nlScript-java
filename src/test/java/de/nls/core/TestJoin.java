@@ -28,12 +28,23 @@ public class TestJoin {
 		Lexer l = new Lexer(input);
 		RDParser test = new RDParser(grammar.createBNF(), l);
 		ParsedNode root = test.parse();
+		System.out.println(GraphViz.toVizDotLink(root));
 		root = test.buildAst(root);
+		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
 		ParsedNode parsedJoinNode = root.getChild(0);
 		assertEquals(7, parsedJoinNode.numChildren());
+
+		// test names
+		assertEquals("open",      parsedJoinNode.getChild(0).getName());
+		assertEquals("ha",        parsedJoinNode.getChild(1).getName());
+		assertEquals("delimiter", parsedJoinNode.getChild(2).getName());
+		assertEquals("ho",        parsedJoinNode.getChild(3).getName());
+		assertEquals("delimiter", parsedJoinNode.getChild(4).getName());
+		assertEquals("hu",        parsedJoinNode.getChild(5).getName());
+		assertEquals("close",     parsedJoinNode.getChild(6).getName());
 	}
 
 	@Test
@@ -161,7 +172,9 @@ public class TestJoin {
 		Lexer l = new Lexer(input);
 		RDParser test = new RDParser(grammar, l);
 		ParsedNode root = test.parse();
+		System.out.println(GraphViz.toVizDotLink(root));
 		root = test.buildAst(root);
+		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
@@ -179,12 +192,17 @@ public class TestJoin {
 		Object[] evaluated = (Object[]) parsed.evaluate();
 		for(i = 0; i < evaluated.length; i++)
 			assertEquals(result[i], evaluated[i]);
+
+		// test names
+		for(ParsedNode child : parsed.getChildren())
+			assertEquals(BNF.DIGIT.getSymbol(), child.getName());
 	}
 
 	private static void testFailure(BNF grammar, String input) {
 		Lexer l = new Lexer(input);
 		RDParser parser = new RDParser(grammar, l);
 		ParsedNode root = parser.parse();
+		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertNotEquals(SUCCESSFUL, root.getMatcher().state);
 	}

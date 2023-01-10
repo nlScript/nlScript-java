@@ -46,7 +46,9 @@ public class TestOptional {
 		Lexer l = new Lexer(input);
 		RDParser test = new RDParser(grammar, l);
 		ParsedNode root = test.parse();
+		System.out.println(GraphViz.toVizDotLink(root));
 		root = test.buildAst(root);
+		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
@@ -64,6 +66,10 @@ public class TestOptional {
 		Object[] evaluated = (Object[]) parsed.evaluate();
 		for(i = 0; i < evaluated.length; i++)
 			assertEquals(input.substring(2 * i, 2 * i + 2), evaluated[i]);
+
+		// test names
+		for(ParsedNode child : parsed.getChildren())
+			assertEquals("seq", child.getName());
 	}
 
 	private static void testFailure(String input) {
@@ -72,6 +78,7 @@ public class TestOptional {
 		Lexer l = new Lexer(input);
 		RDParser parser = new RDParser(grammar, l);
 		ParsedNode root = parser.parse();
+		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertNotEquals(SUCCESSFUL, root.getMatcher().state);
 	}
