@@ -11,9 +11,14 @@ public class Production {
 	private final Symbol[] right;
 
 	private AstBuilder astBuilder = null;
+	private ExtensionListener extensionListener = null;
 
 	public interface AstBuilder {
 		void buildAST(ParsedNode parent, ParsedNode... children);
+	}
+
+	public interface ExtensionListener {
+		void onExtension(ParsedNode parent, ParsedNode... children);
 	}
 
 	public Production(NonTerminal left, Symbol... right) {
@@ -48,6 +53,17 @@ public class Production {
 			return;
 		}
 		parent.addChildren(children);
+	}
+
+	public void wasExtended(ParsedNode parent, ParsedNode... children) {
+		if(this.extensionListener != null)
+			extensionListener.onExtension(parent, children);
+	}
+
+	public void onExtension(ExtensionListener listener) {
+		if(this.extensionListener != null)
+			throw new RuntimeException("ExtensionListener cannot be overwritten");
+		this.extensionListener = listener;
 	}
 
 	@Override

@@ -105,12 +105,7 @@ public class RDParser {
 		}
 
 		public ParsedNode getCurrentSymbol() {
-			try {
-				return sequence.get(pos);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
-			}
+			return sequence.get(pos);
 		}
 
 		public SymbolSequence replaceCurrentSymbol(Production production) {
@@ -123,6 +118,7 @@ public class RDParser {
 				parent.addChildren(pn);
 				copy.sequence.add(pos + i, pn);
 			}
+			production.wasExtended(parent, parent.getChildren());
 			return copy;
 		}
 
