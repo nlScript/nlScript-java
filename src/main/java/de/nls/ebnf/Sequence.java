@@ -2,7 +2,7 @@ package de.nls.ebnf;
 
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
-import de.nls.core.ParsedNode;
+import de.nls.ParsedNode;
 import de.nls.core.Production;
 import de.nls.core.Symbol;
 

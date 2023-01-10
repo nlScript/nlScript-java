@@ -1,7 +1,5 @@
 package de.nls;
 
-import de.nls.core.ParsedNode;
-
 public interface Evaluator {
 	Object evaluate(ParsedNode pn);
 

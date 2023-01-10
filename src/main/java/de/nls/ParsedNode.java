@@ -1,5 +1,9 @@
-package de.nls.core;
+package de.nls;
 
+import de.nls.core.Matcher;
+import de.nls.core.ParsingState;
+import de.nls.core.Production;
+import de.nls.core.Symbol;
 import de.nls.ebnf.EBNFProduction;
 import de.nls.ebnf.Rule;
 
@@ -82,7 +86,7 @@ public class ParsedNode {
 			child.parent = this;
 	}
 
-	void populateMatcher() {
+	public void populateMatcher() {
 		if(children.isEmpty())
 			return;
 		ParsingState state = ParsingState.SUCCESSFUL;

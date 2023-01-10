@@ -1,5 +1,6 @@
 package de.nls.core;
 
+import de.nls.ParsedNode;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;

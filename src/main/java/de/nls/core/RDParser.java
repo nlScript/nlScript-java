@@ -1,5 +1,7 @@
 package de.nls.core;
 
+import de.nls.ParsedNode;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 

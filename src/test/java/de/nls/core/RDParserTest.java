@@ -1,5 +1,6 @@
 package de.nls.core;
 
+import de.nls.ParsedNode;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

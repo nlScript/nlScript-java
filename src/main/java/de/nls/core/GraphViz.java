@@ -1,5 +1,7 @@
 package de.nls.core;
 
+import de.nls.ParsedNode;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
