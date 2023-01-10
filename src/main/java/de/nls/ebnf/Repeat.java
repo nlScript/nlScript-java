@@ -25,6 +25,12 @@ public class Repeat extends Rule {
 			for(int i = 0; i < seqLen; i++)
 				rhs[i] = children[0];
 			Production p = addProduction(g, this, tgt, rhs);
+			p.onExtension((parent, children) -> {
+				for(int c = 0; c < children.length; c++) {
+					children[c].setNthEntryInParent(c);
+					children[c].setName(getNameForChild(c));
+				}
+			});
 			p.setAstBuilder((ParsedNode::addChildren));
 		}
 	}

@@ -16,6 +16,10 @@ public class Or extends Rule {
 	public void createBNF(BNF grammar) {
 		for(Symbol option : children) {
 			Production p = addProduction(grammar, this, tgt, option);
+			p.onExtension((parent, children) -> {
+				children[0].setNthEntryInParent(0);
+				children[0].setName(getNameForChild(0));
+			});
 			p.setAstBuilder((ParsedNode::addChildren));
 		}
 	}

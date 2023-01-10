@@ -17,6 +17,20 @@ class Plus extends Rule {
 		Production p1 = addProduction(grammar, this, tgt, children[0], tgt);
 		Production p2 = addProduction(grammar, this, tgt, children[0]);
 
+		p1.onExtension((parent, children) -> {
+			int nthEntry = parent.getNthEntryInParent();
+			children[0].setNthEntryInParent(nthEntry);
+			children[0].setName(getNameForChild(nthEntry));
+			children[1].setNthEntryInParent(nthEntry + 1);
+			children[1].setName(parent.getName());
+		});
+
+		p2.onExtension((parent, children) -> {
+			int nthEntry = parent.getNthEntryInParent();
+			children[0].setNthEntryInParent(nthEntry);
+			children[0].setName(getNameForChild(nthEntry));
+		});
+
 		p1.setAstBuilder((parent, children) -> {
 			// collect the ParsedNode from the first child and add all children of the 2nd child
 			parent.addChildren(children[0]);

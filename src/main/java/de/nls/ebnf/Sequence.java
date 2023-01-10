@@ -14,6 +14,12 @@ class Sequence extends Rule {
 
 	public void createBNF(BNF g) {
 		Production p = addProduction(g, this, tgt, children);
+		p.onExtension((parent, children) -> {
+			for(int c = 0; c < children.length; c++) {
+				children[c].setNthEntryInParent(c);
+				children[c].setName(getNameForChild(c));
+			}
+		});
 		p.setAstBuilder((ParsedNode::addChildren));
 	}
 }

@@ -18,6 +18,8 @@ public abstract class Named {
 		return new NamedNonTerminal(name, t);
 	}
 
+
+
 	final String name;
 
 	public Named(String name) {

@@ -18,6 +18,11 @@ public class Optional extends Rule {
 		final Production p1 = addProduction(g, this, tgt, children[0]);
 		final Production p2 = addProduction(g, this, tgt);
 
+		p1.onExtension((parent, children) -> {
+			children[0].setNthEntryInParent(0);
+			children[0].setName(getNameForChild(0));
+		});
+
 		p1.setAstBuilder(ParsedNode::addChildren);
 	}
 }

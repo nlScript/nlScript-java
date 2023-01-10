@@ -48,6 +48,12 @@ public class Join extends Rule {
 			 *     |                                            |-- entry (3rd name)
 			 *     |-- close
 			 */
+			p.onExtension((parent, children) -> {
+				int nthEntry = parent.getNthEntryInParent() + 1; // increment because next starts with index 1, index 0 is first
+				children[0].setName("delimiter");
+				children[1].setName(getNameForChild(nthEntry));
+			});
+
 			if(onlyKeepEntries)
 				p.setAstBuilder((parent, children) -> parent.addChildren(children[1]));
 			else
@@ -55,6 +61,10 @@ public class Join extends Rule {
 		}
 		else {
 			Production p = addProduction(g, this, next, first);
+			p.onExtension((parent, children) -> {
+				int nthEntry = parent.getNthEntryInParent() + 1; // increment because next starts with index 1, index 0 is first
+				children[0].setName(getNameForChild(nthEntry));
+			});
 			p.setAstBuilder((parent, children) -> parent.addChildren(children[0]));
 		}
 
@@ -73,6 +83,10 @@ public class Join extends Rule {
 			star.setParsedChildNames("next");
 			star.createBNF(g);
 			Production p = addProduction(g, this, repetition, first, star.tgt);
+			p.onExtension((parent, children) -> {
+				children[0].setName(getNameForChild(0));
+				children[1].setName("star");
+			});
 			p.setAstBuilder(astBuilder);
 		}
 		// L -> first L
@@ -90,12 +104,18 @@ public class Join extends Rule {
 			Production p2 = addProduction(g, this, repetition, BNF.EPSILON);
 			p1.setAstBuilder(astBuilder);
 			p2.setAstBuilder((parent, children) -> {});
+
+			p1.onExtension((parent, children) -> {
+				children[0].setName(getNameForChild(0));
+				children[1].setName("star");
+			});
 		}
 
 		// ? : L -> first
 		//     L -> epsilon
 		else if(cardinality.equals(Range.OPTIONAL)) {
 			Production p1 = addProduction(g, this, repetition, first); // using default ASTBuilder
+			p1.onExtension((parent, children) -> children[0].setName(getNameForChild(0)));
 			Production p2 = addProduction(g, this, repetition, BNF.EPSILON);
 			p2.setAstBuilder((parent, children) -> {});
 		}
@@ -109,6 +129,7 @@ public class Join extends Rule {
 			}
 			else if(lower == 1 && upper == 1) {
 				Production p = addProduction(g, this, repetition, first); // using default ASTBuilder
+				p.onExtension(((parent, children) -> children[0].setName(getNameForChild(0))));
 			}
 			else {
 				if(lower <= 0) {
@@ -117,6 +138,10 @@ public class Join extends Rule {
 					repeat.createBNF(g);
 					Production p = addProduction(g, this, repetition, first, repeat.tgt);
 					p.setAstBuilder(astBuilder);
+					p.onExtension((parent, children) -> {
+						children[0].setName(getNameForChild(0));
+						children[1].setName("repeat");
+					});
 					addProduction(g, this, repetition, BNF.EPSILON).setAstBuilder(((parent, children) -> {}));
 				}
 				else {
@@ -125,16 +150,28 @@ public class Join extends Rule {
 					repeat.createBNF(g);
 					Production p = addProduction(g, this, repetition, first, repeat.tgt);
 					p.setAstBuilder(astBuilder);
+					p.onExtension((parent, children) -> {
+						children[0].setName(getNameForChild(0));
+						children[1].setName("repeat");
+					});
 				}
 			}
 		}
 
 		if(!hasOpen && !hasClose) {
 			Production p = addProduction(g, this, tgt, repetition);
+			p.onExtension(((parent, children) -> children[0].setName("repetition")));
 			p.setAstBuilder(((parent, children) -> parent.addChildren(children[0].getChildren())));
 		}
 		else {
 			Production p = addProduction(g, this, tgt, open, repetition, close);
+			p.onExtension((parent, children) -> {
+				if(!onlyKeepEntries)
+					children[0].setName("open");
+				children[1].setName("repetition");
+				if(!onlyKeepEntries)
+					children[2].setName("close");
+			});
 			p.setAstBuilder((parent, children) -> {
 				if(!onlyKeepEntries)
 					parent.addChildren(children[0]);

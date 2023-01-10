@@ -14,6 +14,8 @@ public class ParsedNode {
 	private final Symbol symbol;
 	private Production production;
 	private Matcher matcher;
+	private String name;
+	private int nthEntryInParent = 0;
 
 	public ParsedNode(Matcher matcher, Symbol symbol) {
 		this.matcher = matcher;
@@ -22,6 +24,22 @@ public class ParsedNode {
 
 	public Symbol getSymbol() {
 		return symbol;
+	}
+
+	public String getName() {
+		return name != null ? name : symbol.getSymbol();
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setNthEntryInParent(int nthEntry) {
+		this.nthEntryInParent = nthEntry;
+	}
+
+	public int getNthEntryInParent() {
+		return nthEntryInParent;
 	}
 
 	public Production getProduction() {
