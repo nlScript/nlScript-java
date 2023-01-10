@@ -10,6 +10,7 @@ public class BNF {
 	public static final Terminal    EPSILON                 = new Terminal.Epsilon();
 	public static final Terminal    DIGIT                   = new Terminal.Digit();
 	public static final Terminal    LETTER                  = new Terminal.Letter();
+	public static final Terminal    WHITESPACE              = new Terminal.Whitespace();
 
 	private final HashMap<String, Symbol> symbols = new HashMap<>();
 
@@ -29,6 +30,10 @@ public class BNF {
 
 	public static Terminal literal(String s) {
 		return new Terminal.Literal(s);
+	}
+
+	public static Terminal characterClass(String pattern) {
+		return new Terminal.CharacterClass(pattern);
 	}
 
 	public Symbol getSymbol(String symbol) {

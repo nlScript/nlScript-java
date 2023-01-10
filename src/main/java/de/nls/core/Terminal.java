@@ -100,7 +100,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Whitespace extends Terminal {
-		private Whitespace() {
+		Whitespace() {
 			super("whitespace");
 		}
 
@@ -120,7 +120,7 @@ public abstract class Terminal extends Symbol {
 
 		private final Ranges ranges;
 
-		public CharacterClass(String pattern) {
+		CharacterClass(String pattern) {
 			super(pattern);
 			StringBuilder b = new StringBuilder(pattern.trim());
 			if(b.charAt(0) != '[' || b.charAt(b.length() - 1) != ']')
