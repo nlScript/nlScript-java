@@ -1,5 +1,6 @@
 package de.nls.core;
 
+import de.nls.Autocompleter;
 import de.nls.ParsedNode;
 
 import java.util.ArrayList;
@@ -15,9 +16,13 @@ public class RDParser {
 	}
 
 	public ParsedNode parse() {
+		return parse(new ArrayList<>());
+	}
+
+	public ParsedNode parse(ArrayList<Autocompletion> autocompletions) {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
 		ParsedNode ret = seq.getCurrentSymbol();
-		parse(seq);
+		parse(seq, autocompletions);
 		populateParsedTree(ret);
 		return ret;
 	}
@@ -34,6 +39,44 @@ public class RDParser {
 		return pn;
 	}
 
+	private void addAutocompletions(ParsedNode pn, ArrayList<Autocompletion> autocompletions) {
+		// get a trace to the root
+		ArrayList<ParsedNode> pathToRoot = new ArrayList<>();
+		ParsedNode parent = pn;
+		while(parent != null) {
+			pathToRoot.add(parent);
+			parent = parent.getParent();
+		}
+
+		// find the node closest to root which provides autocompletion
+		ParsedNode autocompletingParent = null;
+		for(int i = pathToRoot.size() - 1; i >= 0; i--) {
+			ParsedNode tmp = pathToRoot.get(i);
+			if (tmp.doesAutocomplete()) {
+				autocompletingParent = tmp;
+				break;
+			}
+		}
+		if(autocompletingParent == null)
+			return;
+
+		autocompletingParent.populateMatcher();
+		int autocompletingParentStart = autocompletingParent.getMatcher().pos;
+		String alreadyEntered = lexer.substring(autocompletingParentStart);
+		String completion = autocompletingParent.getAutocompletion();
+		if(completion != null && !completion.isEmpty()) {
+			for(String c : completion.split(";;;")) {
+				if(c.equals(Autocompleter.VETO)) {
+					autocompletions.clear();
+					return; // TODO prevent somehow further autocompletion
+				}
+				Autocompletion ac = new Autocompletion(c, alreadyEntered);
+				if(!autocompletions.contains(ac))
+					autocompletions.add(ac);
+			}
+		}
+	}
+
 	/**
 	 * algorithm:
 	 *
@@ -46,12 +89,14 @@ public class RDParser {
 	 *   - for all productions U -> XYZ
 	 *     - in the symbol sequence, replace U with XYZ
 	 */
-	private ParsedNode parse(SymbolSequence symbolSequence) {
+	private ParsedNode parse(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
 		ParsedNode parent = symbolSequence.getCurrentSymbol();
 		Symbol next = parent.getSymbol();
 		while(next.isTerminal()) {
 			Matcher matcher = ((Terminal) next).matches(lexer);
 			parent.setMatcher(matcher);
+			if(matcher.state == ParsingState.END_OF_INPUT)
+				addAutocompletions(parent, autocompletions);
 			if(matcher.state != ParsingState.SUCCESSFUL)
 				return parent;
 			symbolSequence.incrementPosition();
@@ -68,7 +113,7 @@ public class RDParser {
 		for(Production alternate : alternates) {
 			int lexerPos = lexer.getPosition();
 			SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate);
-			ParsedNode pn = parse(nextSequence);
+			ParsedNode pn = parse(nextSequence, autocompletions);
 			if(pn.getMatcher().state == ParsingState.SUCCESSFUL)
 				return pn;
 			if(best == null || pn.getMatcher().isBetterThan(best.getMatcher())) {

@@ -4,6 +4,7 @@ import de.nls.core.Matcher;
 import de.nls.core.ParsingState;
 import de.nls.core.Production;
 import de.nls.core.Symbol;
+import de.nls.core.Terminal;
 import de.nls.ebnf.EBNFProduction;
 import de.nls.ebnf.Rule;
 
@@ -68,6 +69,26 @@ public class ParsedNode {
 		this.matcher = matcher;
 	}
 
+	public boolean doesAutocomplete() {
+		return getAutocompletion() != null;
+	}
+
+	public String getAutocompletion() {
+		Rule rule = getRule();
+		if(rule != null && rule.getAutocompleter() != null)
+			return rule.getAutocompleter().getAutocompletion(this);
+
+		if(symbol != null && symbol instanceof Terminal.Literal)
+			return symbol.getSymbol();
+
+		if(symbol != null && symbol.isTerminal()) {
+			if(getParsedString().length() > 0)
+				return Autocompleter.VETO;
+			return "${" + getName() + "}";
+		}
+		return null;
+	}
+
 	public int numChildren() {
 		return children.size();
 	}
@@ -84,6 +105,10 @@ public class ParsedNode {
 		this.children.addAll(Arrays.asList(children));
 		for(ParsedNode child : children)
 			child.parent = this;
+	}
+
+	public ParsedNode getParent() {
+		return parent;
 	}
 
 	public void populateMatcher() {

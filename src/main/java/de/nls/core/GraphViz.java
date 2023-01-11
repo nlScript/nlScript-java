@@ -50,7 +50,7 @@ public class GraphViz {
 		sb.append("  ")
 				.append(root.hashCode())
 				.append("[label=\"").append(root.getName()).append("\", color=").append(color)
-				.append(", tooltip=\"").append(root.getParsedString()).append("\"")
+				.append(", tooltip=\"").append(root.getParsedString()).append("(").append(root.getMatcher().pos).append(")").append("\"")
 				.append("]\n");
 		for(ParsedNode pn : root.getChildren())
 			sb.append(vizDotNodes(pn));

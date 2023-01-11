@@ -1,5 +1,6 @@
 package de.nls.ebnf;
 
+import de.nls.Autocompleter;
 import de.nls.Evaluator;
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
@@ -12,6 +13,7 @@ public abstract class Rule {
 	protected String[] parsedChildNames;
 
 	private Evaluator evaluator;
+	private Autocompleter autocompleter;
 
 	public Rule(String type, NonTerminal tgt, Symbol... children) {
 		this.type = type;
@@ -31,6 +33,15 @@ public abstract class Rule {
 
 	public Rule setEvaluator(Evaluator evaluator) {
 		this.evaluator = evaluator;
+		return this;
+	}
+
+	public Autocompleter getAutocompleter() {
+		return autocompleter;
+	}
+
+	public Rule setAutocompleter(Autocompleter autocompleter) {
+		this.autocompleter = autocompleter;
 		return this;
 	}
 
