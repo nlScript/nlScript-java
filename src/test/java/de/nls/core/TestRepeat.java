@@ -15,8 +15,8 @@ public class TestRepeat {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.repeat("repeat",
 				Named.n("seq", grammar.sequence("seq",
-						Named.n(BNF.DIGIT),
-						Named.n(BNF.LETTER))),
+						Named.n(Terminal.DIGIT),
+						Named.n(Terminal.LETTER))),
 				lower,
 				upper);
 		grammar.setWhatToMatch(rule.getTarget());

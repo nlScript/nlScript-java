@@ -30,10 +30,10 @@ public class Production {
 
 	private static Symbol[] removeEpsilon(Symbol[] arr) {
 		List<Symbol> list = new ArrayList<>(Arrays.asList(arr));
-		int idx = list.indexOf(BNF.EPSILON);
+		int idx = list.indexOf(Terminal.EPSILON);
 		if(idx == -1)
 			return arr;
-		list.remove(BNF.EPSILON);
+		list.remove(Terminal.EPSILON);
 		return list.toArray(new Symbol[0]);
 	}
 

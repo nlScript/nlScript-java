@@ -6,6 +6,7 @@ import de.nls.core.NonTerminal;
 import de.nls.ParsedNode;
 import de.nls.core.Production;
 import de.nls.core.Symbol;
+import de.nls.core.Terminal;
 import de.nls.util.Range;
 
 public class Join extends Rule {
@@ -101,7 +102,7 @@ public class Join extends Rule {
 			star.createBNF(g);
 
 			Production p1 = addProduction(g, this, repetition, first, star.tgt);
-			Production p2 = addProduction(g, this, repetition, BNF.EPSILON);
+			Production p2 = addProduction(g, this, repetition, Terminal.EPSILON);
 			p1.setAstBuilder(astBuilder);
 			p2.setAstBuilder((parent, children) -> {});
 
@@ -116,7 +117,7 @@ public class Join extends Rule {
 		else if(cardinality.equals(Range.OPTIONAL)) {
 			Production p1 = addProduction(g, this, repetition, first); // using default ASTBuilder
 			p1.onExtension((parent, children) -> children[0].setName(getNameForChild(0)));
-			Production p2 = addProduction(g, this, repetition, BNF.EPSILON);
+			Production p2 = addProduction(g, this, repetition, Terminal.EPSILON);
 			p2.setAstBuilder((parent, children) -> {});
 		}
 
@@ -125,7 +126,7 @@ public class Join extends Rule {
 			int lower = cardinality.getLower();
 			int upper = cardinality.getUpper();
 			if(lower == 0 && upper == 0) {
-				addProduction(g, this, repetition, BNF.EPSILON).setAstBuilder((parent, children) -> {});
+				addProduction(g, this, repetition, Terminal.EPSILON).setAstBuilder((parent, children) -> {});
 			}
 			else if(lower == 1 && upper == 1) {
 				Production p = addProduction(g, this, repetition, first); // using default ASTBuilder
@@ -142,7 +143,7 @@ public class Join extends Rule {
 						children[0].setName(getNameForChild(0));
 						children[1].setName("repeat");
 					});
-					addProduction(g, this, repetition, BNF.EPSILON).setAstBuilder(((parent, children) -> {}));
+					addProduction(g, this, repetition, Terminal.EPSILON).setAstBuilder(((parent, children) -> {}));
 				}
 				else {
 					Repeat repeat = new Repeat(null, next, lower - 1, upper - 1);

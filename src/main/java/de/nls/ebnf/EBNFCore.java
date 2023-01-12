@@ -3,6 +3,7 @@ package de.nls.ebnf;
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
 import de.nls.core.Symbol;
+import de.nls.core.Terminal;
 import de.nls.util.Range;
 
 import java.util.ArrayList;
@@ -91,19 +92,19 @@ public class EBNFCore {
 	}
 
 	public Rule list(String type, Named child) {
-		Named.NamedRule wsStar = Named.n("ws*", star(null, Named.n(BNF.WHITESPACE)));
+		Named.NamedRule wsStar = Named.n("ws*", star(null, Named.n(Terminal.WHITESPACE)));
 		NonTerminal delimiter = sequence(null,
 				wsStar,
-				Named.n(BNF.literal(",")),
+				Named.n(Terminal.literal(",")),
 				wsStar).tgt;
 		return join(type, child, null, null, delimiter, Range.STAR);
 	}
 
 	public Rule tuple(String type, Named child, String... names) {
-		Named.NamedRule wsStar = Named.n("ws*", star(null, Named.n(BNF.WHITESPACE)));
-		Symbol open      = sequence(null, Named.n(BNF.literal("(")), wsStar).tgt;
-		Symbol close     = sequence(null, wsStar, Named.n(BNF.literal(")"))).tgt;
-		Symbol delimiter = sequence(null, wsStar, Named.n(BNF.literal(",")), wsStar).tgt;
+		Named.NamedRule wsStar = Named.n("ws*", star(null, Named.n(Terminal.WHITESPACE)));
+		Symbol open      = sequence(null, Named.n(Terminal.literal("(")), wsStar).tgt;
+		Symbol close     = sequence(null, wsStar, Named.n(Terminal.literal(")"))).tgt;
+		Symbol delimiter = sequence(null, wsStar, Named.n(Terminal.literal(",")), wsStar).tgt;
 		return join(type, child, open, close, delimiter, names);
 	}
 

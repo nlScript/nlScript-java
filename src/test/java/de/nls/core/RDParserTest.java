@@ -9,15 +9,15 @@ public class RDParserTest {
 	public void testParse() {
 		BNF bnf = new BNF();
 		bnf.addProduction(new Production(new NonTerminal("EXPR"),
-				new NonTerminal("TERM"), new Terminal.Literal("+"), new NonTerminal("EXPR")));
+				new NonTerminal("TERM"), Terminal.literal("+"), new NonTerminal("EXPR")));
 		bnf.addProduction(new Production(new NonTerminal("EXPR"),
 				new NonTerminal("TERM")));
 		bnf.addProduction(new Production(new NonTerminal("TERM"),
-				new NonTerminal("FACTOR"), new Terminal.Literal("*"), new NonTerminal("FACTOR")));
+				new NonTerminal("FACTOR"), Terminal.literal("*"), new NonTerminal("FACTOR")));
 		bnf.addProduction(new Production(new NonTerminal("TERM"),
 				new NonTerminal("FACTOR")));
 		bnf.addProduction(new Production(new NonTerminal("FACTOR"),
-				BNF.DIGIT));
+				Terminal.DIGIT));
 
 		bnf.addProduction(new Production(BNF.ARTIFICIAL_START_SYMBOL,
 				new NonTerminal("EXPR"), BNF.ARTIFICIAL_STOP_SYMBOL));

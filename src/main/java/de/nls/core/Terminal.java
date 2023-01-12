@@ -5,6 +5,23 @@ import java.util.HashSet;
 
 public abstract class Terminal extends Symbol {
 
+	public static final Terminal EPSILON      = new Epsilon();
+	public static final Terminal DIGIT        = new Digit();
+	public static final Terminal LETTER       = new Letter();
+	public static final Terminal WHITESPACE   = new Whitespace();
+
+	public static final Terminal END_OF_INPUT = new EndOfInput();
+
+	public static Terminal literal(String s) {
+		return new Literal(s);
+	}
+
+	public static Terminal characterClass(String pattern) {
+		return new CharacterClass(pattern);
+	}
+
+
+
 	public Terminal(String symbol) {
 		super(symbol);
 	}
@@ -16,8 +33,10 @@ public abstract class Terminal extends Symbol {
 		return getSymbol();
 	}
 
+
+
 	public static class Epsilon extends Terminal {
-		Epsilon() {
+		private Epsilon() {
 			super("epsilon");
 		}
 
@@ -28,7 +47,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class EndOfInput extends Terminal {
-		EndOfInput() {
+		private EndOfInput() {
 			super("EOI");
 		}
 
@@ -42,7 +61,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Digit extends Terminal {
-		Digit() {
+		private Digit() {
 			super("digit");
 		}
 
@@ -59,7 +78,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Literal extends Terminal {
-		Literal(String symbol) {
+		private Literal(String symbol) {
 			super(symbol);
 		}
 
@@ -83,7 +102,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Letter extends Terminal {
-		Letter() {
+		private Letter() {
 			super("letter");
 		}
 
@@ -100,7 +119,7 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Whitespace extends Terminal {
-		Whitespace() {
+		private Whitespace() {
 			super("whitespace");
 		}
 
@@ -120,7 +139,7 @@ public abstract class Terminal extends Symbol {
 
 		private final Ranges ranges;
 
-		CharacterClass(String pattern) {
+		private CharacterClass(String pattern) {
 			super(pattern);
 			StringBuilder b = new StringBuilder(pattern.trim());
 			if(b.charAt(0) != '[' || b.charAt(b.length() - 1) != ']')

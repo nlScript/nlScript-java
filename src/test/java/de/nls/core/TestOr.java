@@ -16,11 +16,11 @@ public class TestOr {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.or("or",
 				Named.n("seq", grammar.sequence("seq1",
-					Named.n(BNF.literal("y")),
-					Named.n(BNF.DIGIT))),
+					Named.n(Terminal.literal("y")),
+					Named.n(Terminal.DIGIT))),
 				Named.n("seq", grammar.sequence("seq2",
-					Named.n(BNF.literal("n")),
-					Named.n(BNF.DIGIT))));
+					Named.n(Terminal.literal("n")),
+					Named.n(Terminal.DIGIT))));
 		grammar.setWhatToMatch(rule.getTarget());
 		return grammar.createBNF();
 	}

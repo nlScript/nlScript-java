@@ -15,8 +15,8 @@ public class TestPlus {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.plus("plus",
 				Named.n("seq", grammar.sequence("seq",
-						Named.n(BNF.DIGIT),
-						Named.n(BNF.LETTER))));
+						Named.n(Terminal.DIGIT),
+						Named.n(Terminal.LETTER))));
 		grammar.setWhatToMatch(rule.getTarget());
 		return grammar.createBNF();
 	}

@@ -51,19 +51,19 @@ public class TestAutocompletion {
 	private static BNF makeGrammar() {
 		EBNFCore grammar = new EBNFCore();
 		Rule e = grammar.sequence("expr",
-				Named.n(BNF.literal("one")),
+				Named.n(Terminal.literal("one")),
 				Named.n("star", grammar.star(null,
 						Named.n("or", grammar.or(null,
-								Named.n(BNF.literal("two")),
-								Named.n(BNF.literal("three")),
-								Named.n(BNF.literal("four"))
+								Named.n(Terminal.literal("two")),
+								Named.n(Terminal.literal("three")),
+								Named.n(Terminal.literal("four"))
 						).setAutocompleter(pn -> {
 							if(pn.getParsedString().length() > 0)
 								return Autocompleter.VETO;
 							return "${" + pn.getName() + "}";
 						}))
 				)),
-				Named.n(BNF.literal("five"))
+				Named.n(Terminal.literal("five"))
 		);
 
 		grammar.setWhatToMatch(e.getTarget());

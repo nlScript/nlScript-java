@@ -17,10 +17,10 @@ public class TestJoin {
 	public void testKeepDelimiters() {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.join("join",
-				Named.n(BNF.DIGIT),
-				BNF.literal("("),
-				BNF.literal(")"),
-				BNF.literal(","),
+				Named.n(Terminal.DIGIT),
+				Terminal.literal("("),
+				Terminal.literal(")"),
+				Terminal.literal(","),
 				false, // onlyKeepEntries
 				"ha", "ho", "hu");
 		grammar.setWhatToMatch(rule.getTarget());
@@ -160,10 +160,10 @@ public class TestJoin {
 	private static BNF makeGrammar(boolean withOpenAndClose, boolean withDelimiter, Range range) {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.join("join",
-				Named.n(BNF.DIGIT),
-				withOpenAndClose ? BNF.literal("(") : null,
-				withOpenAndClose ? BNF.literal(")") : null,
-				withDelimiter    ? BNF.literal(",") : null,
+				Named.n(Terminal.DIGIT),
+				withOpenAndClose ? Terminal.literal("(") : null,
+				withOpenAndClose ? Terminal.literal(")") : null,
+				withDelimiter    ? Terminal.literal(",") : null,
 				range);
 		grammar.setWhatToMatch(rule.getTarget());
 		return grammar.createBNF();
@@ -196,7 +196,7 @@ public class TestJoin {
 
 		// test names
 		for(ParsedNode child : parsed.getChildren())
-			assertEquals(BNF.DIGIT.getSymbol(), child.getName());
+			assertEquals(Terminal.DIGIT.getSymbol(), child.getName());
 	}
 
 	private static void testFailure(BNF grammar, String input) {
