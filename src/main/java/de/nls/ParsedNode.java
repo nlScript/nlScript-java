@@ -101,6 +101,13 @@ public class ParsedNode {
 		return children.get(i);
 	}
 
+	public ParsedNode getChild(String name) {
+		for(ParsedNode n : children)
+			if (name.equals(n.getName()))
+				return n;
+		return null;
+	}
+
 	public void addChildren(ParsedNode... children) {
 		this.children.addAll(Arrays.asList(children));
 		for(ParsedNode child : children)
@@ -142,6 +149,16 @@ public class ParsedNode {
 
 	public Object evaluate(int child) {
 		return children.get(child).evaluate();
+	}
+
+	public Object evaluate(String... names) {
+		ParsedNode pn = this;
+		for(String name : names) {
+			pn = pn.getChild(name);
+			if (pn == null)
+				return null;
+		}
+		return pn.evaluate();
 	}
 
 	public String getParsedString() {

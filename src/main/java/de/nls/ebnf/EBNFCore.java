@@ -15,6 +15,10 @@ public class EBNFCore {
 
 	private final ArrayList<Rule> rules = new ArrayList<>();
 
+	public Symbol getSymbol(String type) {
+		return symbols.get(type);
+	}
+
 	public Rule plus(String type, Named child) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		Plus plus = new Plus(tgt, child.getSymbol());
