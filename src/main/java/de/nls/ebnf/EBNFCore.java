@@ -120,6 +120,7 @@ public class EBNFCore {
 		removeRules(BNF.ARTIFICIAL_START_SYMBOL);
 		Sequence sequence = new Sequence(BNF.ARTIFICIAL_START_SYMBOL, topLevelSymbol, BNF.ARTIFICIAL_STOP_SYMBOL);
 		addRule(sequence);
+		sequence.setEvaluator(pn -> pn.evaluate(0));
 	}
 
 	public BNF createBNF() {
