@@ -28,6 +28,10 @@ public abstract class Rule {
 		return tgt;
 	}
 
+	public Symbol[] getChildren() {
+		return children;
+	}
+
 	public Evaluator getEvaluator() {
 		return evaluator;
 	}

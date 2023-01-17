@@ -4,9 +4,14 @@ import de.nls.ParsedNode;
 import de.nls.Parser;
 import de.nls.ebnf.EBNF;
 import de.nls.ebnf.Named;
+import de.nls.ebnf.Plus;
+import de.nls.ebnf.Repeat;
 import de.nls.ebnf.Rule;
+import de.nls.ebnf.Star;
 import de.nls.util.Range;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestHighlevelParser {
 
@@ -204,6 +209,83 @@ public class TestHighlevelParser {
 
 		if (((int) pn.evaluate()) != 3)
 			throw new RuntimeException();
+	}
+
+	@Test
+	public void testVariable() {
+		System.out.println("Test Variable");
+		Parser hlp = new Parser();
+		EBNF grammar = hlp.getGrammar();
+		grammar.setWhatToMatch(hlp.VARIABLE.getTarget());
+
+		String test = "{bla:int:3-5}";
+		Named.NamedNonTerminal evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals("bla", evaluatedNonTerminal.getName());
+		Rule rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		assertEquals(Repeat.class, rule.getClass());
+		Repeat repeat = (Repeat) rule;
+		assertEquals(3, repeat.getFrom());
+		assertEquals(5, repeat.getTo());
+		assertEquals(EBNF.INTEGER_NAME, repeat.getEntry().getSymbol());
+
+		test = "{blubb:digit}";
+		Named.NamedTerminal evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals("blubb", evaluatedTerminal.getName());
+		assertEquals(Terminal.DIGIT, evaluatedTerminal.getSymbol());
+
+		test = "{blubb:int:*}";
+		evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals("blubb", evaluatedNonTerminal.getName());
+		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		assertEquals(Star.class, rule.getClass());
+		Star star = (Star) rule;
+		assertEquals(EBNF.INTEGER_NAME, star.getEntry().getSymbol());
+
+		test = "{blubb:[A-Z]:+}";
+		evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals("blubb", evaluatedNonTerminal.getName());
+		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		assertEquals(Plus.class, rule.getClass());
+		Plus plus = (Plus) rule;
+		assertEquals("[A-Z]", plus.getEntry().getSymbol());
+
+		test = "{blubb , alkjad asd 4. <>l}";
+		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals("blubb , alkjad asd 4. <>l", evaluatedTerminal.getSymbol().getSymbol());
+		assertEquals("blubb , alkjad asd 4. <>l", evaluatedTerminal.getName());
+
+		test = "{heinz}";
+		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals("heinz", evaluatedTerminal.getSymbol().getSymbol());
+		assertEquals("heinz", evaluatedTerminal.getName());
+
+		test = "{heinz:+}";
+		evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals("heinz", evaluatedNonTerminal.getName());
+		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		assertEquals(Plus.class, rule.getClass());
+		plus = (Plus) rule;
+		assertEquals("heinz", plus.getEntry().getSymbol());
+
+		test = "{heinz:3-5}";
+		evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals("heinz", evaluatedNonTerminal.getName());
+		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		assertEquals(Repeat.class, rule.getClass());
+		repeat = (Repeat) rule;
+		assertEquals(3, repeat.getFrom());
+		assertEquals(5, repeat.getTo());
+		assertEquals("heinz", repeat.getEntry().getSymbol());
+
+		test = "{, }";
+		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals(", ", evaluatedTerminal.getSymbol().getSymbol());
+		assertEquals(", ", evaluatedTerminal.getName());
+
+		test = "{,\n }";
+		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals(",\n ", evaluatedTerminal.getSymbol().getSymbol());
+		assertEquals(",\n ", evaluatedTerminal.getName());
 	}
 
 	@Test

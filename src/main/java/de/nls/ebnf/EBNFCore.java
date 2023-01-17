@@ -19,6 +19,12 @@ public class EBNFCore {
 		return symbols.get(type);
 	}
 
+	public ArrayList<Rule> getRules(NonTerminal target) {
+		ArrayList<Rule> ret = new ArrayList<>(rules);
+		ret.removeIf(p -> !p.getTarget().equals(target));
+		return ret;
+	}
+
 	public Rule plus(String type, Named child) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		Plus plus = new Plus(tgt, child.getSymbol());
