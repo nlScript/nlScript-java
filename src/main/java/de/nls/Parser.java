@@ -1,5 +1,6 @@
 package de.nls;
 
+import de.nls.core.Autocompletion;
 import de.nls.core.GraphViz;
 import de.nls.core.Lexer;
 import de.nls.core.NonTerminal;
@@ -73,9 +74,26 @@ public class Parser {
 			throw new RuntimeException("Parsing failed");
 		p = parser.buildAst(p);
 		return p.evaluate();
+	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator) {
+		return defineSentence(pattern, evaluator, null);
 	}
 
-	public Named defineType(String type, String pattern, Evaluator evaluator) {
+	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator, boolean completeEntireSequence) {
+		return defineSentence(pattern, evaluator, null);
+	}
+	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator, Autocompleter autocompleter) {
+		return defineType("sentence", pattern, evaluator, autocompleter);
+	}
+
+	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator) {
+		return defineType(type, pattern, evaluator, null);
+	}
+
+	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator, boolean completeEntireSequence) {
+		return defineType(type, pattern, evaluator, null);
+	}
+
+	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator, Autocompleter autocompleter) {
 		grammar.setWhatToMatch(EXPRESSION.getTarget());
 		RDParser parser = new RDParser(grammar.createBNF(), new Lexer(pattern));
 		ParsedNode pn = parser.parse();
@@ -88,6 +106,8 @@ public class Parser {
 		Rule newRule = targetGrammar.sequence(type, rhs);
 		if(evaluator != null)
 			newRule.setEvaluator(evaluator);
+		if(autocompleter != null)
+			newRule.setAutocompleter(autocompleter);
 
 		return n(type, newRule);
 	}
