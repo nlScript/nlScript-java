@@ -16,13 +16,15 @@ public class RDParser {
 	}
 
 	public ParsedNode parse() {
-		return parse(new ArrayList<>());
+		return parse(null);
 	}
 
 	public ParsedNode parse(ArrayList<Autocompletion> autocompletions) {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
 		ParsedNode ret = seq.getCurrentSymbol();
 		parse(seq, autocompletions);
+		if(autocompletions != null && autocompletions.size() == 1 && autocompletions.get(0) == null)
+			autocompletions.clear();
 		populateParsedTree(ret);
 		return ret;
 	}
@@ -39,7 +41,12 @@ public class RDParser {
 		return pn;
 	}
 
+	/**
+	 * Removes all entries and puts null at index 0 if further autocompletion should be prohibited.
+	 */
 	private void addAutocompletions(ParsedNode pn, ArrayList<Autocompletion> autocompletions) {
+		if(autocompletions != null && autocompletions.size() == 1 && autocompletions.get(0) == null)
+			return;
 		// get a trace to the root
 		ArrayList<ParsedNode> pathToRoot = new ArrayList<>();
 		ParsedNode parent = pn;
@@ -68,7 +75,8 @@ public class RDParser {
 			for(String c : completion.split(";;;")) {
 				if(c.equals(Autocompleter.VETO)) {
 					autocompletions.clear();
-					return; // TODO prevent somehow further autocompletion
+					autocompletions.add(null); // to prevent further autocompletion
+					return;
 				}
 				Autocompletion ac = new Autocompletion(c, alreadyEntered);
 				if(!autocompletions.contains(ac))
@@ -95,8 +103,9 @@ public class RDParser {
 		while(next.isTerminal()) {
 			Matcher matcher = ((Terminal) next).matches(lexer);
 			parent.setMatcher(matcher);
-			if(matcher.state == ParsingState.END_OF_INPUT)
+			if(matcher.state == ParsingState.END_OF_INPUT && autocompletions != null)
 				addAutocompletions(parent, autocompletions);
+
 			if(matcher.state != ParsingState.SUCCESSFUL)
 				return parent;
 			symbolSequence.incrementPosition();
