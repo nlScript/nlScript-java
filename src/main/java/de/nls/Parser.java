@@ -66,14 +66,6 @@ public class Parser {
 		return targetGrammar;
 	}
 
-	public Object evaluate(String input) {
-		Lexer lexer = new Lexer(input);
-		RDParser parser = new RDParser(grammar.createBNF(), lexer);
-		ParsedNode p = parser.parse();
-		if(p.getMatcher().state != ParsingState.SUCCESSFUL)
-			throw new RuntimeException("Parsing failed");
-		p = parser.buildAst(p);
-		return p.evaluate();
 	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator) {
 		return defineSentence(pattern, evaluator, null);
 	}
@@ -110,6 +102,16 @@ public class Parser {
 			newRule.setAutocompleter(autocompleter);
 
 		return n(type, newRule);
+	}
+
+	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions) {
+		targetGrammar.setWhatToMatch((NonTerminal) targetGrammar.getSymbol("program"));
+		RDParser rdParser = new RDParser(targetGrammar.createBNF(), new Lexer(text));
+		ParsedNode pn = rdParser.parse(autocompletions);
+		if(pn.getMatcher().state == ParsingState.SUCCESSFUL)
+			pn = rdParser.buildAst(pn);
+		System.out.println(GraphViz.toVizDotLink(pn));
+		return pn;
 	}
 
 	private Rule quantifier() {

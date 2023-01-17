@@ -75,6 +75,16 @@ public class TestHighlevelParser {
 		}
 	}
 
+	private Object evaluateHighlevelParser(Parser hlp, String input) {
+		Lexer lexer = new Lexer(input);
+		RDParser parser = new RDParser(hlp.getGrammar().createBNF(), lexer);
+		ParsedNode p = parser.parse();
+		if(p.getMatcher().state != ParsingState.SUCCESSFUL)
+			throw new RuntimeException("Parsing failed");
+		p = parser.buildAst(p);
+		return p.evaluate();
+	}
+
 	@Test
 	public void testList() {
 		System.out.println("Test List");
@@ -83,7 +93,7 @@ public class TestHighlevelParser {
 		grammar.setWhatToMatch(hlp.LIST.getTarget());
 
 		String test = "list<int>";
-		NonTerminal list = (NonTerminal) hlp.evaluate(test);
+		NonTerminal list = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		EBNF tgt = hlp.getTargetGrammar();
@@ -106,7 +116,7 @@ public class TestHighlevelParser {
 		grammar.setWhatToMatch(hlp.TUPLE.getTarget());
 
 		String test = "tuple<int,x, y>";
-		NonTerminal tuple = (NonTerminal) hlp.evaluate(test);
+		NonTerminal tuple = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		EBNF tgt = hlp.getTargetGrammar();
@@ -146,7 +156,7 @@ public class TestHighlevelParser {
 
 		// test tuple
 		String test = "tuple<int,x,y,z>";
-		NonTerminal tuple = (NonTerminal) hlp.evaluate(test);
+		NonTerminal tuple = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		EBNF tgt = hlp.getTargetGrammar();
@@ -164,7 +174,7 @@ public class TestHighlevelParser {
 
 		// test list
 		test = "list<int>";
-		NonTerminal list = (NonTerminal) hlp.evaluate(test);
+		NonTerminal list = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		tgt = hlp.getTargetGrammar();
@@ -181,7 +191,7 @@ public class TestHighlevelParser {
 
 		// test identifier
 		test = "int";
-		NonTerminal identifier = (NonTerminal) hlp.evaluate(test);
+		NonTerminal identifier = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		tgt = hlp.getTargetGrammar();
@@ -204,7 +214,7 @@ public class TestHighlevelParser {
 		grammar.setWhatToMatch(hlp.EXPRESSION.getTarget());
 
 		String test = "Today, let's wait for {time:int} minutes.";
-		Named[] rhs = (Named[]) hlp.evaluate(test);
+		Named[] rhs = (Named[]) evaluateHighlevelParser(hlp, test);
 		Rule myType = hlp.getTargetGrammar().sequence("mytype", rhs);
 
 		// now parse and evaluate the generated grammar:
@@ -223,25 +233,20 @@ public class TestHighlevelParser {
 		Parser hlp = new Parser();
 		hlp.defineType("percentage", "{p:int} %", pn -> pn.evaluate("p"));
 
-		hlp.defineType("sentence", "Now it is only {p:percentage}.", pn -> {
+		hlp.defineSentence("Now it is only {p:percentage}.", pn -> {
 			int percentage = (int) pn.evaluate("p");
 			System.out.println(percentage + " % left.");
 			return null;
 		});
-		hlp.defineType("sentence", "There is still {p:percentage} left.", pn -> {
+		hlp.defineSentence("There is still {p:percentage} left.", pn -> {
 			int percentage = (int) pn.evaluate("p");
 			System.out.println(percentage + " % left.");
 			return null;
 		});
-		hlp.getTargetGrammar().setWhatToMatch((NonTerminal) hlp.getTargetGrammar().getSymbol("program"));
-		RDParser test = new RDParser(hlp.getTargetGrammar().createBNF(), new Lexer(
+
+		ParsedNode pn = hlp.parse(
 				"There is still 38 % left.\n" +
-				"Now it is only 5 %."));
-		ParsedNode pn = test.parse();
-		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
-			throw new RuntimeException("Parsing failed");
-		pn = test.buildAst(pn);
-		System.out.println(GraphViz.toVizDotLink(pn));
+				"Now it is only 5 %.", null);
 		pn.evaluate();
 	}
 }
