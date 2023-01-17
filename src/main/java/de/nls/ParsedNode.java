@@ -175,6 +175,16 @@ public class ParsedNode {
 		return matcher.parsed;
 	}
 
+	public String getParsedString(String... names) {
+		ParsedNode pn = this;
+		for(String name : names) {
+			pn = pn.getChild(name);
+			if(pn == null)
+				return "";
+		}
+		return pn.getParsedString();
+	}
+
 	@Override
 	public String toString() {
 		return getParsedString();
