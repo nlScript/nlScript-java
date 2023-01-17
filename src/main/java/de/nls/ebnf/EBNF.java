@@ -8,12 +8,12 @@ import static de.nls.core.Terminal.*;
 
 public class EBNF extends EBNFCore {
 
-	private static final String SIGN_NAME            = "sign";
-	private static final String INTEGER_NAME         = "int";
-	private static final String FLOAT_NAME           = "float";
-	private static final String WHITESPACE_STAR_NAME = "whitespace-star";
-	private static final String WHITESPACE_PLUS_NAME = "whitespace-plus";
-	private static final String INTEGER_RANGE_NAME   = "integer-range";
+	public static final String SIGN_NAME            = "sign";
+	public static final String INTEGER_NAME         = "int";
+	public static final String FLOAT_NAME           = "float";
+	public static final String WHITESPACE_STAR_NAME = "whitespace-star";
+	public static final String WHITESPACE_PLUS_NAME = "whitespace-plus";
+	public static final String INTEGER_RANGE_NAME   = "integer-range";
 
 	public final Rule SIGN;
 	public final Rule INTEGER;
