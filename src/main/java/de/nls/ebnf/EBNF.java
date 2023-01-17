@@ -1,5 +1,6 @@
 package de.nls.ebnf;
 
+import de.nls.Autocompleter;
 import de.nls.util.Range;
 
 import static de.nls.ebnf.Named.n;
@@ -40,6 +41,7 @@ public class EBNF extends EBNFCore {
 				n("optional", optional(null, n("sign", SIGN))),
 				n("plus", plus(null, n(DIGIT))));
 		ret.setEvaluator(pn -> Integer.parseInt(pn.getParsedString()));
+		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		return ret;
 	}
 
@@ -56,15 +58,20 @@ public class EBNF extends EBNFCore {
 				))
 		);
 		ret.setEvaluator(pn -> Double.parseDouble(pn.getParsedString()));
+		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		return ret;
 	}
 
 	private Rule makeWhitespaceStar() {
-		return star(WHITESPACE_STAR_NAME, n(WHITESPACE));
+		Rule ret = star(WHITESPACE_STAR_NAME, n(WHITESPACE));
+		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(" "));
+		return ret;
 	}
 
 	private Rule makeWhitespacePlus() {
-		return plus(WHITESPACE_PLUS_NAME, n(WHITESPACE));
+		Rule ret = plus(WHITESPACE_PLUS_NAME, n(WHITESPACE)).setAutocompleter(pn -> pn.getParsedString().isEmpty() ? " " : "");
+		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(" "));
+		return ret;
 	}
 
 	private Rule makeIntegerRange() {
@@ -82,5 +89,6 @@ public class EBNF extends EBNFCore {
 				(Integer) pn.evaluate(0),
 				(Integer) pn.evaluate(1)));
 		return ret;
+		// TODO set autocompleter
 	}
 }
