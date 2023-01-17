@@ -154,11 +154,11 @@ public class Parser {
 	 *
 	 * [^:{}\n]+
 	 *
-	 * Everything but ':', '{', '}', '\n'
+	 * Everything but ':', '{', '}'
 	 */
 	private Rule variableName() {
 		return grammar.plus("var-name",
-				n(Terminal.characterClass("[^:{}\n]"))).setEvaluator(ParsedNode::getParsedString);
+				n(Terminal.characterClass("[^:{}]"))).setEvaluator(ParsedNode::getParsedString);
 	}
 
 	/**
