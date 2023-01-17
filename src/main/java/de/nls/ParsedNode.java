@@ -6,6 +6,7 @@ import de.nls.core.Production;
 import de.nls.core.Symbol;
 import de.nls.core.Terminal;
 import de.nls.ebnf.EBNFProduction;
+import de.nls.ebnf.ParseListener;
 import de.nls.ebnf.Rule;
 
 import java.util.ArrayList;
@@ -132,6 +133,14 @@ public class ParsedNode {
 		}
 		int pos = this.children.get(0).matcher.pos;
 		this.matcher = new Matcher(state, pos, parsed.toString());
+		if(state == ParsingState.SUCCESSFUL) {
+			Rule rule = getRule();
+			if(rule != null) {
+				ParseListener l = rule.getOnSuccessfulParsed();
+				if(l != null)
+					l.parsed(this);
+			}
+		}
 	}
 
 	public void removeAllChildren() {

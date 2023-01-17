@@ -14,6 +14,7 @@ public abstract class Rule {
 
 	private Evaluator evaluator;
 	private Autocompleter autocompleter;
+	private ParseListener onSuccessfulParsed;
 
 	public Rule(String type, NonTerminal tgt, Symbol... children) {
 		this.type = type;
@@ -43,6 +44,15 @@ public abstract class Rule {
 	public Rule setAutocompleter(Autocompleter autocompleter) {
 		this.autocompleter = autocompleter;
 		return this;
+	}
+
+	public Rule onSuccessfulParsed(ParseListener listener) {
+		this.onSuccessfulParsed = listener;
+		return this;
+	}
+
+	public ParseListener getOnSuccessfulParsed() {
+		return this.onSuccessfulParsed;
 	}
 
 	public static EBNFProduction addProduction(BNF grammar, Rule rule, NonTerminal left, Symbol... right) {

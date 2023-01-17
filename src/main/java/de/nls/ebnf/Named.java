@@ -41,6 +41,10 @@ public abstract class Named {
 			this.rule = rule;
 		}
 
+		public void onSuccessfulParsed(ParseListener listener) {
+			rule.onSuccessfulParsed(listener);
+		}
+
 		@Override
 		public Symbol getSymbol() {
 			return getTarget();
