@@ -131,10 +131,6 @@ public class RDParser {
 	}
 
 	private void populateParsedTree(ParsedNode pn) {
-		ParsedNode[] children = pn.getChildren();
-		for(ParsedNode child : children)
-			populateParsedTree(child);
-
 		pn.populateMatcher();
 	}
 

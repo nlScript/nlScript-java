@@ -124,6 +124,7 @@ public class ParsedNode {
 		ParsingState state = ParsingState.SUCCESSFUL;
 		StringBuilder parsed = new StringBuilder(matcher.parsed);
 		for(ParsedNode c : children) {
+			c.populateMatcher();
 			parsed.append(c.getMatcher().parsed);
 			state = c.matcher.state;
 			if(state != ParsingState.SUCCESSFUL)
