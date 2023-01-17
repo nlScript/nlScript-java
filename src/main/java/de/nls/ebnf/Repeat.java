@@ -19,6 +19,18 @@ public class Repeat extends Rule {
 		setEvaluator(Evaluator.ALL_CHILDREN_EVALUATOR);
 	}
 
+	public int getFrom() {
+		return from;
+	}
+
+	public int getTo() {
+		return to;
+	}
+
+	public Symbol getEntry() {
+		return children[0];
+	}
+
 	public void createBNF(BNF g) {
 		for(int seqLen = to; seqLen >= from; seqLen--) {
 			Symbol[] rhs = new Symbol[seqLen];

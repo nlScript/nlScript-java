@@ -6,11 +6,15 @@ import de.nls.core.NonTerminal;
 import de.nls.core.Production;
 import de.nls.core.Symbol;
 
-class Plus extends Rule {
+public class Plus extends Rule {
 
 	public Plus(NonTerminal tgt, Symbol child) {
 		super("plus", tgt, child);
 		setEvaluator(Evaluator.ALL_CHILDREN_EVALUATOR);
+	}
+
+	public Symbol getEntry() {
+		return children[0];
 	}
 
 	public void createBNF(BNF grammar) {

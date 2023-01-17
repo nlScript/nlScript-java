@@ -13,6 +13,10 @@ public class Optional extends Rule {
 		setEvaluator(Evaluator.ALL_CHILDREN_EVALUATOR);
 	}
 
+	public Symbol getEntry() {
+		return children[0];
+	}
+
 	@Override
 	public void createBNF(BNF g) {
 		final Production p1 = addProduction(g, this, tgt, children[0]);

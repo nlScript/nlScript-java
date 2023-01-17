@@ -25,6 +25,10 @@ public class Join extends Rule {
 		setEvaluator(Evaluator.ALL_CHILDREN_EVALUATOR);
 	}
 
+	public Symbol getEntry() {
+		return children[0];
+	}
+
 	public void setOnlyKeepEntries(boolean onlyKeepEntries) {
 		this.onlyKeepEntries = onlyKeepEntries;
 	}

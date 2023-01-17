@@ -12,6 +12,10 @@ public class Star extends Rule {
 		setEvaluator(Evaluator.ALL_CHILDREN_EVALUATOR);
 	}
 
+	public Symbol getEntry() {
+		return children[0];
+	}
+
 	public void createBNF(BNF grammar) {
 		final Production p1 = addProduction(grammar, this, tgt, children[0], tgt);
 		final Production p2 = addProduction(grammar, this, tgt);
