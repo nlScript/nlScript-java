@@ -106,9 +106,9 @@ public class EBNFCore {
 
 	public Rule tuple(String type, Named child, String... names) {
 		Named.NamedRule wsStar = Named.n("ws*", star(null, Named.n(Terminal.WHITESPACE)));
-		Symbol open      = sequence(null, Named.n(Terminal.literal("(")), wsStar).tgt;
-		Symbol close     = sequence(null, wsStar, Named.n(Terminal.literal(")"))).tgt;
-		Symbol delimiter = sequence(null, wsStar, Named.n(Terminal.literal(",")), wsStar).tgt;
+		Symbol open      = sequence(null, Named.n("open", Terminal.literal("(")), wsStar).tgt;
+		Symbol close     = sequence(null, wsStar, Named.n("close", Terminal.literal(")"))).tgt;
+		Symbol delimiter = sequence(null, wsStar, Named.n("delimiter", Terminal.literal(",")), wsStar).tgt;
 		return join(type, child, open, close, delimiter, names);
 	}
 

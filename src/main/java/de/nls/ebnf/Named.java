@@ -11,7 +11,11 @@ public abstract class Named {
 	}
 
 	public static NamedTerminal n(Terminal t) {
-		return new NamedTerminal(t);
+		return new NamedTerminal(t.getSymbol(), t);
+	}
+
+	public static NamedTerminal n(String name, Terminal t) {
+		return new NamedTerminal(name, t);
 	}
 
 	public static NamedNonTerminal n(String name, NonTerminal t) {
@@ -58,8 +62,8 @@ public abstract class Named {
 	public static class NamedTerminal extends Named {
 		private final Terminal terminal;
 
-		public NamedTerminal(Terminal terminal) {
-			super(terminal.getSymbol());
+		public NamedTerminal(String name, Terminal terminal) {
+			super(name);
 			this.terminal = terminal;
 		}
 

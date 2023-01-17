@@ -2,6 +2,7 @@ package de.nls.core;
 
 import de.nls.Autocompleter;
 import de.nls.ParsedNode;
+import de.nls.Parser;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
@@ -9,8 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestAutocompletion {
 
@@ -20,6 +20,16 @@ public class TestAutocompletion {
 		test("o", "one (o)");
 		test("one", "${or} ()", "five ()");
 		test("onet");
+	}
+
+	@Test
+	public void test02() {
+		Parser parser = new Parser();
+		parser.defineSentence("The first digit of the number is {first:digit}.", pn -> null);
+		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
+		parser.parse("The first digit of the number is ", autocompletions);
+		assertEquals(1, autocompletions.size());
+		assertEquals(new Autocompletion("${first}", ""), autocompletions.get(0));
 	}
 
 	private void test(String input, String... expectedCompletion) {

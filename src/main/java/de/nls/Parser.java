@@ -271,7 +271,7 @@ public class Parser {
 					? Terminal.literal(variableName)
 					: (Symbol) typeObject;
 			Named namedSymbol = (symbol instanceof Terminal)
-					? n((Terminal) symbol)
+					? n(variableName, (Terminal)    symbol)
 					: n(variableName, (NonTerminal) symbol);
 
 			Object quantifierObject = pn.evaluate("opt-quantifier", "seq-quantifier", "quantifier");
