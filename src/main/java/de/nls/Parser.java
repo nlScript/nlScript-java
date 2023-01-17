@@ -107,6 +107,7 @@ public class Parser {
 	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions) {
 		targetGrammar.setWhatToMatch((NonTerminal) targetGrammar.getSymbol("program"));
 		RDParser rdParser = new RDParser(targetGrammar.createBNF(), new Lexer(text));
+		fireParsingStarted();
 		ParsedNode pn = rdParser.parse(autocompletions);
 		if(pn.getMatcher().state == ParsingState.SUCCESSFUL)
 			pn = rdParser.buildAst(pn);
@@ -342,5 +343,24 @@ public class Parser {
 				LINEBREAK_STAR.getTarget(),
 				LINEBREAK_STAR.getTarget(),
 				Range.STAR);
+	}
+
+	public interface ParseStartListener {
+		void parsingStarted();
+	}
+
+	private final ArrayList<ParseStartListener> parseStartListeners = new ArrayList<>();
+
+	public void addParseStartListener(ParseStartListener l) {
+		parseStartListeners.add(l);
+	}
+
+	public void removeParseStartListener(ParseStartListener l) {
+		parseStartListeners.remove(l);
+	}
+
+	private void fireParsingStarted() {
+		for(ParseStartListener l : parseStartListeners)
+			l.parsingStarted();
 	}
 }
