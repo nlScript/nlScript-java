@@ -12,6 +12,7 @@ import de.nls.util.Range;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestHighlevelParser {
 
@@ -286,6 +287,37 @@ public class TestHighlevelParser {
 		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
 		assertEquals(",\n ", evaluatedTerminal.getSymbol().getSymbol());
 		assertEquals(",\n ", evaluatedTerminal.getName());
+	}
+
+	@Test
+	public void testNoVariable() {
+		System.out.println("Test NoVariable");
+		Parser hlp = new Parser();
+		EBNF grammar = hlp.getGrammar();
+		grammar.setWhatToMatch(hlp.NO_VARIABLE.getTarget());
+
+		String test = "lk345}.-";
+		Named.NamedTerminal evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals(Terminal.Literal.class, evaluatedTerminal.getTerminal().getClass());
+		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
+		assertEquals(test, evaluatedTerminal.getName());
+
+		test = "--1'x}";
+		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals(Terminal.Literal.class, evaluatedTerminal.getTerminal().getClass());
+		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
+		assertEquals(test, evaluatedTerminal.getName());
+
+		test = ".";
+		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		assertEquals(Terminal.Literal.class, evaluatedTerminal.getTerminal().getClass());
+		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
+		assertEquals(test, evaluatedTerminal.getName());
+
+		String testToFail = "lj{l";
+		Parser hlp2 = hlp;
+		assertThrows(RuntimeException.class, () -> { evaluateHighlevelParser(hlp2, testToFail); }, "Parsing failed");
+
 	}
 
 	@Test
