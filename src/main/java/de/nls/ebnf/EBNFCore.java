@@ -1,5 +1,6 @@
 package de.nls.ebnf;
 
+import de.nls.Autocompleter;
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
 import de.nls.core.Symbol;
@@ -17,6 +18,13 @@ public class EBNFCore {
 
 	public Symbol getSymbol(String type) {
 		return symbols.get(type);
+	}
+
+	public EBNFCore() {}
+
+	public EBNFCore(EBNFCore other) {
+		symbols.putAll(other.symbols);
+		rules.addAll(other.rules);
 	}
 
 	public ArrayList<Rule> getRules(NonTerminal target) {
@@ -103,19 +111,35 @@ public class EBNFCore {
 
 	public Rule list(String type, Named child) {
 		Named.NamedRule wsStar = Named.n("ws*", star(null, Named.n(Terminal.WHITESPACE)));
-		NonTerminal delimiter = sequence(null,
+		Rule delimiter = sequence(null,
 				wsStar,
 				Named.n(Terminal.literal(",")),
-				wsStar).tgt;
-		return join(type, child, null, null, delimiter, Range.STAR);
+				wsStar);
+//		delimiter.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(", ${" + child.getName() + "}"));
+		delimiter.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(", "));
+		return join(type, child, null, null, delimiter.tgt, Range.STAR);
 	}
 
 	public Rule tuple(String type, Named child, String... names) {
 		Named.NamedRule wsStar = Named.n("ws*", star(null, Named.n(Terminal.WHITESPACE)));
+		wsStar.rule.setAutocompleter(pn -> "");
 		Symbol open      = sequence(null, Named.n("open", Terminal.literal("(")), wsStar).tgt;
 		Symbol close     = sequence(null, wsStar, Named.n("close", Terminal.literal(")"))).tgt;
 		Symbol delimiter = sequence(null, wsStar, Named.n("delimiter", Terminal.literal(",")), wsStar).tgt;
-		return join(type, child, open, close, delimiter, names);
+		Rule ret = join(type, child, open, close, delimiter, names);
+		ret.setAutocompleter(pn -> {
+			if(!pn.getParsedString().isEmpty())
+				return null;
+			StringBuilder sb = new StringBuilder("(");
+			Join rule = (Join) pn.getRule();
+			sb.append("${").append(rule.getNameForChild(0)).append("}");
+			for(int i = 1; i < rule.getCardinality().getLower(); i++) {
+				sb.append(", ${").append(rule.getNameForChild(i)).append("}");
+			}
+			sb.append(")");
+			return sb.toString();
+		});
+		return ret;
 	}
 
 	public Rule sequence(String type, Named... children) {
@@ -126,7 +150,7 @@ public class EBNFCore {
 		return sequence;
 	}
 
-	public void setWhatToMatch(NonTerminal topLevelSymbol) {
+	public void setWhatToMatch(Symbol topLevelSymbol) {
 		removeRules(BNF.ARTIFICIAL_START_SYMBOL);
 		Sequence sequence = new Sequence(BNF.ARTIFICIAL_START_SYMBOL, topLevelSymbol, BNF.ARTIFICIAL_STOP_SYMBOL);
 		addRule(sequence);

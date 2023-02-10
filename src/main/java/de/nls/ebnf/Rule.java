@@ -65,9 +65,8 @@ public abstract class Rule {
 		return production;
 	}
 
-	protected String getNameForChild(int idx) {
+	public String getNameForChild(int idx) {
 		if(parsedChildNames == null) {
-			System.out.println("parsedChildNames not set");
 			return null;
 		}
 		if(parsedChildNames.length == 1)

@@ -1,6 +1,5 @@
 package de.nls.core;
 
-import de.nls.ParsedNode;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,8 +21,8 @@ public class RDParserTest {
 		bnf.addProduction(new Production(BNF.ARTIFICIAL_START_SYMBOL,
 				new NonTerminal("EXPR"), BNF.ARTIFICIAL_STOP_SYMBOL));
 
-		RDParser parser = new RDParser(bnf, new Lexer("3+4*6+8"));
-		ParsedNode parsed = parser.parse();
+		RDParser parser = new RDParser(bnf, new Lexer("3+4*6+8"), ParsedNodeFactory.DEFAULT);
+		DefaultParsedNode parsed = parser.parse();
 		assertEquals(ParsingState.SUCCESSFUL, parsed.getMatcher().state);
 	}
 }

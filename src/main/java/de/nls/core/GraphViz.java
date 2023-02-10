@@ -1,14 +1,12 @@
 package de.nls.core;
 
-import de.nls.ParsedNode;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 public class GraphViz {
 
-	public static String toVizDotLink(ParsedNode root) {
+	public static String toVizDotLink(DefaultParsedNode root) {
 		try {
 			return "https://edotor.net/?s=%22bla%22?engine=dot#" +
 					URLEncoder.encode(toVizDot(root), StandardCharsets.UTF_8.toString())
@@ -19,7 +17,7 @@ public class GraphViz {
 		}
 	}
 
-	public static String toVizDot(ParsedNode root) {
+	public static String toVizDot(DefaultParsedNode root) {
 		return "digraph parsed_tree {\n" +
 				"  # rankdir=LR;\n" +
 				"  size=\"8,5\"\n" +
@@ -30,7 +28,7 @@ public class GraphViz {
 				"}\n";
 	}
 
-	private static String vizDotNodes(ParsedNode root) {
+	private static String vizDotNodes(DefaultParsedNode root) {
 		String color = "black";
 		Matcher matcher = root.getMatcher();
 		if(matcher != null) {
@@ -47,20 +45,24 @@ public class GraphViz {
 			}
 		}
 		StringBuilder sb = new StringBuilder();
+		String parsed = root.getParsedString();
+		parsed = parsed.replaceAll("\\n", "\\n");
+		String name = root.getName();
+		name = name.replaceAll("\\n", "\\n");
 		sb.append("  ")
 				.append(root.hashCode())
-				.append("[label=\"").append(root.getName()).append("\", color=").append(color)
-				.append(", tooltip=\"").append(root.getParsedString()).append("(").append(root.getMatcher().pos).append(")").append("\"")
+				.append("[label=\"").append(name).append("\", color=").append(color)
+				.append(", tooltip=\"").append(parsed).append("(").append(root.getMatcher().pos).append(")").append("\"")
 				.append("]\n");
-		for(ParsedNode pn : root.getChildren())
+		for(DefaultParsedNode pn : root.getChildren())
 			sb.append(vizDotNodes(pn));
 		return sb.toString();
 	}
 
-	private static String vizDotLinks(ParsedNode root) {
+	private static String vizDotLinks(DefaultParsedNode root) {
 		StringBuilder sb = new StringBuilder();
 		int hash = root.hashCode();
-		for (ParsedNode child : root.getChildren()) {
+		for (DefaultParsedNode child : root.getChildren()) {
 			sb.append("  ").append(hash).append(" -> ").append(child.hashCode()).append(";\n");
 			sb.append(vizDotLinks(child));
 		}

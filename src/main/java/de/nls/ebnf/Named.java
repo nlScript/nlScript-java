@@ -22,6 +22,13 @@ public abstract class Named {
 		return new NamedNonTerminal(name, t);
 	}
 
+	public static Named n(String name, Symbol t) {
+		if(t.isTerminal())
+			return n(name, (Terminal) t);
+		else
+			return n(name, (NonTerminal) t);
+	}
+
 
 
 	final String name;

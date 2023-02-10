@@ -1,5 +1,16 @@
 package de.nls;
 
+import de.nls.core.Autocompletion;
+import de.nls.core.Lexer;
+import de.nls.core.RDParser;
+import de.nls.core.Symbol;
+import de.nls.ebnf.EBNFCore;
+import de.nls.ebnf.EBNFParsedNodeFactory;
+import de.nls.ebnf.Named;
+import de.nls.ebnf.Rule;
+
+import java.util.ArrayList;
+
 public interface Autocompleter {
 
 	String VETO = "VETO";
@@ -33,4 +44,39 @@ public interface Autocompleter {
 		return null;
 	};
 
+	class EntireSequenceCompleter implements Autocompleter {
+
+		private final EBNFCore ebnf;
+
+		public EntireSequenceCompleter(EBNFCore ebnf) {
+			this.ebnf = ebnf;
+		}
+
+		@Override
+		public String getAutocompletion(ParsedNode pn) {
+			String alreadyEntered = pn.getParsedString();
+			if (alreadyEntered.length() > 0)
+				return null;
+			StringBuilder autocompletionString = new StringBuilder();
+
+			Rule sequence = pn.getRule();
+			Symbol[] children = sequence.getChildren();
+
+			for (int i = 0; i < children.length; i++) {
+				EBNFCore ebnfCopy = new EBNFCore(ebnf);
+				Rule newSequence = ebnfCopy.sequence(null, Named.n(sequence.getNameForChild(i), children[i]));
+				ebnfCopy.setWhatToMatch(newSequence.getTarget());
+				RDParser parser = new RDParser(ebnfCopy.createBNF(), new Lexer(""), EBNFParsedNodeFactory.INSTANCE);
+				ArrayList<Autocompletion> autocompletions = new ArrayList<>();
+				parser.parse(autocompletions);
+
+				int n = autocompletions.size();
+				if (n > 1)
+					autocompletionString.append("${").append(sequence.getNameForChild(i)).append('}');
+				else if (n == 1)
+					autocompletionString.append(autocompletions.get(0).getCompletion());
+			}
+			return autocompletionString.toString();
+		}
+	}
 }

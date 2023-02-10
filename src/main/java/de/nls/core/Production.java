@@ -1,7 +1,5 @@
 package de.nls.core;
 
-import de.nls.ParsedNode;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,11 +14,11 @@ public class Production {
 	private ExtensionListener extensionListener = null;
 
 	public interface AstBuilder {
-		void buildAST(ParsedNode parent, ParsedNode... children);
+		void buildAST(DefaultParsedNode parent, DefaultParsedNode... children);
 	}
 
 	public interface ExtensionListener {
-		void onExtension(ParsedNode parent, ParsedNode... children);
+		void onExtension(DefaultParsedNode parent, DefaultParsedNode... children);
 	}
 
 	public Production(NonTerminal left, Symbol... right) {
@@ -49,7 +47,7 @@ public class Production {
 		this.astBuilder = astBuilder;
 	}
 
-	public void builtAST(ParsedNode parent, ParsedNode... children) {
+	public void builtAST(DefaultParsedNode parent, DefaultParsedNode... children) {
 		if(astBuilder != null) {
 			astBuilder.buildAST(parent, children);
 			return;
@@ -57,7 +55,7 @@ public class Production {
 		parent.addChildren(children);
 	}
 
-	public void wasExtended(ParsedNode parent, ParsedNode... children) {
+	public void wasExtended(DefaultParsedNode parent, DefaultParsedNode... children) {
 		if(this.extensionListener != null)
 			extensionListener.onExtension(parent, children);
 	}

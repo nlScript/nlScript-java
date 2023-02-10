@@ -27,4 +27,8 @@ public class Matcher {
 			return false;
 		return false;
 	}
+
+	public String toString() {
+		return state.toString() + ": '" + parsed + "' (" + pos + ")";
+	}
 }

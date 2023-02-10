@@ -1,7 +1,7 @@
 package de.nls.core;
 
-import de.nls.ParsedNode;
 import de.nls.ebnf.EBNFCore;
+import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import org.junit.jupiter.api.Test;
@@ -74,19 +74,19 @@ public class TestRepeat {
 
 	private static void testSuccess(BNF grammar, String input) {
 		Lexer l = new Lexer(input);
-		RDParser test = new RDParser(grammar, l);
-		ParsedNode root = test.parse();
+		RDParser test = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode root = test.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
 		root = test.buildAst(root);
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
-		ParsedNode parsed = root.getChildren()[0];
+		DefaultParsedNode parsed = root.getChildren()[0];
 		assertEquals(input.length() / 2, parsed.numChildren());
 
 		int i = 0;
-		for(ParsedNode child : parsed.getChildren()) {
+		for(DefaultParsedNode child : parsed.getChildren()) {
 			assertEquals(input.substring(i, i + 2), child.getParsedString());
 			assertEquals(2, child.numChildren());
 			i += 2;
@@ -98,14 +98,14 @@ public class TestRepeat {
 			assertEquals(input.substring(2 * i, 2 * i + 2), evaluated[i]);
 
 		// test names
-		for(ParsedNode child : parsed.getChildren())
+		for(DefaultParsedNode child : parsed.getChildren())
 			assertEquals("seq", child.getName());
 	}
 
 	private static void testFailure(BNF grammar, String input) {
 		Lexer l = new Lexer(input);
-		RDParser parser = new RDParser(grammar, l);
-		ParsedNode root = parser.parse();
+		RDParser parser = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode root = parser.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertNotEquals(SUCCESSFUL, root.getMatcher().state);

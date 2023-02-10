@@ -1,14 +1,10 @@
 package de.nls;
 
-import de.nls.core.Autocompletion;
-import de.nls.core.GraphViz;
-import de.nls.core.Lexer;
-import de.nls.core.NonTerminal;
-import de.nls.core.ParsingState;
-import de.nls.core.RDParser;
-import de.nls.core.Symbol;
-import de.nls.core.Terminal;
+import de.nls.core.*;
 import de.nls.ebnf.EBNF;
+import de.nls.ebnf.EBNFCore;
+import de.nls.ebnf.EBNFParsedNodeFactory;
+import de.nls.ebnf.EBNFParser;
 import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import de.nls.util.Range;
@@ -33,7 +29,6 @@ public class Parser {
 	public final Rule VARIABLE;
 	public final Rule NO_VARIABLE;
 	public final Rule EXPRESSION;
-//	public final NonTerminal SENTENCE = new NonTerminal("sentence");
 
 	private final Rule LINEBREAK_STAR;
 
@@ -62,7 +57,7 @@ public class Parser {
 		return grammar;
 	}
 
-	public EBNF getTargetGrammar() {
+	public EBNFCore getTargetGrammar() {
 		return targetGrammar;
 	}
 
@@ -71,8 +66,12 @@ public class Parser {
 	}
 
 	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator, boolean completeEntireSequence) {
-		return defineSentence(pattern, evaluator, null);
+		Autocompleter autocompleter = completeEntireSequence
+				? new Autocompleter.EntireSequenceCompleter(targetGrammar)
+				: Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER;
+		return defineSentence(pattern, evaluator, autocompleter);
 	}
+
 	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator, Autocompleter autocompleter) {
 		return defineType("sentence", pattern, evaluator, autocompleter);
 	}
@@ -82,13 +81,19 @@ public class Parser {
 	}
 
 	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator, boolean completeEntireSequence) {
-		return defineType(type, pattern, evaluator, null);
+		Autocompleter autocompleter = completeEntireSequence
+				? new Autocompleter.EntireSequenceCompleter(targetGrammar)
+				: Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER;
+		return defineType(type, pattern, evaluator, autocompleter);
 	}
 
 	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator, Autocompleter autocompleter) {
 		grammar.setWhatToMatch(EXPRESSION.getTarget());
-		RDParser parser = new RDParser(grammar.createBNF(), new Lexer(pattern));
-		ParsedNode pn = parser.parse();
+		RDParser parser = new RDParser(
+				grammar.createBNF(),
+				new Lexer(pattern),
+				EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode pn = parser.parse();
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException("Parsing failed");
 		pn = parser.buildAst(pn);
@@ -105,12 +110,14 @@ public class Parser {
 	}
 
 	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions) {
-		targetGrammar.setWhatToMatch((NonTerminal) targetGrammar.getSymbol("program"));
-		RDParser rdParser = new RDParser(targetGrammar.createBNF(), new Lexer(text));
-		fireParsingStarted();
-		ParsedNode pn = rdParser.parse(autocompletions);
+		targetGrammar.setWhatToMatch(targetGrammar.getSymbol("program"));
+		BNF bnf = targetGrammar.createBNF();
+		EBNFParser rdParser = new EBNFParser(bnf, new Lexer(text));
+		rdParser.addParseStartListener(this::fireParsingStarted);
+		ParsedNode pn = (ParsedNode) rdParser.parse(autocompletions);
+		System.out.println(GraphViz.toVizDotLink(pn));
 		if(pn.getMatcher().state == ParsingState.SUCCESSFUL)
-			pn = rdParser.buildAst(pn);
+			pn = (ParsedNode) rdParser.buildAst(pn);
 		System.out.println(GraphViz.toVizDotLink(pn));
 		return pn;
 	}
@@ -183,7 +190,7 @@ public class Parser {
 
 			Named namedEntry = (entry instanceof Terminal)
 					? n((Terminal) entry)
-					: n(null, (NonTerminal) entry);
+					: n(identifier, (NonTerminal) entry);
 			return targetGrammar.list(null, namedEntry).getTarget();
 		});
 	}
@@ -207,7 +214,7 @@ public class Parser {
 				n(Terminal.literal(">"))
 		).setEvaluator(pn -> {
 			String type = (String)pn.evaluate("type");
-			ParsedNode plus = pn.getChild("plus-names");
+			DefaultParsedNode plus = pn.getChild("plus-names");
 			int nTuple = plus.numChildren();
 			String[] entryNames = new String[nTuple];
 			for(int i = 0; i < nTuple; i++)
@@ -319,7 +326,7 @@ public class Parser {
 
 			rhsList.add((Named) parsedNode.getChild(0).evaluate());
 			for(int i = 1; i < nChildren; i++) {
-				ParsedNode child = parsedNode.getChild(i);
+				DefaultParsedNode child = parsedNode.getChild(i);
 				if(i % 2 == 0) { // or
 					rhsList.add((Named) child.evaluate());
 				}
@@ -337,7 +344,6 @@ public class Parser {
 
 	public Rule program() {
 		return targetGrammar.join("program",
-//				n("sentence", (NonTerminal) targetGrammar.getSymbol("sentence")),
 				n("sentence", new NonTerminal("sentence")),
 				LINEBREAK_STAR.getTarget(),
 				LINEBREAK_STAR.getTarget(),
@@ -345,22 +351,18 @@ public class Parser {
 				Range.STAR);
 	}
 
-	public interface ParseStartListener {
-		void parsingStarted();
-	}
+	private final ArrayList<EBNFParser.ParseStartListener> parseStartListeners = new ArrayList<>();
 
-	private final ArrayList<ParseStartListener> parseStartListeners = new ArrayList<>();
-
-	public void addParseStartListener(ParseStartListener l) {
+	public void addParseStartListener(EBNFParser.ParseStartListener l) {
 		parseStartListeners.add(l);
 	}
 
-	public void removeParseStartListener(ParseStartListener l) {
+	public void removeParseStartListener(EBNFParser.ParseStartListener l) {
 		parseStartListeners.remove(l);
 	}
 
 	private void fireParsingStarted() {
-		for(ParseStartListener l : parseStartListeners)
+		for(EBNFParser.ParseStartListener l : parseStartListeners)
 			l.parsingStarted();
 	}
 }

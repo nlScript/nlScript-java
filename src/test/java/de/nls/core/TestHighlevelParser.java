@@ -3,6 +3,8 @@ package de.nls.core;
 import de.nls.ParsedNode;
 import de.nls.Parser;
 import de.nls.ebnf.EBNF;
+import de.nls.ebnf.EBNFCore;
+import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Named;
 import de.nls.ebnf.Plus;
 import de.nls.ebnf.Repeat;
@@ -18,8 +20,8 @@ public class TestHighlevelParser {
 
 	private static Object evaluate(EBNF grammar, String input) {
 		Lexer lexer = new Lexer(input);
-		RDParser parser = new RDParser(grammar.createBNF(), lexer);
-		ParsedNode p = parser.parse();
+		RDParser parser = new RDParser(grammar.createBNF(), lexer, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode p = parser.parse();
 		System.out.println(GraphViz.toVizDotLink(p));
 		p = parser.buildAst(p);
 		System.out.println(GraphViz.toVizDotLink(p));
@@ -29,8 +31,8 @@ public class TestHighlevelParser {
 
 	private static void checkFailed(BNF grammar, String input) {
 		Lexer lexer = new Lexer(input);
-		RDParser parser = new RDParser(grammar, lexer);
-		ParsedNode p = parser.parse();
+		RDParser parser = new RDParser(grammar, lexer, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode p = parser.parse();
 		System.out.println(GraphViz.toVizDotLink(p));
 		if (p.getMatcher().state == ParsingState.SUCCESSFUL)
 			throw new RuntimeException();
@@ -83,8 +85,8 @@ public class TestHighlevelParser {
 
 	private Object evaluateHighlevelParser(Parser hlp, String input) {
 		Lexer lexer = new Lexer(input);
-		RDParser parser = new RDParser(hlp.getGrammar().createBNF(), lexer);
-		ParsedNode p = parser.parse();
+		RDParser parser = new RDParser(hlp.getGrammar().createBNF(), lexer, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode p = parser.parse();
 		if(p.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException("Parsing failed");
 		p = parser.buildAst(p);
@@ -102,10 +104,10 @@ public class TestHighlevelParser {
 		NonTerminal list = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
-		EBNF tgt = hlp.getTargetGrammar();
+		EBNFCore tgt = hlp.getTargetGrammar();
 		tgt.setWhatToMatch(list);
-		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("1, 2, 3"));
-		ParsedNode pn = rdParser.buildAst(rdParser.parse());
+		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException();
 		Object[] result = (Object[]) pn.evaluate();
@@ -125,11 +127,11 @@ public class TestHighlevelParser {
 		NonTerminal tuple = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
-		EBNF tgt = hlp.getTargetGrammar();
+		EBNFCore tgt = hlp.getTargetGrammar();
 		tgt.setWhatToMatch(tuple);
-		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("(1, 2)"));
+		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("(1, 2)"), EBNFParsedNodeFactory.INSTANCE);
 
-		ParsedNode pn = rdParser.parse();
+		DefaultParsedNode pn = rdParser.parse();
 		System.out.println(GraphViz.toVizDotLink(pn));
 
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
@@ -165,10 +167,10 @@ public class TestHighlevelParser {
 		NonTerminal tuple = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
-		EBNF tgt = hlp.getTargetGrammar();
+		EBNFCore tgt = hlp.getTargetGrammar();
 		tgt.setWhatToMatch(tuple);
-		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("(1, 2, 3)"));
-		ParsedNode pn = rdParser.buildAst(rdParser.parse());
+		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("(1, 2, 3)"), EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException();
 		System.out.println(GraphViz.toVizDotLink(pn));
@@ -185,7 +187,7 @@ public class TestHighlevelParser {
 		// now parse and evaluate the generated grammar:
 		tgt = hlp.getTargetGrammar();
 		tgt.setWhatToMatch(list);
-		rdParser = new RDParser(tgt.createBNF(), new Lexer("1, 2, 3"));
+		rdParser = new RDParser(tgt.createBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
 		pn = rdParser.buildAst(rdParser.parse());
 		System.out.println(GraphViz.toVizDotLink(pn));
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
@@ -202,7 +204,7 @@ public class TestHighlevelParser {
 		// now parse and evaluate the generated grammar:
 		tgt = hlp.getTargetGrammar();
 		tgt.setWhatToMatch(identifier);
-		rdParser = new RDParser(tgt.createBNF(), new Lexer("3"));
+		rdParser = new RDParser(tgt.createBNF(), new Lexer("3"), EBNFParsedNodeFactory.INSTANCE);
 		pn = rdParser.buildAst(rdParser.parse());
 		System.out.println(GraphViz.toVizDotLink(pn));
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
@@ -332,10 +334,10 @@ public class TestHighlevelParser {
 		Rule myType = hlp.getTargetGrammar().sequence("mytype", rhs);
 
 		// now parse and evaluate the generated grammar:
-		EBNF tgt = hlp.getTargetGrammar();
+		EBNFCore tgt = hlp.getTargetGrammar();
 		tgt.setWhatToMatch(myType.getTarget());
-		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("Today, let's wait for 5 minutes."));
-		ParsedNode pn = rdParser.buildAst(rdParser.parse());
+		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("Today, let's wait for 5 minutes."), EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException();
 		System.out.println(GraphViz.toVizDotLink(pn));

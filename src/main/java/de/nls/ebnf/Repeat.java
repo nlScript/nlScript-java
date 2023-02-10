@@ -2,6 +2,7 @@ package de.nls.ebnf;
 
 import de.nls.Evaluator;
 import de.nls.core.BNF;
+import de.nls.core.DefaultParsedNode;
 import de.nls.core.NonTerminal;
 import de.nls.ParsedNode;
 import de.nls.core.Production;
@@ -39,11 +40,12 @@ public class Repeat extends Rule {
 			Production p = addProduction(g, this, tgt, rhs);
 			p.onExtension((parent, children) -> {
 				for(int c = 0; c < children.length; c++) {
-					children[c].setNthEntryInParent(c);
-					children[c].setName(getNameForChild(c));
+					ParsedNode ch = (ParsedNode) children[c];
+					ch.setNthEntryInParent(c);
+					ch.setName(getNameForChild(c));
 				}
 			});
-			p.setAstBuilder((ParsedNode::addChildren));
+			p.setAstBuilder((DefaultParsedNode::addChildren));
 		}
 	}
 }

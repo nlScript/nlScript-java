@@ -1,7 +1,7 @@
 package de.nls.core;
 
-import de.nls.ParsedNode;
 import de.nls.ebnf.EBNFCore;
+import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import org.junit.jupiter.api.Test;
@@ -49,18 +49,18 @@ public class TestOr {
 		BNF grammar = makeGrammar();
 
 		Lexer l = new Lexer(input);
-		RDParser test = new RDParser(grammar, l);
-		ParsedNode root = test.parse();
+		RDParser test = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode root = test.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
 		root = test.buildAst(root);
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
-		ParsedNode parsed = root.getChildren()[0];
+		DefaultParsedNode parsed = root.getChildren()[0];
 		assertEquals(1, parsed.numChildren());
 
-		ParsedNode child = parsed.getChild(0);
+		DefaultParsedNode child = parsed.getChild(0);
 		assertEquals(input, child.getParsedString());
 		assertEquals(2, child.numChildren());
 
@@ -76,8 +76,8 @@ public class TestOr {
 		BNF grammar = makeGrammar();
 
 		Lexer l = new Lexer(input);
-		RDParser parser = new RDParser(grammar, l);
-		ParsedNode root = parser.parse();
+		RDParser parser = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode root = parser.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertNotEquals(SUCCESSFUL, root.getMatcher().state);

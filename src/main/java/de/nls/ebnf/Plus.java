@@ -1,6 +1,7 @@
 package de.nls.ebnf;
 
 import de.nls.Evaluator;
+import de.nls.ParsedNode;
 import de.nls.core.BNF;
 import de.nls.core.NonTerminal;
 import de.nls.core.Production;
@@ -22,17 +23,21 @@ public class Plus extends Rule {
 		Production p2 = addProduction(grammar, this, tgt, children[0]);
 
 		p1.onExtension((parent, children) -> {
-			int nthEntry = parent.getNthEntryInParent();
-			children[0].setNthEntryInParent(nthEntry);
-			children[0].setName(getNameForChild(nthEntry));
-			children[1].setNthEntryInParent(nthEntry + 1);
-			children[1].setName(parent.getName());
+			int nthEntry = ((ParsedNode)parent).getNthEntryInParent();
+			ParsedNode c0 = (ParsedNode) children[0];
+			ParsedNode c1 = (ParsedNode) children[1];
+
+			c0.setNthEntryInParent(nthEntry);
+			c0.setName(getNameForChild(nthEntry));
+			c1.setNthEntryInParent(nthEntry + 1);
+			c1.setName(parent.getName());
 		});
 
 		p2.onExtension((parent, children) -> {
-			int nthEntry = parent.getNthEntryInParent();
-			children[0].setNthEntryInParent(nthEntry);
-			children[0].setName(getNameForChild(nthEntry));
+			int nthEntry = ((ParsedNode)parent).getNthEntryInParent();
+			ParsedNode c0 = (ParsedNode) children[0];
+			c0.setNthEntryInParent(nthEntry);
+			c0.setName(getNameForChild(nthEntry));
 		});
 
 		p1.setAstBuilder((parent, children) -> {

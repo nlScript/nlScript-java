@@ -2,6 +2,7 @@ package de.nls.ebnf;
 
 import de.nls.Evaluator;
 import de.nls.core.BNF;
+import de.nls.core.DefaultParsedNode;
 import de.nls.core.NonTerminal;
 import de.nls.ParsedNode;
 import de.nls.core.Production;
@@ -29,6 +30,10 @@ public class Join extends Rule {
 		return children[0];
 	}
 
+	public Range getCardinality() {
+		return cardinality;
+	}
+
 	public void setOnlyKeepEntries(boolean onlyKeepEntries) {
 		this.onlyKeepEntries = onlyKeepEntries;
 	}
@@ -54,7 +59,7 @@ public class Join extends Rule {
 			 *     |-- close
 			 */
 			p.onExtension((parent, children) -> {
-				int nthEntry = parent.getNthEntryInParent() + 1; // increment because next starts with index 1, index 0 is first
+				int nthEntry = ((ParsedNode)parent).getNthEntryInParent() + 1; // increment because next starts with index 1, index 0 is first
 				children[0].setName("delimiter");
 				children[1].setName(getNameForChild(nthEntry));
 			});
@@ -62,12 +67,12 @@ public class Join extends Rule {
 			if(onlyKeepEntries)
 				p.setAstBuilder((parent, children) -> parent.addChildren(children[1]));
 			else
-				p.setAstBuilder(ParsedNode::addChildren);
+				p.setAstBuilder(DefaultParsedNode::addChildren);
 		}
 		else {
 			Production p = addProduction(g, this, next, first);
 			p.onExtension((parent, children) -> {
-				int nthEntry = parent.getNthEntryInParent() + 1; // increment because next starts with index 1, index 0 is first
+				int nthEntry = ((ParsedNode)parent).getNthEntryInParent() + 1; // increment because next starts with index 1, index 0 is first
 				children[0].setName(getNameForChild(nthEntry));
 			});
 			p.setAstBuilder((parent, children) -> parent.addChildren(children[0]));
@@ -76,7 +81,7 @@ public class Join extends Rule {
 		// Assume L -> first next
 		Production.AstBuilder astBuilder = ((parent, children) -> {
 			parent.addChildren(children[0]);
-			for(ParsedNode pn : children[1].getChildren())
+			for(DefaultParsedNode pn : children[1].getChildren())
 				parent.addChildren(pn.getChildren());
 		});
 

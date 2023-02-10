@@ -1,36 +1,42 @@
 package de.nls.core;
 
 import de.nls.Autocompleter;
-import de.nls.ParsedNode;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public class RDParser {
+
+	private final ParsedNodeFactory parsedNodeFactory;
+
 	private final BNF grammar;
 	private final Lexer lexer;
 
-	public RDParser(BNF grammar, Lexer lexer) {
+	public RDParser(BNF grammar, Lexer lexer, ParsedNodeFactory parsedNodeFactory) {
 		this.grammar = grammar;
 		this.lexer = lexer;
+		this.parsedNodeFactory = parsedNodeFactory;
 	}
 
-	public ParsedNode parse() {
+	public DefaultParsedNode parse() {
 		return parse(null);
 	}
 
-	public ParsedNode parse(ArrayList<Autocompletion> autocompletions) {
+	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
-		ParsedNode ret = seq.getCurrentSymbol();
-		parse(seq, autocompletions);
+		SymbolSequence parsedSequence = parse(seq, autocompletions);
 		if(autocompletions != null && autocompletions.size() == 1 && autocompletions.get(0) == null)
 			autocompletions.clear();
-		populateParsedTree(ret);
+		DefaultParsedNode[] last = new DefaultParsedNode[1];
+		DefaultParsedNode ret = createParsedTree(parsedSequence, last);
+		if(autocompletions != null)
+			System.out.println("Autocompletions: " + autocompletions);
 		return ret;
 	}
 
-	public ParsedNode buildAst(ParsedNode pn) {
-		ParsedNode[] children = new ParsedNode[pn.numChildren()];
+	public DefaultParsedNode buildAst(DefaultParsedNode pn) {
+		DefaultParsedNode[] children = new DefaultParsedNode[pn.numChildren()];
 		for(int i = 0; i < pn.numChildren(); i++) {
 			children[i] = buildAst(pn.getChild(i));
 		}
@@ -44,21 +50,26 @@ public class RDParser {
 	/**
 	 * Removes all entries and puts null at index 0 if further autocompletion should be prohibited.
 	 */
-	private void addAutocompletions(ParsedNode pn, ArrayList<Autocompletion> autocompletions) {
-		if(autocompletions != null && autocompletions.size() == 1 && autocompletions.get(0) == null)
+	private void addAutocompletions(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
+		assert autocompletions != null;
+		if(autocompletions.size() == 1 && autocompletions.get(0) == null)
 			return;
+
+		DefaultParsedNode[] last = new DefaultParsedNode[1];
+		createParsedTree(symbolSequence, last);
+
 		// get a trace to the root
-		ArrayList<ParsedNode> pathToRoot = new ArrayList<>();
-		ParsedNode parent = pn;
+		ArrayList<DefaultParsedNode> pathToRoot = new ArrayList<>();
+		DefaultParsedNode parent = last[0];
 		while(parent != null) {
 			pathToRoot.add(parent);
 			parent = parent.getParent();
 		}
 
 		// find the node closest to root which provides autocompletion
-		ParsedNode autocompletingParent = null;
+		DefaultParsedNode autocompletingParent = null;
 		for(int i = pathToRoot.size() - 1; i >= 0; i--) {
-			ParsedNode tmp = pathToRoot.get(i);
+			DefaultParsedNode tmp = pathToRoot.get(i);
 			if (tmp.doesAutocomplete()) {
 				autocompletingParent = tmp;
 				break;
@@ -67,7 +78,6 @@ public class RDParser {
 		if(autocompletingParent == null)
 			return;
 
-		autocompletingParent.populateMatcher();
 		int autocompletingParentStart = autocompletingParent.getMatcher().pos;
 		String alreadyEntered = lexer.substring(autocompletingParentStart);
 		String completion = autocompletingParent.getAutocompletion();
@@ -97,80 +107,164 @@ public class RDParser {
 	 *   - for all productions U -> XYZ
 	 *     - in the symbol sequence, replace U with XYZ
 	 */
-	private ParsedNode parse(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
-		ParsedNode parent = symbolSequence.getCurrentSymbol();
-		Symbol next = parent.getSymbol();
+	private SymbolSequence parse(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
+		Symbol next = symbolSequence.getCurrentSymbol();
+
 		while(next.isTerminal()) {
 			Matcher matcher = ((Terminal) next).matches(lexer);
-			parent.setMatcher(matcher);
+			symbolSequence.addMatcher(matcher);
 			if(matcher.state == ParsingState.END_OF_INPUT && autocompletions != null)
-				addAutocompletions(parent, autocompletions);
+				addAutocompletions(symbolSequence, autocompletions);
 
 			if(matcher.state != ParsingState.SUCCESSFUL)
-				return parent;
+				return symbolSequence;
 			symbolSequence.incrementPosition();
 			lexer.fwd(matcher.parsed.length());
 			if(lexer.isDone())
-				return parent;
-			parent = symbolSequence.getCurrentSymbol();
-			next = parent.getSymbol();
+				return symbolSequence;
+			next = symbolSequence.getCurrentSymbol();
 		}
 		NonTerminal u = (NonTerminal) next;
 		ArrayList<Production> alternates = grammar.getProductions(u);
-		ParsedNode best = null;
-		ParsedNode[] childrenOfBest = null;
+		SymbolSequence best = null;
+		int lexerPosOfBest = lexer.getPosition();
 		for(Production alternate : alternates) {
 			int lexerPos = lexer.getPosition();
 			SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate);
-			ParsedNode pn = parse(nextSequence, autocompletions);
-			if(pn.getMatcher().state == ParsingState.SUCCESSFUL)
-				return pn;
-			if(best == null || pn.getMatcher().isBetterThan(best.getMatcher())) {
-				best = pn;
-				childrenOfBest = parent.getChildren();
+			SymbolSequence parsedSequence = parse(nextSequence, autocompletions);
+			Matcher m = parsedSequence.getLastMatcher();
+			if(m.state == ParsingState.SUCCESSFUL)
+				return parsedSequence;
+			if(best == null || m.isBetterThan(best.getLastMatcher())) {
+				best = parsedSequence;
+				lexerPosOfBest = lexer.getPosition();
 			}
-			parent.removeAllChildren();
 			lexer.setPosition(lexerPos);
 		}
-		if(childrenOfBest == null) {
-			System.out.println("children of best are null");
+		if(best != null) {
+			lexer.setPosition(lexerPosOfBest);
 		}
-		parent.addChildren(childrenOfBest);
 		return best;
 	}
 
-	private void populateParsedTree(ParsedNode pn) {
-		pn.populateMatcher();
+	protected DefaultParsedNode createParsedTree(SymbolSequence leafSequence, DefaultParsedNode[] retLast) {
+		LinkedList<DefaultParsedNode> parsedNodeSequence = new LinkedList<>();
+		int nParsedMatchers = leafSequence.parsedMatchers.size();
+		int i = 0;
+		for(Symbol symbol : leafSequence.sequence) {
+			Matcher matcher = i < nParsedMatchers
+					? leafSequence.parsedMatchers.get(i)
+					: new Matcher(ParsingState.NOT_PARSED, 0, "");
+			i++;
+
+			DefaultParsedNode pn = parsedNodeFactory.createNode(matcher, symbol, null);
+			parsedNodeSequence.add(pn);
+		}
+
+		if(retLast != null)
+			retLast[0] = parsedNodeSequence.get(nParsedMatchers - 1);
+
+		SymbolSequence childSequence = leafSequence;
+		while(childSequence.parent != null) {
+			SymbolSequence parentSequence = childSequence.parent;
+			Production productionToCreateChildSequence = childSequence.production;
+			assert productionToCreateChildSequence != null;
+			int pos = parentSequence.pos;
+			Symbol[] rhs = productionToCreateChildSequence.getRight();
+			Symbol   lhs = productionToCreateChildSequence.getLeft();
+			int rhsSize = rhs.length;
+			List<DefaultParsedNode> childList = parsedNodeSequence.subList(pos, pos + rhsSize);
+
+			Matcher matcher = matcherFromChildSequence(childList);
+			DefaultParsedNode newParent = parsedNodeFactory.createNode(matcher, lhs, productionToCreateChildSequence);
+			newParent.addChildren(childList.toArray(new DefaultParsedNode[0]));
+			childList.clear();
+			parsedNodeSequence.add(pos, newParent);
+
+			childSequence = childSequence.parent;
+		}
+
+		DefaultParsedNode root = parsedNodeSequence.get(0);
+		assert root.getSymbol().equals(BNF.ARTIFICIAL_START_SYMBOL);
+
+		notifyExtensionListeners(root);
+
+		return root;
 	}
 
-	private static class SymbolSequence {
-		private final LinkedList<ParsedNode> sequence = new LinkedList<>();
-		private int pos = 0;
+	private static void notifyExtensionListeners(DefaultParsedNode pn) {
+		Production production = pn.getProduction();
+		if(production != null) {
+			production.wasExtended(pn, pn.getChildren());
+			for (DefaultParsedNode child : pn.getChildren())
+				notifyExtensionListeners(child);
+		}
+	}
 
-		private SymbolSequence(SymbolSequence o) {
+	private static Matcher matcherFromChildSequence(Iterable<DefaultParsedNode> children) {
+		int pos = 0;
+		ParsingState state = ParsingState.NOT_PARSED;
+		StringBuilder parsed = new StringBuilder();
+		int i = 0;
+		for(DefaultParsedNode child : children) {
+			if(i++ == 0)
+				pos = child.getMatcher().pos;
+
+			// already encountered EOI or FAILED before, do nothing
+			if(state == ParsingState.END_OF_INPUT || state == ParsingState.FAILED)
+				break;
+
+			Matcher matcher = child.getMatcher();
+			ParsingState childState = matcher.state;
+			if (childState != ParsingState.NOT_PARSED) {
+				if (state == ParsingState.NOT_PARSED || !childState.isBetterThan(state)) {
+					state = childState;
+				}
+			}
+			parsed.append(matcher.parsed);
+		}
+		return new Matcher(state, pos, parsed.toString());
+	}
+
+	protected static class SymbolSequence {
+		private final LinkedList<Symbol> sequence = new LinkedList<>();
+		private int pos = 0;
+		private final SymbolSequence parent;
+		private final ArrayList<Matcher> parsedMatchers = new ArrayList<>();
+		private final Production production;
+
+		private SymbolSequence(SymbolSequence o, Production production) {
 			this.sequence.addAll(o.sequence);
 			this.pos = o.pos;
+			this.parent = o;
+			this.production = production;
 		}
 
 		public SymbolSequence(Symbol start) {
-			sequence.add(new ParsedNode(new Matcher(ParsingState.SUCCESSFUL, 0, ""), start));
+			sequence.add(start);
+			parent = null;
+			production = null;
 		}
 
-		public ParsedNode getCurrentSymbol() {
+		public Matcher getLastMatcher() {
+			return parsedMatchers.get(parsedMatchers.size() - 1);
+		}
+
+		public void addMatcher(Matcher matcher) {
+			this.parsedMatchers.add(matcher);
+		}
+
+		public Symbol getCurrentSymbol() {
 			return sequence.get(pos);
 		}
 
 		public SymbolSequence replaceCurrentSymbol(Production production) {
-			SymbolSequence copy = new SymbolSequence(this);
-			ParsedNode parent = copy.sequence.remove(pos);
-			parent.setProduction(production);
+			SymbolSequence copy = new SymbolSequence(this, production);
+			copy.parsedMatchers.addAll(this.parsedMatchers);
+			copy.sequence.remove(pos);
 			Symbol[] replacement = production.getRight();
-			for(int i = 0; i < replacement.length; i++) {
-				ParsedNode pn = new ParsedNode(new Matcher(ParsingState.SUCCESSFUL, 0, ""), replacement[i]);
-				parent.addChildren(pn);
-				copy.sequence.add(pos + i, pn);
-			}
-			production.wasExtended(parent, parent.getChildren());
+			for(int i = 0; i < replacement.length; i++)
+				copy.sequence.add(pos + i, replacement[i]);
 			return copy;
 		}
 
@@ -180,8 +274,11 @@ public class RDParser {
 
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			for(ParsedNode pn : sequence) {
-				sb.append(pn.getSymbol()).append(" ");
+			int i = 0;
+			for(Symbol sym : sequence) {
+				if(i++ == pos)
+					sb.append(".");
+				sb.append(sym).append(" -- ");
 			}
 			return sb.toString();
 		}

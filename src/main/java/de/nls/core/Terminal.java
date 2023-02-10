@@ -20,8 +20,6 @@ public abstract class Terminal extends Symbol {
 		return new CharacterClass(pattern);
 	}
 
-
-
 	public Terminal(String symbol) {
 		super(symbol);
 	}
@@ -32,8 +30,6 @@ public abstract class Terminal extends Symbol {
 	public String toString() {
 		return getSymbol();
 	}
-
-
 
 	public static class Epsilon extends Terminal {
 		private Epsilon() {
@@ -142,6 +138,8 @@ public abstract class Terminal extends Symbol {
 		private CharacterClass(String pattern) {
 			super(pattern);
 			StringBuilder b = new StringBuilder(pattern.trim());
+			if(b.length() == 0)
+				throw new RuntimeException("empty character class pattern");
 			if(b.charAt(0) != '[' || b.charAt(b.length() - 1) != ']')
 				throw new RuntimeException("Wrong character class format: " + pattern);
 
@@ -190,6 +188,13 @@ public abstract class Terminal extends Symbol {
 			if(ranges.checkCharacter(c))
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
 			return new Matcher(ParsingState.FAILED, pos, "");
+		}
+
+		@Override
+		public String toString() {
+			String ret = super.toString();
+			ret = ret.replaceAll("\n", "\\n");
+			return ret;
 		}
 	}
 

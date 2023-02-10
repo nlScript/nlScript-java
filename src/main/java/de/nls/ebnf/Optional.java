@@ -2,6 +2,7 @@ package de.nls.ebnf;
 
 import de.nls.Evaluator;
 import de.nls.core.BNF;
+import de.nls.core.DefaultParsedNode;
 import de.nls.core.NonTerminal;
 import de.nls.ParsedNode;
 import de.nls.core.Production;
@@ -23,10 +24,11 @@ public class Optional extends Rule {
 		final Production p2 = addProduction(g, this, tgt);
 
 		p1.onExtension((parent, children) -> {
-			children[0].setNthEntryInParent(0);
-			children[0].setName(getNameForChild(0));
+			ParsedNode c0 = (ParsedNode) children[0];
+			c0.setNthEntryInParent(0);
+			c0.setName(getNameForChild(0));
 		});
 
-		p1.setAstBuilder(ParsedNode::addChildren);
+		p1.setAstBuilder(DefaultParsedNode::addChildren);
 	}
 }

@@ -1,7 +1,7 @@
 package de.nls.core;
 
-import de.nls.ParsedNode;
 import de.nls.ebnf.EBNFCore;
+import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import de.nls.util.Range;
@@ -27,15 +27,15 @@ public class TestJoin {
 
 		String input = "(1,3,4)";
 		Lexer l = new Lexer(input);
-		RDParser test = new RDParser(grammar.createBNF(), l);
-		ParsedNode root = test.parse();
+		RDParser test = new RDParser(grammar.createBNF(), l, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode root = test.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
 		root = test.buildAst(root);
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
-		ParsedNode parsedJoinNode = root.getChild(0);
+		DefaultParsedNode parsedJoinNode = root.getChild(0);
 		assertEquals(7, parsedJoinNode.numChildren());
 
 		// test names
@@ -171,20 +171,20 @@ public class TestJoin {
 
 	private static void testSuccess(BNF grammar, String input, String... result) {
 		Lexer l = new Lexer(input);
-		RDParser test = new RDParser(grammar, l);
-		ParsedNode root = test.parse();
+		RDParser test = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode root = test.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
 		root = test.buildAst(root);
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
 
-		ParsedNode parsed = root.getChildren()[0];
+		DefaultParsedNode parsed = root.getChildren()[0];
 		assertEquals(result.length, parsed.numChildren());
 		assertEquals(input, parsed.getParsedString());
 
 		int i = 0;
-		for(ParsedNode child : parsed.getChildren()) {
+		for(DefaultParsedNode child : parsed.getChildren()) {
 			assertEquals(result[i++], child.getParsedString());
 			assertEquals(0, child.numChildren());
 		}
@@ -195,14 +195,14 @@ public class TestJoin {
 			assertEquals(result[i], evaluated[i]);
 
 		// test names
-		for(ParsedNode child : parsed.getChildren())
+		for(DefaultParsedNode child : parsed.getChildren())
 			assertEquals(Terminal.DIGIT.getSymbol(), child.getName());
 	}
 
 	private static void testFailure(BNF grammar, String input) {
 		Lexer l = new Lexer(input);
-		RDParser parser = new RDParser(grammar, l);
-		ParsedNode root = parser.parse();
+		RDParser parser = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode root = parser.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertNotEquals(SUCCESSFUL, root.getMatcher().state);
