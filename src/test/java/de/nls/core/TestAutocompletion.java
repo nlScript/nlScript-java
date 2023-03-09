@@ -39,9 +39,9 @@ public class TestAutocompletion {
 		Parser parser = new Parser();
 		parser.defineSentence("Define the output path {p:path}.", pn -> null);
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
-		parser.parse("Define the output path ", autocompletions);
-		assertEquals(1, autocompletions.size());
-		assertEquals(new Autocompletion("Define the output path", ""), autocompletions.get(0));
+		parser.parse("", autocompletions);
+		assertEquals(2, autocompletions.size());
+		assertEquals(new Autocompletion("Define the output path", ""), autocompletions.get(1));
 	}
 
 	@Test
@@ -140,7 +140,8 @@ public class TestAutocompletion {
 		System.out.println(GraphViz.toVizDotLink(pn));
 		System.out.println(pn.getMatcher().state);
 		assertEquals(ParsingState.END_OF_INPUT, pn.getMatcher().state);
-
+		assertEquals(1, autocompletions.size());
+		assertEquals("Define channel", autocompletions.get(0).getCompletion());
 	}
 
 	@Test
@@ -162,6 +163,24 @@ public class TestAutocompletion {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		ParsedNode root = parser.parse("Excite with 10% at 3", autocompletions);
 		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
+		assertEquals(1, autocompletions.size());
+		assertEquals("385nm", autocompletions.get(0).getCompletion());
+	}
+
+	@Test
+	public void test08() {
+		Parser parser = new Parser();
+
+		parser.defineType("color", "blue", null);
+		parser.defineType("color", "green", null);
+		parser.defineSentence("My favorite color is {color:color}.", null);
+
+		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
+		ParsedNode root = parser.parse("My favorite color is ", autocompletions);
+		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
+		assertEquals(2, autocompletions.size());
+		assertEquals("blue", autocompletions.get(0).getCompletion());
+		assertEquals("green", autocompletions.get(1).getCompletion());
 	}
 
 

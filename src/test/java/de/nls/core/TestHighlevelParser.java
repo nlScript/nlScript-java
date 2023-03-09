@@ -331,10 +331,10 @@ public class TestHighlevelParser {
 
 		String test = "Today, let's wait for {time:int} minutes.";
 		Named[] rhs = (Named[]) evaluateHighlevelParser(hlp, test);
-		Rule myType = hlp.getTargetGrammar().sequence("mytype", rhs);
+		EBNFCore tgt = hlp.getTargetGrammar();
+		Rule myType = tgt.sequence("mytype", rhs);
 
 		// now parse and evaluate the generated grammar:
-		EBNFCore tgt = hlp.getTargetGrammar();
 		tgt.setWhatToMatch(myType.getTarget());
 		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("Today, let's wait for 5 minutes."), EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
@@ -351,11 +351,13 @@ public class TestHighlevelParser {
 
 		hlp.defineSentence("Now it is only {p:percentage}.", pn -> {
 			int percentage = (int) pn.evaluate("p");
+			assertEquals(5, percentage);
 			System.out.println(percentage + " % left.");
 			return null;
 		});
 		hlp.defineSentence("There is still {p:percentage} left.", pn -> {
 			int percentage = (int) pn.evaluate("p");
+			assertEquals(38, percentage);
 			System.out.println(percentage + " % left.");
 			return null;
 		});
@@ -363,6 +365,8 @@ public class TestHighlevelParser {
 		ParsedNode pn = hlp.parse(
 				"There is still 38 % left.\n" +
 				"Now it is only 5 %.", null);
+
+		assertEquals(pn.getMatcher().state, ParsingState.SUCCESSFUL);
 		pn.evaluate();
 	}
 }
