@@ -3,7 +3,7 @@ package de.nls.core;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RDParserTest {
+public class TestRDParser {
 	@Test
 	public void testParse() {
 		BNF bnf = new BNF();
