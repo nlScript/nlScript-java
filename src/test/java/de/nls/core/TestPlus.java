@@ -45,10 +45,10 @@ public class TestPlus {
 		BNF grammar = makeGrammar();
 
 		Lexer l = new Lexer(input);
-		RDParser test = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
-		DefaultParsedNode root = test.parse();
+		RDParser parser = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
+		DefaultParsedNode root = parser.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
-		root = test.buildAst(root);
+		root = parser.buildAst(root);
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
