@@ -189,7 +189,7 @@ public class Parser {
 			Symbol entry = targetGrammar.getSymbol(identifier);
 
 			Named namedEntry = (entry instanceof Terminal)
-					? n((Terminal) entry)
+					? n(identifier, (Terminal) entry)
 					: n(identifier, (NonTerminal) entry);
 			return targetGrammar.list(null, namedEntry).getTarget();
 		});
@@ -324,7 +324,7 @@ public class Parser {
 
 			ArrayList<Named> rhsList = new ArrayList<>();
 
-			rhsList.add((Named) parsedNode.getChild(0).evaluate());
+			rhsList.add((Named) parsedNode.evaluate(0));
 			for(int i = 1; i < nChildren; i++) {
 				DefaultParsedNode child = parsedNode.getChild(i);
 				if(i % 2 == 0) { // or
@@ -342,7 +342,7 @@ public class Parser {
 		});
 	}
 
-	public Rule program() {
+	private Rule program() {
 		return targetGrammar.join("program",
 				n("sentence", new NonTerminal("sentence")),
 				LINEBREAK_STAR.getTarget(),

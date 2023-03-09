@@ -143,7 +143,7 @@ public class EBNF extends EBNFCore {
 
 		static HashMap<Path, Path[]> filesystemCache = new HashMap<>();
 
-		void clearFilesystemCache() {
+		static void clearFilesystemCache() {
 			filesystemCache.clear();
 		}
 

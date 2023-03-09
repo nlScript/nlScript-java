@@ -201,15 +201,11 @@ public class RDParser {
 		}
 	}
 
-	private static Matcher matcherFromChildSequence(Iterable<DefaultParsedNode> children) {
-		int pos = 0;
+	private static Matcher matcherFromChildSequence(List<DefaultParsedNode> children) {
+		int pos = children.size() > 0 ? children.get(0).getMatcher().pos : 0;
 		ParsingState state = ParsingState.NOT_PARSED;
 		StringBuilder parsed = new StringBuilder();
-		int i = 0;
 		for(DefaultParsedNode child : children) {
-			if(i++ == 0)
-				pos = child.getMatcher().pos;
-
 			// already encountered EOI or FAILED before, do nothing
 			if(state == ParsingState.END_OF_INPUT || state == ParsingState.FAILED)
 				break;
