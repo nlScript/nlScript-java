@@ -51,4 +51,10 @@ public class Lexer {
 	public boolean isAtEnd(int fwd) {
 		return pos + fwd == input.length();
 	}
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(input.substring(0, pos)).append(" -- ").append(input.substring(pos));
+		return sb.toString();
+	}
 }
