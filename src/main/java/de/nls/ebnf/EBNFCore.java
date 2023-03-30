@@ -16,6 +16,10 @@ public class EBNFCore {
 
 	private final ArrayList<Rule> rules = new ArrayList<>();
 
+	private final BNF bnf = new BNF();
+
+	private boolean compiled = false;
+
 	public Symbol getSymbol(String type) {
 		return symbols.get(type);
 	}
@@ -25,6 +29,26 @@ public class EBNFCore {
 	public EBNFCore(EBNFCore other) {
 		symbols.putAll(other.symbols);
 		rules.addAll(other.rules);
+		compiled = other.compiled;
+	}
+
+	public void compile(Symbol topLevelSymbol) {
+		compiled = false; // otherwise removeRules() and addRule() will complain
+		// update the start symbol
+		removeRules(BNF.ARTIFICIAL_START_SYMBOL);
+		Sequence sequence = new Sequence(BNF.ARTIFICIAL_START_SYMBOL, topLevelSymbol, BNF.ARTIFICIAL_STOP_SYMBOL);
+		addRule(sequence);
+		sequence.setEvaluator(pn -> pn.evaluate(0));
+
+		bnf.reset();
+
+		for(Rule r : rules)
+			r.createBNF(bnf);
+		compiled = true;
+	}
+
+	public BNF getBNF() {
+		return bnf;
 	}
 
 	public ArrayList<Rule> getRules(NonTerminal target) {
@@ -150,20 +174,6 @@ public class EBNFCore {
 		return sequence;
 	}
 
-	public void setWhatToMatch(Symbol topLevelSymbol) {
-		removeRules(BNF.ARTIFICIAL_START_SYMBOL);
-		Sequence sequence = new Sequence(BNF.ARTIFICIAL_START_SYMBOL, topLevelSymbol, BNF.ARTIFICIAL_STOP_SYMBOL);
-		addRule(sequence);
-		sequence.setEvaluator(pn -> pn.evaluate(0));
-	}
-
-	public BNF createBNF() {
-		BNF grammar = new BNF();
-		for(Rule r : rules)
-			r.createBNF(grammar);
-		return grammar;
-	}
-
 	protected static Symbol[] getSymbols(Named... named) {
 		Symbol[] ret = new Symbol[named.length];
 		for(int i = 0; i < named.length; i++)
@@ -179,6 +189,8 @@ public class EBNFCore {
 	}
 
 	private void addRule(Rule rule) {
+		if(compiled)
+			throw new RuntimeException("Grammar is already compiled");
 		if(!symbols.containsKey(rule.tgt.getSymbol()))
 			symbols.put(rule.tgt.getSymbol(), rule.tgt);
 
@@ -190,6 +202,8 @@ public class EBNFCore {
 	}
 
 	private void removeRules(NonTerminal symbol) {
+		if(compiled)
+			throw new RuntimeException("Grammar is already compiled");
 		for(int i = rules.size() - 1; i >= 0; i--)
 			if(rules.get(i).tgt.equals(symbol))
 				rules.remove(i);

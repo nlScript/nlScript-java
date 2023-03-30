@@ -17,8 +17,8 @@ public class TestStar {
 				Named.n("seq", grammar.sequence("seq",
 						Named.n(Terminal.DIGIT),
 						Named.n(Terminal.LETTER))));
-		grammar.setWhatToMatch(rule.getTarget());
-		return grammar.createBNF();
+		grammar.compile(rule.getTarget());
+		return grammar.getBNF();
 	}
 
 	@Test

@@ -20,7 +20,7 @@ public class TestHighlevelParser {
 
 	private static Object evaluate(EBNF grammar, String input) {
 		Lexer lexer = new Lexer(input);
-		RDParser parser = new RDParser(grammar.createBNF(), lexer, EBNFParsedNodeFactory.INSTANCE);
+		RDParser parser = new RDParser(grammar.getBNF(), lexer, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode p = parser.parse();
 		System.out.println(GraphViz.toVizDotLink(p));
 		p = parser.buildAst(p);
@@ -43,7 +43,7 @@ public class TestHighlevelParser {
 		System.out.println("Test Quantifier");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.QUANTIFIER.getTarget());
+		grammar.compile(hlp.QUANTIFIER.getTarget());
 
 		if (!evaluate(grammar, "?").equals(Range.OPTIONAL))
 			throw new RuntimeException();
@@ -66,7 +66,7 @@ public class TestHighlevelParser {
 		System.out.println("Test Identifier");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.IDENTIFIER.getTarget());
+		grammar.compile(hlp.IDENTIFIER.getTarget());
 		System.out.println(grammar);
 
 		String[] positives = new String[]{"bla", "_1-lkj", "A", "_"};
@@ -79,13 +79,13 @@ public class TestHighlevelParser {
 		}
 		for (String test : negatives) {
 			System.out.println("Testing " + test);
-			checkFailed(grammar.createBNF(), test);
+			checkFailed(grammar.getBNF(), test);
 		}
 	}
 
 	private Object evaluateHighlevelParser(Parser hlp, String input) {
 		Lexer lexer = new Lexer(input);
-		RDParser parser = new RDParser(hlp.getGrammar().createBNF(), lexer, EBNFParsedNodeFactory.INSTANCE);
+		RDParser parser = new RDParser(hlp.getGrammar().getBNF(), lexer, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode p = parser.parse();
 		if(p.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException("Parsing failed");
@@ -98,15 +98,15 @@ public class TestHighlevelParser {
 		System.out.println("Test List");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.LIST.getTarget());
+		grammar.compile(hlp.LIST.getTarget());
 
 		String test = "list<int>";
 		NonTerminal list = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		EBNFCore tgt = hlp.getTargetGrammar();
-		tgt.setWhatToMatch(list);
-		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
+		tgt.compile(list);
+		RDParser rdParser = new RDParser(tgt.getBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException();
@@ -121,15 +121,15 @@ public class TestHighlevelParser {
 		System.out.println("Test Tuple");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.TUPLE.getTarget());
+		grammar.compile(hlp.TUPLE.getTarget());
 
 		String test = "tuple<int,x, y>";
 		NonTerminal tuple = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		EBNFCore tgt = hlp.getTargetGrammar();
-		tgt.setWhatToMatch(tuple);
-		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("(1, 2)"), EBNFParsedNodeFactory.INSTANCE);
+		tgt.compile(tuple);
+		RDParser rdParser = new RDParser(tgt.getBNF(), new Lexer("(1, 2)"), EBNFParsedNodeFactory.INSTANCE);
 
 		DefaultParsedNode pn = rdParser.parse();
 		System.out.println(GraphViz.toVizDotLink(pn));
@@ -149,7 +149,7 @@ public class TestHighlevelParser {
 		System.out.println("Test Character Class");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.CHARACTER_CLASS.getTarget());
+		grammar.compile(hlp.CHARACTER_CLASS.getTarget());
 
 		Terminal.CharacterClass cc = (Terminal.CharacterClass) evaluate(grammar, "[a-zA-Z]");
 		if(!cc.equals(Terminal.characterClass("[a-zA-Z]")))
@@ -160,7 +160,7 @@ public class TestHighlevelParser {
 	public void testType() {
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.TYPE.getTarget());
+		grammar.compile(hlp.TYPE.getTarget());
 
 		// test tuple
 		String test = "tuple<int,x,y,z>";
@@ -168,8 +168,8 @@ public class TestHighlevelParser {
 
 		// now parse and evaluate the generated grammar:
 		EBNFCore tgt = hlp.getTargetGrammar();
-		tgt.setWhatToMatch(tuple);
-		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("(1, 2, 3)"), EBNFParsedNodeFactory.INSTANCE);
+		tgt.compile(tuple);
+		RDParser rdParser = new RDParser(tgt.getBNF(), new Lexer("(1, 2, 3)"), EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException();
@@ -181,13 +181,16 @@ public class TestHighlevelParser {
 
 
 		// test list
+		hlp = new Parser();
+		grammar = hlp.getGrammar();
+		grammar.compile(hlp.TYPE.getTarget());
 		test = "list<int>";
 		NonTerminal list = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		tgt = hlp.getTargetGrammar();
-		tgt.setWhatToMatch(list);
-		rdParser = new RDParser(tgt.createBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
+		tgt.compile(list);
+		rdParser = new RDParser(tgt.getBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
 		pn = rdParser.buildAst(rdParser.parse());
 		System.out.println(GraphViz.toVizDotLink(pn));
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
@@ -198,13 +201,16 @@ public class TestHighlevelParser {
 			throw new RuntimeException();
 
 		// test identifier
+		hlp = new Parser();
+		grammar = hlp.getGrammar();
+		grammar.compile(hlp.TYPE.getTarget());
 		test = "int";
 		NonTerminal identifier = (NonTerminal) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		tgt = hlp.getTargetGrammar();
-		tgt.setWhatToMatch(identifier);
-		rdParser = new RDParser(tgt.createBNF(), new Lexer("3"), EBNFParsedNodeFactory.INSTANCE);
+		tgt.compile(identifier);
+		rdParser = new RDParser(tgt.getBNF(), new Lexer("3"), EBNFParsedNodeFactory.INSTANCE);
 		pn = rdParser.buildAst(rdParser.parse());
 		System.out.println(GraphViz.toVizDotLink(pn));
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
@@ -219,7 +225,7 @@ public class TestHighlevelParser {
 		System.out.println("Test Variable");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.VARIABLE.getTarget());
+		grammar.compile(hlp.VARIABLE.getTarget());
 
 		String test = "{bla:int:3-5}";
 		Named.NamedNonTerminal evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
@@ -296,7 +302,7 @@ public class TestHighlevelParser {
 		System.out.println("Test NoVariable");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.NO_VARIABLE.getTarget());
+		grammar.compile(hlp.NO_VARIABLE.getTarget());
 
 		String test = "lk345}.-";
 		Named.NamedTerminal evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
@@ -327,7 +333,7 @@ public class TestHighlevelParser {
 		System.out.println("Test Expression");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
-		grammar.setWhatToMatch(hlp.EXPRESSION.getTarget());
+		grammar.compile(hlp.EXPRESSION.getTarget());
 
 		String test = "Today, let's wait for {time:int} minutes.";
 		Named[] rhs = (Named[]) evaluateHighlevelParser(hlp, test);
@@ -335,8 +341,8 @@ public class TestHighlevelParser {
 		Rule myType = tgt.sequence("mytype", rhs);
 
 		// now parse and evaluate the generated grammar:
-		tgt.setWhatToMatch(myType.getTarget());
-		RDParser rdParser = new RDParser(tgt.createBNF(), new Lexer("Today, let's wait for 5 minutes."), EBNFParsedNodeFactory.INSTANCE);
+		tgt.compile(myType.getTarget());
+		RDParser rdParser = new RDParser(tgt.getBNF(), new Lexer("Today, let's wait for 5 minutes."), EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException();

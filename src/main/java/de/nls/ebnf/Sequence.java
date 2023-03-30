@@ -7,7 +7,7 @@ import de.nls.ParsedNode;
 import de.nls.core.Production;
 import de.nls.core.Symbol;
 
-class Sequence extends Rule {
+public class Sequence extends Rule {
 	public Sequence(NonTerminal tgt, Symbol... children) {
 		super("sequence", tgt, children);
 		// don't set an evaluator for sequences... setEvaluator(allChildEvaluator);

@@ -19,8 +19,8 @@ public class TestRepeat {
 						Named.n(Terminal.LETTER))),
 				lower,
 				upper);
-		grammar.setWhatToMatch(rule.getTarget());
-		return grammar.createBNF();
+		grammar.compile(rule.getTarget());
+		return grammar.getBNF();
 	}
 
 	@Test

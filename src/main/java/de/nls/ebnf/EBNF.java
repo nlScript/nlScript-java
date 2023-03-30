@@ -45,17 +45,6 @@ public class EBNF extends EBNFCore {
 		PATH            = makePath();
 	}
 
-	public EBNF(EBNF other) {
-		super(other);
-		SIGN = other.SIGN;
-		INTEGER         = other.INTEGER;
-		FLOAT           = other.FLOAT;
-		WHITESPACE_STAR = other.WHITESPACE_STAR;
-		WHITESPACE_PLUS = other.WHITESPACE_PLUS;
-		INTEGER_RANGE   = other.INTEGER_RANGE;
-		PATH            = other.PATH;
-	}
-
 	public static void clearFilesystemCache() {
 		pathAutocompleter.clearFilesystemCache();
 	}

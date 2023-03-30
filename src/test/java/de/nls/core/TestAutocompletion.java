@@ -127,13 +127,13 @@ public class TestAutocompletion {
 				// Named.n("sentence", sentence));
 				Named.n("sentence", new NonTerminal("sentence")));
 
-		ebnf.setWhatToMatch(program.getTarget());
+		ebnf.compile(program.getTarget());
 
 		String text = "Define channel DA.D";
 
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 
-		BNF bnf = ebnf.createBNF();
+		BNF bnf = ebnf.getBNF();
 		System.out.println(bnf);
 		RDParser parser = new RDParser(bnf, new Lexer(text), EBNFParsedNodeFactory.INSTANCE);
 		ParsedNode pn = (ParsedNode) parser.parse(autocompletions);
@@ -229,7 +229,7 @@ public class TestAutocompletion {
 				Named.n(Terminal.literal("five"))
 		);
 
-		grammar.setWhatToMatch(e.getTarget());
-		return grammar.createBNF();
+		grammar.compile(e.getTarget());
+		return grammar.getBNF();
 	}
 }

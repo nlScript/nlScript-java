@@ -23,11 +23,11 @@ public class TestJoin {
 				Terminal.literal(","),
 				false, // onlyKeepEntries
 				"ha", "ho", "hu");
-		grammar.setWhatToMatch(rule.getTarget());
+		grammar.compile(rule.getTarget());
 
 		String input = "(1,3,4)";
 		Lexer l = new Lexer(input);
-		RDParser test = new RDParser(grammar.createBNF(), l, EBNFParsedNodeFactory.INSTANCE);
+		RDParser test = new RDParser(grammar.getBNF(), l, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode root = test.parse();
 		System.out.println(GraphViz.toVizDotLink(root));
 		root = test.buildAst(root);
@@ -165,8 +165,8 @@ public class TestJoin {
 				withOpenAndClose ? Terminal.literal(")") : null,
 				withDelimiter    ? Terminal.literal(",") : null,
 				range);
-		grammar.setWhatToMatch(rule.getTarget());
-		return grammar.createBNF();
+		grammar.compile(rule.getTarget());
+		return grammar.getBNF();
 	}
 
 	private static void testSuccess(BNF grammar, String input, String... result) {

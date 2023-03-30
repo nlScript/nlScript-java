@@ -12,9 +12,28 @@ public class BNF {
 
 	private final ArrayList<Production> productions = new ArrayList<>();
 
+	public BNF() {}
+
+	public BNF(BNF other) {
+		this();
+		symbols.putAll(other.symbols);
+		productions.addAll(other.productions);
+	}
+
+	public void reset() {
+		symbols.clear();
+		productions.clear();
+	}
+
+	public void removeStartProduction() {
+		productions.removeIf(p -> p.getLeft().equals(ARTIFICIAL_START_SYMBOL));
+	}
+
 	public Production addProduction(Production p) {
-		if(productions.contains(p))
+		if(productions.contains(p)) {
+			System.out.println("Production already exists: " + p);
 			return productions.get(productions.indexOf(p));
+		}
 		productions.add(p);
 		symbols.put(p.getLeft().getSymbol(), p.getLeft());
 		for(Symbol s : p.getRight()) {

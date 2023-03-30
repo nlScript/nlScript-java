@@ -21,8 +21,8 @@ public class TestOr {
 				Named.n("seq", grammar.sequence("seq2",
 					Named.n(Terminal.literal("n")),
 					Named.n(Terminal.DIGIT))));
-		grammar.setWhatToMatch(rule.getTarget());
-		return grammar.createBNF();
+		grammar.compile(rule.getTarget());
+		return grammar.getBNF();
 	}
 
 	@Test

@@ -34,6 +34,7 @@ public class Parser {
 
 	private final EBNF targetGrammar = new EBNF();
 
+	private boolean compiled = false;
 
 	public Parser() {
 		QUANTIFIER      = quantifier();
@@ -88,9 +89,9 @@ public class Parser {
 	}
 
 	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator, Autocompleter autocompleter) {
-		grammar.setWhatToMatch(EXPRESSION.getTarget());
+		grammar.compile(EXPRESSION.getTarget());
 		RDParser parser = new RDParser(
-				grammar.createBNF(),
+				grammar.getBNF(),
 				new Lexer(pattern),
 				EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode pn = parser.parse();
@@ -109,10 +110,19 @@ public class Parser {
 		return n(type, newRule);
 	}
 
+	public void compile() {
+		compile(targetGrammar.getSymbol("program"));
+	}
+
+	public void compile(Symbol symbol) {
+		targetGrammar.compile(symbol);
+		compiled = true;
+	}
+
 	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions) {
-		targetGrammar.setWhatToMatch(targetGrammar.getSymbol("program"));
-		BNF bnf = targetGrammar.createBNF();
-		EBNFParser rdParser = new EBNFParser(bnf, new Lexer(text));
+		if(!compiled)
+			compile();
+		EBNFParser rdParser = new EBNFParser(targetGrammar.getBNF(), new Lexer(text));
 		rdParser.addParseStartListener(this::fireParsingStarted);
 		ParsedNode pn = (ParsedNode) rdParser.parse(autocompletions);
 		System.out.println(GraphViz.toVizDotLink(pn));
