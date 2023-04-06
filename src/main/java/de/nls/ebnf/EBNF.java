@@ -121,7 +121,7 @@ public class EBNF extends EBNFCore {
 				n("path", innerPath),
 				n(literal("'")));
 		path.setEvaluator(pn -> pn.evaluate("path"));
-		path.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this));
+		path.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this, new HashMap<>()));
 
 		return path;
 	}

@@ -10,6 +10,7 @@ import de.nls.ebnf.Rule;
 import de.nls.util.Range;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static de.nls.ebnf.Named.n;
 
@@ -33,6 +34,8 @@ public class Parser {
 	private final Rule LINEBREAK_STAR;
 
 	private final EBNF targetGrammar = new EBNF();
+
+	private HashMap<String, String> symbol2Autocompletion = new HashMap<>();
 
 	private boolean compiled = false;
 
@@ -68,7 +71,7 @@ public class Parser {
 
 	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator, boolean completeEntireSequence) {
 		Autocompleter autocompleter = completeEntireSequence
-				? new Autocompleter.EntireSequenceCompleter(targetGrammar)
+				? new Autocompleter.EntireSequenceCompleter(targetGrammar, symbol2Autocompletion)
 				: Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER;
 		return defineSentence(pattern, evaluator, autocompleter);
 	}
@@ -83,7 +86,7 @@ public class Parser {
 
 	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator, boolean completeEntireSequence) {
 		Autocompleter autocompleter = completeEntireSequence
-				? new Autocompleter.EntireSequenceCompleter(targetGrammar)
+				? new Autocompleter.EntireSequenceCompleter(targetGrammar, symbol2Autocompletion)
 				: Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER;
 		return defineType(type, pattern, evaluator, autocompleter);
 	}
@@ -122,6 +125,7 @@ public class Parser {
 	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions) {
 		if(!compiled)
 			compile();
+		symbol2Autocompletion.clear();
 		EBNFParser rdParser = new EBNFParser(targetGrammar.getBNF(), new Lexer(text));
 		rdParser.addParseStartListener(this::fireParsingStarted);
 		ParsedNode pn = (ParsedNode) rdParser.parse(autocompletions);

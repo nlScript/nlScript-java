@@ -14,6 +14,7 @@ import de.nls.ebnf.Rule;
 import de.nls.ebnf.Sequence;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public interface Autocompleter {
 
@@ -52,8 +53,11 @@ public interface Autocompleter {
 
 		private final EBNFCore ebnf;
 
-		public EntireSequenceCompleter(EBNFCore ebnf) {
+		private final HashMap<String, String> symbol2Autocompletion;
+
+		public EntireSequenceCompleter(EBNFCore ebnf, HashMap<String, String> symbol2Autocompletion) {
 			this.ebnf = ebnf;
+			this.symbol2Autocompletion = symbol2Autocompletion;
 		}
 
 		@Override
@@ -68,6 +72,11 @@ public interface Autocompleter {
 
 
 			for(int i = 0; i < children.length; i++) {
+				String autocompletionStringForChild = symbol2Autocompletion.get(children[i].getSymbol());
+				if(autocompletionStringForChild != null) {
+					autocompletionString.append(autocompletionStringForChild);
+					continue;
+				}
 				BNF bnf = new BNF(ebnf.getBNF());
 
 				Sequence newSequence = new Sequence(null, children[i]);
@@ -83,9 +92,12 @@ public interface Autocompleter {
 
 				int n = autocompletions.size();
 				if (n > 1)
-					autocompletionString.append("${").append(sequence.getNameForChild(i)).append('}');
+					autocompletionStringForChild = "${" + sequence.getNameForChild(i) + "}";
 				else if (n == 1)
-					autocompletionString.append(autocompletions.get(0).getCompletion());
+					autocompletionStringForChild = autocompletions.get(0).getCompletion();
+
+				symbol2Autocompletion.put(children[i].getSymbol(), autocompletionStringForChild);
+				autocompletionString.append(autocompletionStringForChild);
 			}
 
 //			for (int i = 0; i < children.length; i++) {
