@@ -1,6 +1,7 @@
 package de.nls.ebnf;
 
 import de.nls.Autocompleter;
+import de.nls.Evaluator;
 import de.nls.ParsedNode;
 import de.nls.core.DefaultParsedNode;
 import de.nls.util.Range;
@@ -9,6 +10,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.Stream;
@@ -27,6 +30,7 @@ public class EBNF extends EBNFCore {
 	public static final String INTEGER_RANGE_NAME   = "integer-range";
 	public static final String PATH_NAME            = "path";
 	public static final String TIME_NAME            = "time";
+	public static final String COLOR_NAME           = "color";
 
 	public final Rule SIGN;
 	public final Rule INTEGER;
@@ -36,6 +40,7 @@ public class EBNF extends EBNFCore {
 	public final Rule INTEGER_RANGE;
 	public final Rule PATH;
 	public final Rule TIME;
+	public final Rule COLOR;
 
 	public EBNF() {
 		SIGN            = makeSign();
@@ -46,6 +51,7 @@ public class EBNF extends EBNFCore {
 		INTEGER_RANGE   = makeIntegerRange();
 		PATH            = makePath();
 		TIME            = makeTime();
+		COLOR           = makeColor();
 	}
 
 	public static void clearFilesystemCache() {
@@ -111,6 +117,48 @@ public class EBNF extends EBNFCore {
 				(Integer) pn.evaluate(1)));
 		return ret;
 		// TODO set autocompleter
+	}
+
+	private Rule makeColor() {
+		Rule black       = sequence(null, n(literal("black"       ))).setEvaluator(pn -> rgb2int(  0,   0,   0));
+		Rule white       = sequence(null, n(literal("white"       ))).setEvaluator(pn -> rgb2int(255, 255, 255));
+		Rule red         = sequence(null, n(literal("red"         ))).setEvaluator(pn -> rgb2int(255,   0,   0));
+		Rule orange      = sequence(null, n(literal("orange"      ))).setEvaluator(pn -> rgb2int(255, 128,   0));
+		Rule yellow      = sequence(null, n(literal("yellow"      ))).setEvaluator(pn -> rgb2int(255, 255,   0));
+		Rule lawngreen   = sequence(null, n(literal("lawn green"  ))).setEvaluator(pn -> rgb2int(128, 255,   0));
+		Rule green       = sequence(null, n(literal("green"       ))).setEvaluator(pn -> rgb2int(  0, 255,   0));
+		Rule springgreen = sequence(null, n(literal("spring green"))).setEvaluator(pn -> rgb2int(  0, 255, 180));
+		Rule cyan        = sequence(null, n(literal("cyan"        ))).setEvaluator(pn -> rgb2int(  0, 255, 255));
+		Rule azure       = sequence(null, n(literal("azure"       ))).setEvaluator(pn -> rgb2int(  0, 128, 255));
+		Rule blue        = sequence(null, n(literal("blue"        ))).setEvaluator(pn -> rgb2int(  0,   0, 255));
+		Rule violet      = sequence(null, n(literal("violet"      ))).setEvaluator(pn -> rgb2int(128,   0, 255));
+		Rule magenta     = sequence(null, n(literal("magenta"     ))).setEvaluator(pn -> rgb2int(255,   0, 255));
+		Rule pink        = sequence(null, n(literal("pink"        ))).setEvaluator(pn -> rgb2int(255,   0, 128));
+		Rule gray        = sequence(null, n(literal("gray"        ))).setEvaluator(pn -> rgb2int(128, 128, 128));
+
+		Rule custom = tuple(null, n("", INTEGER), "red", "green", "blue");
+
+		return or(COLOR_NAME,
+				n(null, custom),
+				n(null, black),
+				n(null, white),
+				n(null, red),
+				n(null, orange),
+				n(null, yellow),
+				n(null, lawngreen),
+				n(null, green),
+				n(null, springgreen),
+				n(null, cyan),
+				n(null, azure),
+				n(null, blue),
+				n(null, violet),
+				n(null, magenta),
+				n(null, pink),
+				n(null, gray));
+	}
+
+	private static int rgb2int(int r, int g, int b) {
+		return (0xff << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
 	}
 
 	private Rule makeTime() {
