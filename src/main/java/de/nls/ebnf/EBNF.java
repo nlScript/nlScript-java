@@ -26,6 +26,7 @@ public class EBNF extends EBNFCore {
 	public static final String WHITESPACE_PLUS_NAME = "whitespace-plus";
 	public static final String INTEGER_RANGE_NAME   = "integer-range";
 	public static final String PATH_NAME            = "path";
+	public static final String TIME_NAME            = "time";
 
 	public final Rule SIGN;
 	public final Rule INTEGER;
@@ -34,6 +35,7 @@ public class EBNF extends EBNFCore {
 	public final Rule WHITESPACE_PLUS;
 	public final Rule INTEGER_RANGE;
 	public final Rule PATH;
+	public final Rule TIME;
 
 	public EBNF() {
 		SIGN            = makeSign();
@@ -43,6 +45,7 @@ public class EBNF extends EBNFCore {
 		WHITESPACE_PLUS = makeWhitespacePlus();
 		INTEGER_RANGE   = makeIntegerRange();
 		PATH            = makePath();
+		TIME            = makeTime();
 	}
 
 	public static void clearFilesystemCache() {
@@ -108,6 +111,18 @@ public class EBNF extends EBNFCore {
 				(Integer) pn.evaluate(1)));
 		return ret;
 		// TODO set autocompleter
+	}
+
+	private Rule makeTime() {
+		Rule ret = sequence(TIME_NAME,
+				n(null, optional(null, n(DIGIT))),
+				n(null, DIGIT),
+				n(literal(":")),
+				n(null, DIGIT),
+				n(null, DIGIT));
+		ret.setEvaluator(pn -> LocalTime.parse(pn.getParsedString(), DateTimeFormatter.ofPattern("H:mm")));
+		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${HH}:${MM}"));
+		return ret;
 	}
 
 	private Rule makePath() {

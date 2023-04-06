@@ -26,12 +26,14 @@ public class RDParser {
 	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
 		SymbolSequence parsedSequence = parse(seq, autocompletions);
-		if(autocompletions != null && autocompletions.size() == 1 && autocompletions.get(0) == null)
-			autocompletions.clear();
+//		if(autocompletions != null && autocompletions.size() == 1 && autocompletions.get(0) == null)
+//			autocompletions.clear();
+		if(autocompletions != null && autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
+			autocompletions.remove(autocompletions.size() - 1);
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
 		DefaultParsedNode ret = createParsedTree(parsedSequence, last);
-		if(autocompletions != null)
-			System.out.println("Autocompletions: " + autocompletions);
+//		if(autocompletions != null)
+//			System.out.println("Autocompletions: " + autocompletions);
 		return ret;
 	}
 
@@ -52,7 +54,8 @@ public class RDParser {
 	 */
 	private void addAutocompletions(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
 		assert autocompletions != null;
-		if(autocompletions.size() == 1 && autocompletions.get(0) == null)
+		// if(autocompletions.size() == 1 && autocompletions.get(0) == null)
+		if(autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
 			return;
 
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
@@ -84,7 +87,7 @@ public class RDParser {
 		if(completion != null && !completion.isEmpty()) {
 			for(String c : completion.split(";;;")) {
 				if(c.equals(Autocompleter.VETO)) {
-					autocompletions.clear();
+					// autocompletions.clear();
 					autocompletions.add(null); // to prevent further autocompletion
 					return;
 				}
