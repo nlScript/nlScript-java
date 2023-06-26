@@ -171,9 +171,9 @@ public class TestAutocompletion {
 	public void test08() {
 		Parser parser = new Parser();
 
-		parser.defineType("color", "blue", null);
-		parser.defineType("color", "green", null);
-		parser.defineSentence("My favorite color is {color:color}.", null);
+		parser.defineType("my-color", "blue", null);
+		parser.defineType("my-color", "green", null);
+		parser.defineSentence("My favorite color is {color:my-color}.", null);
 
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		ParsedNode root = parser.parse("My favorite color is ", autocompletions);
