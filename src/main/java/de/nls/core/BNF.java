@@ -30,7 +30,7 @@ public class BNF {
 	}
 
 	public Production addProduction(Production p) {
-		if(productions.contains(p)) {
+		if(productions.contains(p)) { // TODO inefficient: call indexOf() first and then check if it is -1
 			System.out.println("Production already exists: " + p);
 			return productions.get(productions.indexOf(p));
 		}

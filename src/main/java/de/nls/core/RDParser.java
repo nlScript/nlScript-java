@@ -25,12 +25,14 @@ public class RDParser {
 
 	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
+//		System.out.println(grammar);
 		SymbolSequence parsedSequence = parse(seq, autocompletions);
 //		if(autocompletions != null && autocompletions.size() == 1 && autocompletions.get(0) == null)
 //			autocompletions.clear();
 		if(autocompletions != null && autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
 			autocompletions.remove(autocompletions.size() - 1);
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
+//		System.out.println("createParsedTree with sequence: " + parsedSequence);
 		DefaultParsedNode ret = createParsedTree(parsedSequence, last);
 //		if(autocompletions != null)
 //			System.out.println("Autocompletions: " + autocompletions);
@@ -111,10 +113,16 @@ public class RDParser {
 	 *     - in the symbol sequence, replace U with XYZ
 	 */
 	private SymbolSequence parse(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
+//		System.out.println("parseRecursive:");
+//		System.out.println("  symbol sequence = " + symbolSequence);
+//		System.out.println("  lexer           = " + lexer);
 		Symbol next = symbolSequence.getCurrentSymbol();
+//		System.out.println("next = " + next);
 
 		while(next.isTerminal()) {
+//			System.out.println("next is a terminal node, lexer pos = " + lexer.getPosition());
 			Matcher matcher = ((Terminal) next).matches(lexer);
+//			System.out.println("matcher = " + matcher);
 			symbolSequence.addMatcher(matcher);
 			if(matcher.state == ParsingState.END_OF_INPUT && autocompletions != null)
 				addAutocompletions(symbolSequence, autocompletions);
@@ -142,6 +150,7 @@ public class RDParser {
 				best = parsedSequence;
 				lexerPosOfBest = lexer.getPosition();
 			}
+//			System.out.println("reset lexer pos to " + lexerPos);
 			lexer.setPosition(lexerPos);
 		}
 		if(best != null) {

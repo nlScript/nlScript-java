@@ -12,15 +12,15 @@ public abstract class Symbol {
 		return symbol;
 	}
 
-	public boolean isTerminal() {
+	public boolean isTerminal() { // TODO make abstract to avoid circular dependency
 		return (this instanceof Terminal);
 	}
 
-	public boolean isNonTerminal() {
+	public boolean isNonTerminal() { // TODO make abstract to avoid circular dependency
 		return (this instanceof NonTerminal);
 	}
 
-	public boolean isEpsilon() {
+	public boolean isEpsilon() { // TODO make abstract to avoid circular dependency
 		return (this instanceof Terminal.Epsilon);
 	}
 

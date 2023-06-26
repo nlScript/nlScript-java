@@ -84,6 +84,21 @@ public class EBNF extends EBNFCore {
 						))
 				))
 		);
+		/*
+		 * Here is an idea how this could be written nicer:
+		 *
+		 * ret = sequence(
+		 *           optional(SIGN).withName("opt"),
+		 *           plus(DIGIT).withName("plus")
+		 *           optional(
+		 *               sequence(
+		 *                   literal(".").withName(),
+		 *                   star(DIGIT).withName()
+		 *               ).withName("seq")
+		 *           ).withName()
+		 *       );
+		 *
+		 */
 		ret.setEvaluator(pn -> Double.parseDouble(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		return ret;
@@ -269,8 +284,8 @@ public class EBNF extends EBNFCore {
 					.filter(p -> getFileName(p).toLowerCase().startsWith(child.toString().toLowerCase()))
 					.map(PathWrapper::new)
 					.sorted((o1, o2) -> {
-						if(o1.isHidden && !o2.isHidden) return +1;
-						if(o2.isHidden && !o1.isHidden) return -1;
+						if(o1.isHidden && !o2.isHidden) return +1; // o2 > o1
+						if(o2.isHidden && !o1.isHidden) return -1; // o1 < o2
 						if(o1.isDirectory && !o2.isDirectory) return -1;
 						if(o2.isDirectory && !o1.isDirectory) return +1;
 						return o1.name.compareTo(o2.name);
