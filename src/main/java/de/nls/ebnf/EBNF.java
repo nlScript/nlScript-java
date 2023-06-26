@@ -311,4 +311,31 @@ public class EBNF extends EBNFCore {
 			}
 		}
 	}
+
+	private static void testFileName() {
+		Path p = Paths.get("c:\\");
+		System.out.println(PathAutocompleter.getFileName(p));
+
+		p = Paths.get("c:");
+		System.out.println(PathAutocompleter.getFileName(p));
+
+		p = Paths.get("c");
+		System.out.println(PathAutocompleter.getFileName(p));
+
+		p = Paths.get("c:\\users");
+		System.out.println(PathAutocompleter.getFileName(p));
+
+		p = Paths.get("c:\\users\\");
+		System.out.println(PathAutocompleter.getFileName(p));
+
+		p = Paths.get("c:/users");
+		System.out.println(PathAutocompleter.getFileName(p));
+
+		p = Paths.get("c:/users/");
+		System.out.println(PathAutocompleter.getFileName(p));
+	}
+
+	public static void main(String[] args) {
+		testFileName();
+	}
 }
