@@ -49,10 +49,6 @@ public class ParsedNode extends DefaultParsedNode {
 	public String getAutocompletion() {
 		Rule rule = getRule();
 		if(rule != null && rule.getAutocompleter() != null && !parentHasSameRule()) {
-			if(rule.getTarget().getSymbol().equals(EBNF.PATH_NAME)) {
-				System.out.println("getAutocompletion() of Path");
-//				new RuntimeException().printStackTrace();
-			}
 			return rule.getAutocompleter().getAutocompletion(this);
 		}
 		return super.getAutocompletion();
@@ -62,7 +58,8 @@ public class ParsedNode extends DefaultParsedNode {
 		for(int i = 0; i < numChildren(); i++)
 			((ParsedNode) getChild(i)).notifyListeners();
 
-		if (getMatcher().state != ParsingState.SUCCESSFUL && getMatcher().state != ParsingState.END_OF_INPUT)
+		ParsingState state = getMatcher().state;
+		if (state != ParsingState.SUCCESSFUL && state != ParsingState.END_OF_INPUT)
 			return;
 		Rule rule = getRule();
 		if (rule != null && !parentHasSameRule()) {
