@@ -71,7 +71,8 @@ public interface Autocompleter {
 
 
 			for(int i = 0; i < children.length; i++) {
-				String autocompletionStringForChild = symbol2Autocompletion.get(children[i].getSymbol());
+				String key = children[i].getSymbol() + ":" + sequence.getNameForChild(i);
+				String autocompletionStringForChild = symbol2Autocompletion.get(key);
 				if(autocompletionStringForChild != null) {
 					autocompletionString.append(autocompletionStringForChild);
 					continue;
@@ -95,24 +96,9 @@ public interface Autocompleter {
 				else if (n == 1)
 					autocompletionStringForChild = autocompletions.get(0).getCompletion();
 
-				symbol2Autocompletion.put(children[i].getSymbol(), autocompletionStringForChild);
+				symbol2Autocompletion.put(key, autocompletionStringForChild);
 				autocompletionString.append(autocompletionStringForChild);
 			}
-
-//			for (int i = 0; i < children.length; i++) {
-//				EBNFCore ebnfCopy = new EBNFCore(ebnf);
-//				Rule newSequence = ebnfCopy.sequence(null, Named.n(sequence.getNameForChild(i), children[i]));
-//				ebnfCopy.setWhatToMatch(newSequence.getTarget());
-//				RDParser parser = new RDParser(ebnfCopy.createBNF(), new Lexer(""), EBNFParsedNodeFactory.INSTANCE);
-//				ArrayList<Autocompletion> autocompletions = new ArrayList<>();
-//				parser.parse(autocompletions);
-//
-//				int n = autocompletions.size();
-//				if (n > 1)
-//					autocompletionString.append("${").append(sequence.getNameForChild(i)).append('}');
-//				else if (n == 1)
-//					autocompletionString.append(autocompletions.get(0).getCompletion());
-//			}
 			return autocompletionString.toString();
 		}
 	}
