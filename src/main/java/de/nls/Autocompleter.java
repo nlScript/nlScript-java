@@ -3,7 +3,6 @@ package de.nls;
 import de.nls.core.Autocompletion;
 import de.nls.core.BNF;
 import de.nls.core.Lexer;
-import de.nls.core.NonTerminal;
 import de.nls.core.Production;
 import de.nls.core.RDParser;
 import de.nls.core.Symbol;
@@ -11,6 +10,7 @@ import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Rule;
 import de.nls.ebnf.Sequence;
+import de.nls.util.CompletePath;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +47,8 @@ public interface Autocompleter {
 			return "${" + name + "}";
 		return null;
 	};
+
+	Autocompleter PATH_AUTOCOMPLETER = new PathAutocompleter();
 
 	class EntireSequenceCompleter implements Autocompleter {
 
@@ -100,6 +102,14 @@ public interface Autocompleter {
 				autocompletionString.append(autocompletionStringForChild);
 			}
 			return autocompletionString.toString();
+		}
+	}
+
+	class PathAutocompleter implements Autocompleter {
+		public String getAutocompletion(ParsedNode p) {
+			String ret = CompletePath.getCompletion(p.getParsedString());
+			System.out.println("getAutocompletion: " + ret);
+			return ret;
 		}
 	}
 }
