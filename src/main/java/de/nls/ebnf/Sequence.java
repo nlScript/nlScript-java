@@ -1,7 +1,6 @@
 package de.nls.ebnf;
 
 import de.nls.core.BNF;
-import de.nls.core.DefaultParsedNode;
 import de.nls.core.NonTerminal;
 import de.nls.ParsedNode;
 import de.nls.core.Production;
@@ -22,6 +21,6 @@ public class Sequence extends Rule {
 				ch.setName(getNameForChild(c));
 			}
 		});
-		p.setAstBuilder((DefaultParsedNode::addChildren));
+		p.setAstBuilder(Production.AstBuilder.DEFAULT);
 	}
 }

@@ -24,7 +24,7 @@ public class Or extends Rule {
 				c0.setNthEntryInParent(fio);
 				c0.setName(getNameForChild(fio));
 			});
-			p.setAstBuilder(DefaultParsedNode::addChildren);
+			p.setAstBuilder(Production.AstBuilder.DEFAULT);
 		}
 	}
 }

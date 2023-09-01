@@ -15,6 +15,8 @@ public class Production {
 
 	public interface AstBuilder {
 		void buildAST(DefaultParsedNode parent, DefaultParsedNode... children);
+
+		AstBuilder DEFAULT = DefaultParsedNode::addChildren;
 	}
 
 	public interface ExtensionListener {

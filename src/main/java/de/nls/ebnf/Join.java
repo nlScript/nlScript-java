@@ -67,7 +67,7 @@ public class Join extends Rule {
 			if(onlyKeepEntries)
 				p.setAstBuilder((parent, children) -> parent.addChildren(children[1]));
 			else
-				p.setAstBuilder(DefaultParsedNode::addChildren);
+				p.setAstBuilder(Production.AstBuilder.DEFAULT);
 		}
 		else {
 			Production p = addProduction(g, this, next, first);
