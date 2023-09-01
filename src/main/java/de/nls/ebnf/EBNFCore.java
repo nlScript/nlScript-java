@@ -22,16 +22,16 @@ public class EBNFCore {
 
 	private boolean compiled = false;
 
-	public Symbol getSymbol(String type) {
-		return symbols.get(type);
-	}
-
 	public EBNFCore() {}
 
 	public EBNFCore(EBNFCore other) {
 		symbols.putAll(other.symbols);
 		rules.addAll(other.rules);
 		compiled = other.compiled;
+	}
+
+	public Symbol getSymbol(String type) {
+		return symbols.get(type);
 	}
 
 	public void compile(Symbol topLevelSymbol) {

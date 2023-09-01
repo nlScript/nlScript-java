@@ -46,10 +46,13 @@ public class DefaultParsedNode {
 	}
 
 	public String getAutocompletion() {
-		if(symbol != null && symbol instanceof Terminal.Literal)
+		if(symbol == null)
+			return null;
+
+		if(symbol instanceof Terminal.Literal)
 			return symbol.getSymbol();
 
-		if(symbol != null && symbol.isTerminal()) {
+		if(symbol.isTerminal()) {
 			return getParsedString().length() > 0
 					? Autocompleter.VETO
 					: "${" + getName() + "}";

@@ -26,13 +26,19 @@ public class BNF {
 	}
 
 	public void removeStartProduction() {
-		productions.removeIf(p -> p.getLeft().equals(ARTIFICIAL_START_SYMBOL));
+		for(int i = productions.size() - 1; i >= 0; i--) {
+			if (productions.get(i).getLeft().equals(BNF.ARTIFICIAL_START_SYMBOL)) {
+				this.productions.remove(i);
+				break;
+			}
+		}
 	}
 
 	public Production addProduction(Production p) {
-		if(productions.contains(p)) { // TODO inefficient: call indexOf() first and then check if it is -1
-			System.out.println("Production already exists: " + p);
-			return productions.get(productions.indexOf(p));
+		int existing = productions.indexOf(p);
+		if(existing >= 0) {
+			System.out.println("Production already exists: " + productions.get(existing));
+			return productions.get(existing);
 		}
 		productions.add(p);
 		symbols.put(p.getLeft().getSymbol(), p.getLeft());

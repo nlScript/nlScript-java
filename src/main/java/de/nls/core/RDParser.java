@@ -25,17 +25,11 @@ public class RDParser {
 
 	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
-//		System.out.println(grammar);
-		SymbolSequence parsedSequence = parse(seq, autocompletions);
-//		if(autocompletions != null && autocompletions.size() == 1 && autocompletions.get(0) == null)
-//			autocompletions.clear();
+		SymbolSequence parsedSequence = parseRecursive(seq, autocompletions);
 		if(autocompletions != null && autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
 			autocompletions.remove(autocompletions.size() - 1);
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
-//		System.out.println("createParsedTree with sequence: " + parsedSequence);
 		DefaultParsedNode ret = createParsedTree(parsedSequence, last);
-//		if(autocompletions != null)
-//			System.out.println("Autocompletions: " + autocompletions);
 		return ret;
 	}
 
@@ -56,7 +50,6 @@ public class RDParser {
 	 */
 	private void addAutocompletions(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
 		assert autocompletions != null;
-		// if(autocompletions.size() == 1 && autocompletions.get(0) == null)
 		if(autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
 			return;
 
@@ -112,7 +105,7 @@ public class RDParser {
 	 *   - for all productions U -> XYZ
 	 *     - in the symbol sequence, replace U with XYZ
 	 */
-	private SymbolSequence parse(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
+	private SymbolSequence parseRecursive(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
 //		System.out.println("parseRecursive:");
 //		System.out.println("  symbol sequence = " + symbolSequence);
 //		System.out.println("  lexer           = " + lexer);
@@ -129,6 +122,7 @@ public class RDParser {
 
 			if(matcher.state != ParsingState.SUCCESSFUL)
 				return symbolSequence;
+
 			symbolSequence.incrementPosition();
 			lexer.fwd(matcher.parsed.length());
 			if(lexer.isDone())
@@ -142,13 +136,15 @@ public class RDParser {
 		for(Production alternate : alternates) {
 			int lexerPos = lexer.getPosition();
 			SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate);
-			SymbolSequence parsedSequence = parse(nextSequence, autocompletions);
+			SymbolSequence parsedSequence = parseRecursive(nextSequence, autocompletions);
 			Matcher m = parsedSequence.getLastMatcher();
-			if(m.state == ParsingState.SUCCESSFUL)
-				return parsedSequence;
-			if(best == null || m.isBetterThan(best.getLastMatcher())) {
-				best = parsedSequence;
-				lexerPosOfBest = lexer.getPosition();
+			if(m != null) {
+				if (m.state == ParsingState.SUCCESSFUL)
+					return parsedSequence;
+				if (best == null || m.isBetterThan(best.getLastMatcher())) {
+					best = parsedSequence;
+					lexerPosOfBest = lexer.getPosition();
+				}
 			}
 //			System.out.println("reset lexer pos to " + lexerPos);
 			lexer.setPosition(lexerPos);

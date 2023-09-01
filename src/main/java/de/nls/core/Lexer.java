@@ -14,20 +14,21 @@ public class Lexer {
 		return pos;
 	}
 
+	public void setPosition(int pos) {
+		this.pos = pos;
+	}
+
 	public void fwd(int len) {
 		pos += len;
 	}
 
 	public char peek() {
-		return pos < input.length() ? peek(0) : '$';
-	}
-
-	public void setPosition(int pos) {
-		this.pos = pos;
+		return peek(0);
 	}
 
 	public char peek(int n) {
-		return input.charAt(pos + n);
+		int p = pos + n;
+		return p < input.length() ? input.charAt(p) : '$';
 	}
 
 	public String substring(int from, int to) {
