@@ -2,16 +2,11 @@ package de.nls.core;
 
 import de.nls.ParsedNode;
 import de.nls.Parser;
-import de.nls.ebnf.Rule;
-import de.nls.ui.ACEditor;
 import org.junit.jupiter.api.Test;
 
 import java.awt.Color;
-import java.time.LocalTime;
 import java.util.ArrayList;
 
-import static de.nls.core.Terminal.literal;
-import static de.nls.ebnf.Named.n;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -27,7 +22,7 @@ public class TestColor {
 		});
 
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
-		ParsedNode root = hlp.parse("My favorite color is ", autocompletions);
+		hlp.parse("My favorite color is ", autocompletions);
 
 		String[] actual = autocompletions.stream().map(Autocompletion::getCompletion).toArray(String[]::new);
 		String[] expected = new String[] {
@@ -50,16 +45,8 @@ public class TestColor {
 
 		assertArrayEquals(expected, actual);
 
-		root = hlp.parse("My favorite color is lawn green.", null);
+		ParsedNode root = hlp.parse("My favorite color is lawn green.", null);
 		assertEquals(ParsingState.SUCCESSFUL, root.getMatcher().state);
 		root.evaluate();
-	}
-
-	public static void main(String[] args) {
-		Parser hlp = new Parser();
-		hlp.defineSentence("My favorite color is {c:color}.", pn -> {
-			return null;
-		});
-		new ACEditor(hlp).setVisible(true);
 	}
 }
