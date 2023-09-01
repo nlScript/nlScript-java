@@ -10,6 +10,21 @@ public class NonTerminal extends Symbol {
 		super(symbol != null ? symbol : makeRandomSymbol());
 	}
 
+	@Override
+	public boolean isTerminal() {
+		return false;
+	}
+
+	@Override
+	public boolean isNonTerminal() {
+		return true;
+	}
+
+	@Override
+	public boolean isEpsilon() {
+		return false;
+	}
+
 	public Named<NonTerminal> withName(String name) {
 		return new Named<>(this, name);
 	}

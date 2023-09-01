@@ -12,19 +12,15 @@ public abstract class Symbol implements RepresentsSymbol {
 		return symbol;
 	}
 
-	public boolean isTerminal() { // TODO make abstract to avoid circular dependency
-		return (this instanceof Terminal);
 	public Symbol getRepresentedSymbol() {
 		return this;
 	}
 
-	public boolean isNonTerminal() { // TODO make abstract to avoid circular dependency
-		return (this instanceof NonTerminal);
-	}
+	public abstract boolean isTerminal();
 
-	public boolean isEpsilon() { // TODO make abstract to avoid circular dependency
-		return (this instanceof Terminal.Epsilon);
-	}
+	public abstract boolean isNonTerminal();
+
+	public abstract boolean isEpsilon();
 
 	@Override
 	public String toString() {

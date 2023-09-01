@@ -24,12 +24,22 @@ public abstract class Terminal extends Symbol {
 		super(symbol);
 	}
 
-	public abstract Matcher matches(Lexer lexer);
+	@Override
+	public boolean isTerminal() {
+		return true;
+	}
 
 	@Override
-	public String toString() {
-		return getSymbol();
+	public boolean isNonTerminal() {
+		return false;
 	}
+
+	@Override
+	public boolean isEpsilon() {
+		return false;
+	}
+
+	public abstract Matcher matches(Lexer lexer);
 
 	public Named<Terminal> withName(String name) {
 		return new Named<>(this, name);
@@ -42,6 +52,11 @@ public abstract class Terminal extends Symbol {
 	public static class Epsilon extends Terminal {
 		private Epsilon() {
 			super("epsilon");
+		}
+
+		@Override
+		public boolean isEpsilon() {
+			return true;
 		}
 
 		@Override
