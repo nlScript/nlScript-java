@@ -172,16 +172,17 @@ public class TestAutocompletion {
 
 		parser.defineType("my-color", "blue", null);
 		parser.defineType("my-color", "green", null);
+		parser.defineType("my-color", "({r:int}, {g:int}, {b:int})", null, true);
 		parser.defineSentence("My favorite color is {color:my-color}.", null);
 
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		ParsedNode root = parser.parse("My favorite color is ", autocompletions);
 		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
-		assertEquals(2, autocompletions.size());
+		assertEquals(3, autocompletions.size());
 		assertEquals("blue", autocompletions.get(0).getCompletion());
 		assertEquals("green", autocompletions.get(1).getCompletion());
+		assertEquals("(${r}, ${g}, ${b})", autocompletions.get(2).getCompletion());
 	}
-
 
 	private void test(String input, String... expectedCompletion) {
 		System.out.println("Testing " + input);
