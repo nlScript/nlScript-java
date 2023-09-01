@@ -1,5 +1,7 @@
 package de.nls;
 
+import de.nls.core.DefaultParsedNode;
+
 public interface Evaluator {
 	Object evaluate(ParsedNode pn);
 
@@ -11,4 +13,6 @@ public interface Evaluator {
 	});
 
 	Evaluator FIRST_CHILD_EVALUATOR = (pn -> pn.evaluate(0));
+
+	Evaluator DEFAULT_EVALUATOR = (DefaultParsedNode::getParsedString);
 }

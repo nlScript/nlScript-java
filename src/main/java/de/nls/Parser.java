@@ -5,14 +5,12 @@ import de.nls.ebnf.EBNF;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.EBNFParser;
-import de.nls.ebnf.Named;
+import de.nls.ebnf.NamedRule;
 import de.nls.ebnf.Rule;
 import de.nls.util.Range;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static de.nls.ebnf.Named.n;
 
 public class Parser {
 	private final EBNF grammar = new EBNF();
@@ -52,7 +50,7 @@ public class Parser {
 		NO_VARIABLE     = noVariable();
 		EXPRESSION      = expression();
 
-		LINEBREAK_STAR = targetGrammar.star("linebreak-star", n(LINEBREAK));
+		LINEBREAK_STAR = targetGrammar.star("linebreak-star", LINEBREAK.withName());
 		program();
 
 	}
@@ -65,33 +63,33 @@ public class Parser {
 		return targetGrammar;
 	}
 
-	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator) {
+	public NamedRule defineSentence(String pattern, Evaluator evaluator) {
 		return defineSentence(pattern, evaluator, null);
 	}
 
-	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator, boolean completeEntireSequence) {
+	public NamedRule defineSentence(String pattern, Evaluator evaluator, boolean completeEntireSequence) {
 		Autocompleter autocompleter = completeEntireSequence
 				? new Autocompleter.EntireSequenceCompleter(targetGrammar, symbol2Autocompletion)
 				: Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER;
 		return defineSentence(pattern, evaluator, autocompleter);
 	}
 
-	public Named.NamedRule defineSentence(String pattern, Evaluator evaluator, Autocompleter autocompleter) {
+	public NamedRule defineSentence(String pattern, Evaluator evaluator, Autocompleter autocompleter) {
 		return defineType("sentence", pattern, evaluator, autocompleter);
 	}
 
-	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator) {
+	public NamedRule defineType(String type, String pattern, Evaluator evaluator) {
 		return defineType(type, pattern, evaluator, null);
 	}
 
-	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator, boolean completeEntireSequence) {
+	public NamedRule defineType(String type, String pattern, Evaluator evaluator, boolean completeEntireSequence) {
 		Autocompleter autocompleter = completeEntireSequence
 				? new Autocompleter.EntireSequenceCompleter(targetGrammar, symbol2Autocompletion)
 				: Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER;
 		return defineType(type, pattern, evaluator, autocompleter);
 	}
 
-	public Named.NamedRule defineType(String type, String pattern, Evaluator evaluator, Autocompleter autocompleter) {
+	public NamedRule defineType(String type, String pattern, Evaluator evaluator, Autocompleter autocompleter) {
 		grammar.compile(EXPRESSION.getTarget());
 		RDParser parser = new RDParser(
 				grammar.getBNF(),
@@ -102,7 +100,7 @@ public class Parser {
 			throw new RuntimeException("Parsing failed");
 		pn = parser.buildAst(pn);
 		System.out.println(GraphViz.toVizDotLink(pn));
-		Named[] rhs = (Named[]) pn.evaluate();
+		Named<?>[] rhs = (Named<?>[]) pn.evaluate();
 
 		Rule newRule = targetGrammar.sequence(type, rhs);
 		if(evaluator != null)
@@ -110,7 +108,7 @@ public class Parser {
 		if(autocompleter != null)
 			newRule.setAutocompleter(autocompleter);
 
-		return n(type, newRule);
+		return newRule.withName(type);
 	}
 
 	public void compile() {
@@ -138,11 +136,11 @@ public class Parser {
 
 	private Rule quantifier() {
 		return grammar.or("quantifier",
-				n("optional", grammar.sequence(null, n(         Terminal.literal("?"))).setEvaluator(pn -> Range.OPTIONAL)),
-				n("plus",     grammar.sequence(null, n(         Terminal.literal("+"))).setEvaluator(pn -> Range.PLUS)),
-				n("star",     grammar.sequence(null, n(         Terminal.literal("*"))).setEvaluator(pn -> Range.STAR)),
-				n("range",    grammar.sequence(null, n("range", grammar.INTEGER_RANGE)).setEvaluator(pn -> pn.evaluate(0))),
-				n("fixed",    grammar.sequence(null, n("int",   grammar.INTEGER))      .setEvaluator(pn -> new Range((int)pn.evaluate(0))))
+				grammar.sequence(null, Terminal.literal("?").withName()).       setEvaluator(pn -> Range.OPTIONAL).withName("optional"),
+				grammar.sequence(null, Terminal.literal("+").withName()).       setEvaluator(pn -> Range.PLUS).withName("plus"),
+				grammar.sequence(null, Terminal.literal("*").withName()).       setEvaluator(pn -> Range.STAR).withName("star"),
+				grammar.sequence(null, grammar.INTEGER_RANGE.withName("range")).setEvaluator(pn -> pn.evaluate(0)).withName("range"),
+				grammar.sequence(null,       grammar.INTEGER.withName("int")).  setEvaluator(pn -> new Range((int)pn.evaluate(0))).withName("fixed")
 		);
 	}
 
@@ -158,15 +156,15 @@ public class Parser {
 		if(name == null)
 			name = "identifier";
 		return grammar.sequence(name,
-				n(Terminal.characterClass("[A-Za-z_]")),
-				n("opt", grammar.optional(null,
-						n("seq", grammar.sequence(null,
-								n("star", grammar.star(null,
-										n(Terminal.characterClass("[A-Za-z0-9_-]"))
-								)),
-								n(Terminal.characterClass("[A-Za-z0-9_]"))
-						))
-				))
+				Terminal.characterClass("[A-Za-z_]").withName(),
+				grammar.optional(null,
+						grammar.sequence(null,
+								grammar.star(null,
+										Terminal.characterClass("[A-Za-z0-9_-]").withName()
+								).withName("star"),
+								Terminal.characterClass("[A-Za-z0-9_]").withName()
+						).withName("seq")
+				).withName("opt")
 		);
 	}
 
@@ -179,7 +177,7 @@ public class Parser {
 	 */
 	private Rule variableName() {
 		return grammar.plus("var-name",
-				n(Terminal.characterClass("[^:{}]"))).setEvaluator(ParsedNode::getParsedString);
+				Terminal.characterClass("[^:{}]").withName()).setEvaluator(Evaluator.DEFAULT_EVALUATOR);
 	}
 
 	/**
@@ -191,41 +189,41 @@ public class Parser {
 
 	private Rule list() {
 		return grammar.sequence("list",
-				n(Terminal.literal("list")),
-				n("ws*", grammar.WHITESPACE_STAR),
-				n(Terminal.literal("<")),
-				n("ws*", grammar.WHITESPACE_STAR),
-				n("type", IDENTIFIER),
-				n("ws*", grammar.WHITESPACE_STAR),
-				n(Terminal.literal(">"))
+				Terminal.literal("list").withName(),
+				grammar.WHITESPACE_STAR.withName("ws*"),
+				Terminal.literal("<").withName(),
+				grammar.WHITESPACE_STAR.withName("ws*"),
+				IDENTIFIER.withName("type"),
+				grammar.WHITESPACE_STAR.withName("ws*"),
+				Terminal.literal(">").withName()
 		).setEvaluator(pn -> {
 			String identifier = (String) pn.evaluate("type");
 			Symbol entry = targetGrammar.getSymbol(identifier);
 
-			Named namedEntry = (entry instanceof Terminal)
-					? n(identifier, (Terminal) entry)
-					: n(identifier, (NonTerminal) entry);
+			Named<?> namedEntry = (entry instanceof Terminal)
+					? ((Terminal) entry).withName(identifier)
+					: ((NonTerminal) entry).withName(identifier);
 			return targetGrammar.list(null, namedEntry).getTarget();
 		});
 	}
 
 	private Rule tuple() {
 		return grammar.sequence("tuple",
-				n(Terminal.literal("tuple")),
-				n("ws*", grammar.WHITESPACE_STAR),
-				n(Terminal.literal("<")),
-				n("ws*", grammar.WHITESPACE_STAR),
-				n("type", IDENTIFIER),
-				n("plus-names", grammar.plus(null,
-						n("sequence-names", grammar.sequence(null,
-								n("ws*", grammar.WHITESPACE_STAR),
-								n(Terminal.literal(",")),
-								n("ws*", grammar.WHITESPACE_STAR),
-								n("entry-name", ENTRY_NAME),
-								n("ws*", grammar.WHITESPACE_STAR)
-						))
-				)),
-				n(Terminal.literal(">"))
+				Terminal.literal("tuple").withName(),
+				grammar.WHITESPACE_STAR.withName("ws*"),
+				Terminal.literal("<").withName(),
+				grammar.WHITESPACE_STAR.withName("ws*"),
+				IDENTIFIER.withName("type"),
+				grammar.plus(null,
+						grammar.sequence(null,
+								grammar.WHITESPACE_STAR.withName("ws*"),
+								Terminal.literal(",").withName(),
+								grammar.WHITESPACE_STAR.withName("ws*"),
+								ENTRY_NAME.withName("entry-name"),
+								grammar.WHITESPACE_STAR.withName("ws*")
+						).withName("sequence-names")
+				).withName("plus-names"),
+				Terminal.literal(">").withName()
 		).setEvaluator(pn -> {
 			String type = (String)pn.evaluate("type");
 			DefaultParsedNode plus = pn.getChild("plus-names");
@@ -235,9 +233,9 @@ public class Parser {
 				entryNames[i] = (String) plus.getChild(i).evaluate("entry-name");
 
 			Symbol entry = targetGrammar.getSymbol(type);
-			Named namedEntry = (entry instanceof Terminal)
-					? n((Terminal) entry)
-					: n(null, (NonTerminal) entry);
+			Named<?> namedEntry = (entry instanceof Terminal)
+					? ((Terminal) entry).withName()
+					: ((NonTerminal) entry).withName();
 
 			return targetGrammar.tuple(null, namedEntry, entryNames).getTarget();
 		});
@@ -245,9 +243,11 @@ public class Parser {
 
 	private Rule characterClass() {
 		return grammar.sequence("character-class",
-				n(Terminal.literal("[")),
-				n("plus", grammar.plus(null, n(Terminal.characterClass("[^]]")))),
-				n(Terminal.literal("]"))
+				Terminal.literal("[").withName(),
+				grammar.plus(null,
+						Terminal.characterClass("[^]]").withName()
+				).withName("plus"),
+				Terminal.literal("]").withName()
 		).setEvaluator(pn -> {
 			String pattern = pn.getParsedString();
 			return Terminal.characterClass(pattern);
@@ -256,10 +256,12 @@ public class Parser {
 
 	private Rule type() {
 		return grammar.or("type",
-				n("type", grammar.sequence(null, n("identifier", IDENTIFIER)).setEvaluator(pn -> targetGrammar.getSymbol(pn.getParsedString()))),
-				n("list", LIST),
-				n("tuple", TUPLE),
-				n("character-class", CHARACTER_CLASS)
+				grammar.sequence(null,
+						IDENTIFIER.withName("identifier")
+				).setEvaluator(pn -> targetGrammar.getSymbol(pn.getParsedString())).withName("type"),
+				LIST.withName("list"),
+				TUPLE.withName("tupe"),
+				CHARACTER_CLASS.withName("character-class")
 		);
 	}
 
@@ -270,30 +272,31 @@ public class Parser {
 	 */
 	private Rule variable() {
 		return grammar.sequence("variable",
-				n(Terminal.literal("{")),
-				n("variable-name", VARIABLE_NAME),
-				n("opt-type", grammar.optional(null,
-						n("seq-type", grammar.sequence(null,
-								n(Terminal.literal(":")),
-								n("type", TYPE)
-						))
-				)),
-				n("opt-quantifier", grammar.optional(null,
-						n("seq-quantifier", grammar.sequence(null,
-								n(Terminal.literal(":")),
-								n("quantifier", QUANTIFIER)
-						))
-				)),
-				n(Terminal.literal("}"))
+				Terminal.literal("{").withName(),
+				VARIABLE_NAME.withName("variable-name"),
+				grammar.optional(null,
+						grammar.sequence(null,
+								Terminal.literal(":").withName(),
+								TYPE.withName("type")
+						).withName("seq-type")
+				).withName("opt-type"),
+				grammar.optional(null,
+						grammar.sequence(null,
+								Terminal.literal(":").withName(),
+								QUANTIFIER.withName("quantifier")
+						).withName("seq-quantifier")
+				).withName("opt-quantifier"),
+				Terminal.literal("}").withName()
 		).setEvaluator(pn -> {
 			String variableName = (String) pn.evaluate("variable-name");
 			Object typeObject = pn.evaluate("opt-type", "seq-type", "type");
 			Symbol symbol = typeObject == null
 					? Terminal.literal(variableName)
 					: (Symbol) typeObject;
-			Named namedSymbol = (symbol instanceof Terminal)
-					? n(variableName, (Terminal)    symbol)
-					: n(variableName, (NonTerminal) symbol);
+
+			Named<?> namedSymbol = (symbol instanceof Terminal)
+					? ((Terminal) symbol).withName(variableName)
+					: ((NonTerminal) symbol).withName(variableName);
 
 			Object quantifierObject = pn.evaluate("opt-quantifier", "seq-quantifier", "quantifier");
 			if(quantifierObject != null) {
@@ -302,7 +305,7 @@ public class Parser {
 				else if(range.equals(Range.PLUS))     symbol = targetGrammar.plus(    null, namedSymbol).getTarget();
 				else if(range.equals(Range.OPTIONAL)) symbol = targetGrammar.optional(null, namedSymbol).getTarget();
 				else                                  symbol = targetGrammar.repeat(  null, namedSymbol, range.getLower(), range.getUpper()).getTarget();
-				namedSymbol = n(variableName, (NonTerminal) symbol);
+				namedSymbol = ((NonTerminal) symbol).withName(variableName);
 			}
 			return namedSymbol;
 		});
@@ -310,24 +313,24 @@ public class Parser {
 
 	private Rule noVariable() {
 		return grammar.sequence("no-variable",
-				n(Terminal.characterClass("[^ \t\n{]")),
-				n("tail", grammar.optional(null,
-						n("seq", grammar.sequence(null,
-								n("middle", grammar.star(null,
-										n(Terminal.characterClass("[^{\n]"))
-								)),
-								n(Terminal.characterClass("[^ \t\n{]"))
-						))
-				))
-		).setEvaluator(pn -> n(Terminal.literal(pn.getParsedString())));
+				Terminal.characterClass("[^ \t\n{]").withName(),
+				grammar.optional(null,
+						grammar.sequence(null,
+								grammar.star(null,
+										Terminal.characterClass("[^{\n]").withName()
+								).withName("middle"),
+								Terminal.characterClass("[^ \t\n{]").withName()
+						).withName("seq")
+				).withName("tail")
+		).setEvaluator(pn -> Terminal.literal(pn.getParsedString()).withName());
 	}
 
 	private Rule expression() {
 		return grammar.join("expression",
-				n("or", grammar.or(null,
-						n("no-variable", NO_VARIABLE),
-						n("variable", VARIABLE)
-				)),
+				grammar.or(null,
+						NO_VARIABLE.withName("no-variable"),
+						VARIABLE.withName("variable")
+				).withName("or"),
 				null,
 				null,
 				grammar.WHITESPACE_STAR.getTarget(),
@@ -336,21 +339,21 @@ public class Parser {
 		).setEvaluator(parsedNode -> {
 			int nChildren = parsedNode.numChildren();
 
-			ArrayList<Named> rhsList = new ArrayList<>();
+			ArrayList<Named<?>> rhsList = new ArrayList<>();
 
-			rhsList.add((Named) parsedNode.evaluate(0));
+			rhsList.add((Named<?>) parsedNode.evaluate(0));
 			for(int i = 1; i < nChildren; i++) {
 				DefaultParsedNode child = parsedNode.getChild(i);
 				if(i % 2 == 0) { // or
-					rhsList.add((Named) child.evaluate());
+					rhsList.add((Named<?>) child.evaluate());
 				}
 				else { // ws*
 					boolean hasWS = child.numChildren() > 0;
 					if(hasWS)
-						rhsList.add(n("ws+", targetGrammar.WHITESPACE_PLUS));
+						rhsList.add(targetGrammar.WHITESPACE_PLUS.withName("ws+"));
 				}
 			}
-			Named[] rhs = new Named[rhsList.size()];
+			Named<?>[] rhs = new Named[rhsList.size()];
 			rhsList.toArray(rhs);
 			return rhs;
 		});
@@ -358,7 +361,7 @@ public class Parser {
 
 	private Rule program() {
 		return targetGrammar.join("program",
-				n("sentence", new NonTerminal("sentence")),
+				new NonTerminal("sentence").withName("sequence"),
 				LINEBREAK_STAR.getTarget(),
 				LINEBREAK_STAR.getTarget(),
 				LINEBREAK_STAR.getTarget(),

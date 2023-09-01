@@ -31,6 +31,14 @@ public abstract class Terminal extends Symbol {
 		return getSymbol();
 	}
 
+	public Named<Terminal> withName(String name) {
+		return new Named<>(this, name);
+	}
+
+	public Named<Terminal> withName() {
+		return new Named<>(this);
+	}
+
 	public static class Epsilon extends Terminal {
 		private Epsilon() {
 			super("epsilon");

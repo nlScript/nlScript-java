@@ -3,10 +3,12 @@ package de.nls.ebnf;
 import de.nls.Autocompleter;
 import de.nls.Evaluator;
 import de.nls.core.BNF;
+import de.nls.core.Named;
 import de.nls.core.NonTerminal;
+import de.nls.core.RepresentsSymbol;
 import de.nls.core.Symbol;
 
-public abstract class Rule {
+public abstract class Rule implements RepresentsSymbol {
 	protected final String type;
 	protected final NonTerminal tgt;
 	protected final Symbol[] children;
@@ -24,7 +26,19 @@ public abstract class Rule {
 		this.children = children;
 	}
 
+	public NamedRule withName(String name) {
+		return new NamedRule(this, name);
+	}
+
+	public NamedRule withName() {
+		return new NamedRule(this);
+	}
+
 	public NonTerminal getTarget() {
+		return tgt;
+	}
+
+	public Symbol getRepresentedSymbol() {
 		return tgt;
 	}
 

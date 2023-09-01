@@ -1,6 +1,6 @@
 package de.nls.core;
 
-public abstract class Symbol {
+public abstract class Symbol implements RepresentsSymbol {
 
 	private final String symbol;
 
@@ -14,6 +14,8 @@ public abstract class Symbol {
 
 	public boolean isTerminal() { // TODO make abstract to avoid circular dependency
 		return (this instanceof Terminal);
+	public Symbol getRepresentedSymbol() {
+		return this;
 	}
 
 	public boolean isNonTerminal() { // TODO make abstract to avoid circular dependency

@@ -2,7 +2,6 @@ package de.nls.core;
 
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
-import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import de.nls.util.Range;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ public class TestJoin {
 	public void testKeepDelimiters() {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.join("join",
-				Named.n(Terminal.DIGIT),
+				Terminal.DIGIT.withName(),
 				Terminal.literal("("),
 				Terminal.literal(")"),
 				Terminal.literal(","),
@@ -160,7 +159,7 @@ public class TestJoin {
 	private static BNF makeGrammar(boolean withOpenAndClose, boolean withDelimiter, Range range) {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.join("join",
-				Named.n(Terminal.DIGIT),
+				Terminal.DIGIT.withName("digit"),
 				withOpenAndClose ? Terminal.literal("(") : null,
 				withOpenAndClose ? Terminal.literal(")") : null,
 				withDelimiter    ? Terminal.literal(",") : null,

@@ -59,14 +59,15 @@ public class EBNF extends EBNFCore {
 	}
 
 	private Rule makeSign() {
-		return or(SIGN_NAME, n(literal("-")), n(literal("+")));
+		return or(SIGN_NAME, literal("-").withName(), literal("+").withName());
 	}
 
 	private Rule makeInteger() {
 		// int -> (-|+)?digit+
 		Rule ret = sequence(INTEGER_NAME,
-				n("optional", optional(null, n("sign", SIGN))),
-				n("plus", plus(null, n(DIGIT))));
+				optional(null, SIGN.withName("sign")).withName("optional"),
+				plus(null, DIGIT.withName()).withName("plus")
+		);
 		ret.setEvaluator(pn -> Integer.parseInt(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		return ret;
@@ -75,14 +76,14 @@ public class EBNF extends EBNFCore {
 	private Rule makeFloat() {
 		// float -> (-|+)?digit+(.digit*)?
 		Rule ret = sequence(FLOAT_NAME,
-				n("", optional(null, n("", SIGN))),
-				n("", plus(null, n(DIGIT))),
-				n("", optional(null,
-						n("sequence", sequence(null,
-								n(literal(".")),
-								n("star", star(null, n(DIGIT)))
-						))
-				))
+				optional(null, SIGN.withName()).withName(),
+				plus(null, DIGIT.withName()).withName(),
+				optional(null,
+						sequence(null,
+								literal(".").withName(),
+								star(null, DIGIT.withName()).withName("star")
+						).withName("sequence")
+				).withName()
 		);
 		/*
 		 * Here is an idea how this could be written nicer:
@@ -105,24 +106,24 @@ public class EBNF extends EBNFCore {
 	}
 
 	private Rule makeWhitespaceStar() {
-		Rule ret = star(WHITESPACE_STAR_NAME, n(WHITESPACE));
+		Rule ret = star(WHITESPACE_STAR_NAME, WHITESPACE.withName());
 		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(" "));
 		return ret;
 	}
 
 	private Rule makeWhitespacePlus() {
-		Rule ret = plus(WHITESPACE_PLUS_NAME, n(WHITESPACE));
+		Rule ret = plus(WHITESPACE_PLUS_NAME, WHITESPACE.withName());
 		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(" "));
 		return ret;
 	}
 
 	private Rule makeIntegerRange() {
 		Rule delimiter = sequence(null,
-				n("ws*", WHITESPACE_STAR),
-				n(literal("-")),
-				n("ws*", WHITESPACE_STAR));
+				WHITESPACE_STAR.withName("ws*"),
+				literal("-").withName(),
+				WHITESPACE_STAR.withName("ws*"));
 		Rule ret = join(INTEGER_RANGE_NAME,
-				n("", INTEGER),
+				INTEGER.withName(),
 				null,
 				null,
 				delimiter.getTarget(),
@@ -135,41 +136,41 @@ public class EBNF extends EBNFCore {
 	}
 
 	private Rule makeColor() {
-		Rule black       = sequence(null, n(literal("black"       ))).setEvaluator(pn -> rgb2int(  0,   0,   0));
-		Rule white       = sequence(null, n(literal("white"       ))).setEvaluator(pn -> rgb2int(255, 255, 255));
-		Rule red         = sequence(null, n(literal("red"         ))).setEvaluator(pn -> rgb2int(255,   0,   0));
-		Rule orange      = sequence(null, n(literal("orange"      ))).setEvaluator(pn -> rgb2int(255, 128,   0));
-		Rule yellow      = sequence(null, n(literal("yellow"      ))).setEvaluator(pn -> rgb2int(255, 255,   0));
-		Rule lawngreen   = sequence(null, n(literal("lawn green"  ))).setEvaluator(pn -> rgb2int(128, 255,   0));
-		Rule green       = sequence(null, n(literal("green"       ))).setEvaluator(pn -> rgb2int(  0, 255,   0));
-		Rule springgreen = sequence(null, n(literal("spring green"))).setEvaluator(pn -> rgb2int(  0, 255, 180));
-		Rule cyan        = sequence(null, n(literal("cyan"        ))).setEvaluator(pn -> rgb2int(  0, 255, 255));
-		Rule azure       = sequence(null, n(literal("azure"       ))).setEvaluator(pn -> rgb2int(  0, 128, 255));
-		Rule blue        = sequence(null, n(literal("blue"        ))).setEvaluator(pn -> rgb2int(  0,   0, 255));
-		Rule violet      = sequence(null, n(literal("violet"      ))).setEvaluator(pn -> rgb2int(128,   0, 255));
-		Rule magenta     = sequence(null, n(literal("magenta"     ))).setEvaluator(pn -> rgb2int(255,   0, 255));
-		Rule pink        = sequence(null, n(literal("pink"        ))).setEvaluator(pn -> rgb2int(255,   0, 128));
-		Rule gray        = sequence(null, n(literal("gray"        ))).setEvaluator(pn -> rgb2int(128, 128, 128));
+		Rule black       = sequence(null, literal("black"       ).withName()).setEvaluator(pn -> rgb2int(  0,   0,   0));
+		Rule white       = sequence(null, literal("white"       ).withName()).setEvaluator(pn -> rgb2int(255, 255, 255));
+		Rule red         = sequence(null, literal("red"         ).withName()).setEvaluator(pn -> rgb2int(255,   0,   0));
+		Rule orange      = sequence(null, literal("orange"      ).withName()).setEvaluator(pn -> rgb2int(255, 128,   0));
+		Rule yellow      = sequence(null, literal("yellow"      ).withName()).setEvaluator(pn -> rgb2int(255, 255,   0));
+		Rule lawngreen   = sequence(null, literal("lawn green"  ).withName()).setEvaluator(pn -> rgb2int(128, 255,   0));
+		Rule green       = sequence(null, literal("green"       ).withName()).setEvaluator(pn -> rgb2int(  0, 255,   0));
+		Rule springgreen = sequence(null, literal("spring green").withName()).setEvaluator(pn -> rgb2int(  0, 255, 180));
+		Rule cyan        = sequence(null, literal("cyan"        ).withName()).setEvaluator(pn -> rgb2int(  0, 255, 255));
+		Rule azure       = sequence(null, literal("azure"       ).withName()).setEvaluator(pn -> rgb2int(  0, 128, 255));
+		Rule blue        = sequence(null, literal("blue"        ).withName()).setEvaluator(pn -> rgb2int(  0,   0, 255));
+		Rule violet      = sequence(null, literal("violet"      ).withName()).setEvaluator(pn -> rgb2int(128,   0, 255));
+		Rule magenta     = sequence(null, literal("magenta"     ).withName()).setEvaluator(pn -> rgb2int(255,   0, 255));
+		Rule pink        = sequence(null, literal("pink"        ).withName()).setEvaluator(pn -> rgb2int(255,   0, 128));
+		Rule gray        = sequence(null, literal("gray"        ).withName()).setEvaluator(pn -> rgb2int(128, 128, 128));
 
-		Rule custom = tuple(null, n("", INTEGER), "red", "green", "blue");
+		Rule custom = tuple(null, INTEGER.withName(), "red", "green", "blue");
 
 		return or(COLOR_NAME,
-				n(null, custom),
-				n(null, black),
-				n(null, white),
-				n(null, red),
-				n(null, orange),
-				n(null, yellow),
-				n(null, lawngreen),
-				n(null, green),
-				n(null, springgreen),
-				n(null, cyan),
-				n(null, azure),
-				n(null, blue),
-				n(null, violet),
-				n(null, magenta),
-				n(null, pink),
-				n(null, gray));
+				custom.withName(),
+				black.withName(),
+				white.withName(),
+				red.withName(),
+				orange.withName(),
+				yellow.withName(),
+				lawngreen.withName(),
+				green.withName(),
+				springgreen.withName(),
+				cyan.withName(),
+				azure.withName(),
+				blue.withName(),
+				violet.withName(),
+				magenta.withName(),
+				pink.withName(),
+				gray.withName());
 	}
 
 	private static int rgb2int(int r, int g, int b) {
@@ -178,11 +179,11 @@ public class EBNF extends EBNFCore {
 
 	private Rule makeTime() {
 		Rule ret = sequence(TIME_NAME,
-				n(null, optional(null, n(DIGIT))),
-				n(null, DIGIT),
-				n(literal(":")),
-				n(null, DIGIT),
-				n(null, DIGIT));
+				optional(null, DIGIT.withName()).withName(),
+				DIGIT.withName(),
+				literal(":").withName(),
+				DIGIT.withName(),
+				DIGIT.withName());
 		ret.setEvaluator(pn -> LocalTime.parse(pn.getParsedString(), DateTimeFormatter.ofPattern("H:mm")));
 		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${HH}:${MM}"));
 		return ret;
@@ -190,14 +191,14 @@ public class EBNF extends EBNFCore {
 
 	private Rule makePath() {
 		Rule innerPath = plus(null,
-				n("inner-path", characterClass("[^'<>|?*\n]")));
-		innerPath.setEvaluator(DefaultParsedNode::getParsedString);
 		innerPath.setAutocompleter(pathAutocompleter);
+				characterClass("[^'<>|?*\n]").withName("inner-path"));
+		innerPath.setEvaluator(Evaluator.DEFAULT_EVALUATOR);
 
 		Rule path = sequence(PATH_NAME,
-				n(literal("'")),
-				n("path", innerPath),
-				n(literal("'")));
+				literal("'").withName(),
+				innerPath.withName("path"),
+				literal("'").withName());
 		path.setEvaluator(pn -> pn.evaluate("path"));
 		path.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this, new HashMap<>()));
 

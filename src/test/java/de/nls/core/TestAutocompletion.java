@@ -5,7 +5,6 @@ import de.nls.ParsedNode;
 import de.nls.Parser;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
-import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import org.junit.jupiter.api.Test;
 
@@ -117,15 +116,15 @@ public class TestAutocompletion {
 		EBNFCore ebnf = new EBNFCore();
 
 		Rule sentence = ebnf.sequence("sentence",
-				Named.n(Terminal.literal("Define channel")),
-				Named.n("ws", Terminal.WHITESPACE),
-				Named.n("name", ebnf.plus("name",
-						Named.n(Terminal.characterClass("[A-Za-z]"))
-				)),
-				Named.n(Terminal.literal(".")));
+				Terminal.literal("Define channel").withName(),
+				Terminal.WHITESPACE.withName("ws"),
+				ebnf.plus("name",
+						Terminal.characterClass("[A-Za-z]").withName()
+				).withName("name"),
+				Terminal.literal(".").withName());
 		Rule program = ebnf.star("program",
 				// Named.n("sentence", sentence));
-				Named.n("sentence", new NonTerminal("sentence")));
+				new NonTerminal("sentence").withName("sentence"));
 
 		ebnf.compile(program.getTarget());
 
@@ -214,19 +213,19 @@ public class TestAutocompletion {
 	private static BNF makeGrammar() {
 		EBNFCore grammar = new EBNFCore();
 		Rule e = grammar.sequence("expr",
-				Named.n(Terminal.literal("one")),
-				Named.n("star", grammar.star(null,
-						Named.n("or", grammar.or(null,
-								Named.n(Terminal.literal("two")),
-								Named.n(Terminal.literal("three")),
-								Named.n(Terminal.literal("four"))
+				Terminal.literal("one").withName(),
+				grammar.star(null,
+						grammar.or(null,
+								Terminal.literal("two").withName(),
+								Terminal.literal("three").withName(),
+								Terminal.literal("four").withName()
 						).setAutocompleter(pn -> {
 							if(pn.getParsedString().length() > 0)
 								return Autocompleter.VETO;
 							return "${" + pn.getName() + "}";
-						}))
-				)),
-				Named.n(Terminal.literal("five"))
+						}).withName("or")
+				).withName("star"),
+				Terminal.literal("five").withName()
 		);
 
 		grammar.compile(e.getTarget());

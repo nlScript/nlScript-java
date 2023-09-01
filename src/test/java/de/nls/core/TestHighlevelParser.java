@@ -5,7 +5,6 @@ import de.nls.Parser;
 import de.nls.ebnf.EBNF;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
-import de.nls.ebnf.Named;
 import de.nls.ebnf.Plus;
 import de.nls.ebnf.Repeat;
 import de.nls.ebnf.Rule;
@@ -13,8 +12,7 @@ import de.nls.ebnf.Star;
 import de.nls.util.Range;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestHighlevelParser {
 
@@ -228,9 +226,9 @@ public class TestHighlevelParser {
 		grammar.compile(hlp.VARIABLE.getTarget());
 
 		String test = "{bla:int:3-5}";
-		Named.NamedNonTerminal evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		Named<NonTerminal> evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("bla", evaluatedNonTerminal.getName());
-		Rule rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		Rule rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Repeat.class, rule.getClass());
 		Repeat repeat = (Repeat) rule;
 		assertEquals(3, repeat.getFrom());
@@ -238,48 +236,48 @@ public class TestHighlevelParser {
 		assertEquals(EBNF.INTEGER_NAME, repeat.getEntry().getSymbol());
 
 		test = "{blubb:digit}";
-		Named.NamedTerminal evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		Named<Terminal> evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("blubb", evaluatedTerminal.getName());
 		assertEquals(Terminal.DIGIT, evaluatedTerminal.getSymbol());
 
 		test = "{blubb:int:*}";
-		evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("blubb", evaluatedNonTerminal.getName());
-		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Star.class, rule.getClass());
 		Star star = (Star) rule;
 		assertEquals(EBNF.INTEGER_NAME, star.getEntry().getSymbol());
 
 		test = "{blubb:[A-Z]:+}";
-		evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("blubb", evaluatedNonTerminal.getName());
-		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Plus.class, rule.getClass());
 		Plus plus = (Plus) rule;
 		assertEquals("[A-Z]", plus.getEntry().getSymbol());
 
 		test = "{blubb , alkjad asd 4. <>l}";
-		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("blubb , alkjad asd 4. <>l", evaluatedTerminal.getSymbol().getSymbol());
 		assertEquals("blubb , alkjad asd 4. <>l", evaluatedTerminal.getName());
 
 		test = "{heinz}";
-		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("heinz", evaluatedTerminal.getSymbol().getSymbol());
 		assertEquals("heinz", evaluatedTerminal.getName());
 
 		test = "{heinz:+}";
-		evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("heinz", evaluatedNonTerminal.getName());
-		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Plus.class, rule.getClass());
 		plus = (Plus) rule;
 		assertEquals("heinz", plus.getEntry().getSymbol());
 
 		test = "{heinz:3-5}";
-		evaluatedNonTerminal = (Named.NamedNonTerminal) evaluateHighlevelParser(hlp, test);
+		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("heinz", evaluatedNonTerminal.getName());
-		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.getNonTerminal()).get(0);
+		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Repeat.class, rule.getClass());
 		repeat = (Repeat) rule;
 		assertEquals(3, repeat.getFrom());
@@ -287,12 +285,12 @@ public class TestHighlevelParser {
 		assertEquals("heinz", repeat.getEntry().getSymbol());
 
 		test = "{, }";
-		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals(", ", evaluatedTerminal.getSymbol().getSymbol());
 		assertEquals(", ", evaluatedTerminal.getName());
 
 		test = "{,\n }";
-		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
+		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals(",\n ", evaluatedTerminal.getSymbol().getSymbol());
 		assertEquals(",\n ", evaluatedTerminal.getName());
 	}
@@ -305,22 +303,22 @@ public class TestHighlevelParser {
 		grammar.compile(hlp.NO_VARIABLE.getTarget());
 
 		String test = "lk345}.-";
-		Named.NamedTerminal evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
-		assertEquals(Terminal.Literal.class, evaluatedTerminal.getTerminal().getClass());
+		Named<Terminal> evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
+		assertEquals(Terminal.Literal.class, evaluatedTerminal.get().getClass());
 		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
-		assertEquals(test, evaluatedTerminal.getName());
+		assertEquals(Named.UNNAMED, evaluatedTerminal.getName());
 
 		test = "--1'x}";
-		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
-		assertEquals(Terminal.Literal.class, evaluatedTerminal.getTerminal().getClass());
+		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
+		assertEquals(Terminal.Literal.class, evaluatedTerminal.get().getClass());
 		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
-		assertEquals(test, evaluatedTerminal.getName());
+		assertEquals(Named.UNNAMED, evaluatedTerminal.getName());
 
 		test = ".";
-		evaluatedTerminal = (Named.NamedTerminal) evaluateHighlevelParser(hlp, test);
-		assertEquals(Terminal.Literal.class, evaluatedTerminal.getTerminal().getClass());
+		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
+		assertEquals(Terminal.Literal.class, evaluatedTerminal.get().getClass());
 		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
-		assertEquals(test, evaluatedTerminal.getName());
+		assertEquals(Named.UNNAMED, evaluatedTerminal.getName());
 
 		String testToFail = "lj{l";
 		Parser hlp2 = hlp;
@@ -336,7 +334,7 @@ public class TestHighlevelParser {
 		grammar.compile(hlp.EXPRESSION.getTarget());
 
 		String test = "Today, let's wait for {time:int} minutes.";
-		Named[] rhs = (Named[]) evaluateHighlevelParser(hlp, test);
+		Named<?>[] rhs = (Named<?>[]) evaluateHighlevelParser(hlp, test);
 		EBNFCore tgt = hlp.getTargetGrammar();
 		Rule myType = tgt.sequence("mytype", rhs);
 

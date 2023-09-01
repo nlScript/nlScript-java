@@ -2,7 +2,6 @@ package de.nls.core;
 
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
-import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import org.junit.jupiter.api.Test;
 
@@ -15,12 +14,15 @@ public class TestOr {
 	private static BNF makeGrammar() {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.or("or",
-				Named.n("seq", grammar.sequence("seq1",
-					Named.n(Terminal.literal("y")),
-					Named.n(Terminal.DIGIT))),
-				Named.n("seq", grammar.sequence("seq2",
-					Named.n(Terminal.literal("n")),
-					Named.n(Terminal.DIGIT))));
+				grammar.sequence("seq1",
+					Terminal.literal("y").withName(),
+					Terminal.DIGIT.withName()
+				).withName("seq"),
+				grammar.sequence("seq2",
+					Terminal.literal("n").withName(),
+					Terminal.DIGIT.withName()
+				).withName("seq")
+		);
 		grammar.compile(rule.getTarget());
 		return grammar.getBNF();
 	}

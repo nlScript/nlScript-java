@@ -2,7 +2,6 @@ package de.nls.core;
 
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
-import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +13,10 @@ public class TestRepeat {
 	private static BNF makeGrammar(int lower, int upper) {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.repeat("repeat",
-				Named.n("seq", grammar.sequence("seq",
-						Named.n(Terminal.DIGIT),
-						Named.n(Terminal.LETTER))),
+				grammar.sequence("seq",
+						Terminal.DIGIT.withName(),
+						Terminal.LETTER.withName()
+				).withName("seq"),
 				lower,
 				upper);
 		grammar.compile(rule.getTarget());

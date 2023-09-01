@@ -9,7 +9,6 @@ import de.nls.core.RDParser;
 import de.nls.core.Symbol;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
-import de.nls.ebnf.Named;
 import de.nls.ebnf.Rule;
 import de.nls.ebnf.Sequence;
 

@@ -10,6 +10,14 @@ public class NonTerminal extends Symbol {
 		super(symbol != null ? symbol : makeRandomSymbol());
 	}
 
+	public Named<NonTerminal> withName(String name) {
+		return new Named<>(this, name);
+	}
+
+	public Named<NonTerminal> withName() {
+		return new Named<>(this);
+	}
+
 	@Override
 	public String toString() {
 		return "<" + getSymbol() + ">";
