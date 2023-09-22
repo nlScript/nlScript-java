@@ -15,12 +15,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.IndexColorModel;
 import java.util.ArrayList;
 
@@ -32,6 +32,13 @@ public class ACEditor {
 	private final AutocompletionContext autocompletionContext;
 	private final Parser parser;
 	private final JButton runButton;
+
+	private ActionListener onRun = new ActionListener() {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			run();
+		}
+	};
 
 	public ACEditor(Parser parser) {
 		this.parser = parser;
@@ -53,6 +60,7 @@ public class ACEditor {
 
 		JPanel buttons = new JPanel(new FlowLayout());
 		runButton = new JButton("Run");
+		runButton.addActionListener(onRun);
 		buttons.add(runButton);
 		frame.getContentPane().add(buttons, BorderLayout.SOUTH);
 
@@ -88,6 +96,17 @@ public class ACEditor {
 //				}
 //			}
 //		});
+	}
+
+	public void setOnRun(ActionListener l) {
+		runButton.removeActionListener(onRun);
+		onRun = l;
+		runButton.addActionListener(onRun);
+	}
+
+	public void run() {
+		ParsedNode pn = parser.parse(getText(), null);
+		pn.evaluate();
 	}
 
 	public void setVisible(boolean b) {
