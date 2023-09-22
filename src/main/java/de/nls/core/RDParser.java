@@ -25,7 +25,10 @@ public class RDParser {
 
 	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
-		SymbolSequence parsedSequence = parseRecursive(seq, autocompletions);
+		ArrayList<SymbolSequence> endOfInput = new ArrayList<>();
+		SymbolSequence parsedSequence = parseRecursive(seq, autocompletions, endOfInput);
+		if(autocompletions != null)
+			collectAutocompletions(endOfInput, autocompletions);
 		if(autocompletions != null && autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
 			autocompletions.remove(autocompletions.size() - 1);
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
@@ -43,6 +46,11 @@ public class RDParser {
 			pn.getProduction().builtAST(pn, children);
 
 		return pn;
+	}
+
+	private void collectAutocompletions(ArrayList<SymbolSequence> endOfInput, ArrayList<Autocompletion> autocompletions) {
+		for(SymbolSequence seq : endOfInput)
+			addAutocompletions(seq, autocompletions);
 	}
 
 	/**
@@ -105,7 +113,7 @@ public class RDParser {
 	 *   - for all productions U -> XYZ
 	 *     - in the symbol sequence, replace U with XYZ
 	 */
-	private SymbolSequence parseRecursive(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
+	private SymbolSequence parseRecursive(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions, ArrayList<SymbolSequence> endOfInput) {
 //		System.out.println("parseRecursive:");
 //		System.out.println("  symbol sequence = " + symbolSequence);
 //		System.out.println("  lexer           = " + lexer);
@@ -117,8 +125,9 @@ public class RDParser {
 			Matcher matcher = ((Terminal) next).matches(lexer);
 //			System.out.println("matcher = " + matcher);
 			symbolSequence.addMatcher(matcher);
-			if(matcher.state == ParsingState.END_OF_INPUT && autocompletions != null)
-				addAutocompletions(symbolSequence, autocompletions);
+
+			if(matcher.state == ParsingState.END_OF_INPUT && endOfInput != null)
+				endOfInput.add(symbolSequence);
 
 			if(matcher.state != ParsingState.SUCCESSFUL)
 				return symbolSequence;
@@ -136,7 +145,7 @@ public class RDParser {
 		for(Production alternate : alternates) {
 			int lexerPos = lexer.getPosition();
 			SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate);
-			SymbolSequence parsedSequence = parseRecursive(nextSequence, autocompletions);
+			SymbolSequence parsedSequence = parseRecursive(nextSequence, autocompletions, endOfInput);
 			Matcher m = parsedSequence.getLastMatcher();
 			if(m != null) {
 				if (m.state == ParsingState.SUCCESSFUL)
