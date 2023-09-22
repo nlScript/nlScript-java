@@ -190,8 +190,6 @@ public class EBNFCore {
 	}
 
 	private void addRule(Rule rule) {
-		if(compiled)
-			throw new RuntimeException("Grammar is already compiled");
 		if(!symbols.containsKey(rule.tgt.getSymbol()))
 			symbols.put(rule.tgt.getSymbol(), rule.tgt);
 
@@ -200,14 +198,14 @@ public class EBNFCore {
 				symbols.put(s.getSymbol(), s);
 		}
 		rules.add(rule);
+		compiled = false;
 	}
 
-	private void removeRules(NonTerminal symbol) {
-		if(compiled)
-			throw new RuntimeException("Grammar is already compiled");
+	public void removeRules(NonTerminal symbol) {
 		for(int i = rules.size() - 1; i >= 0; i--)
 			if(rules.get(i).tgt.equals(symbol))
 				rules.remove(i);
+		compiled = false;
 	}
 
 	private NonTerminal newOrExistingNonTerminal(String type) {
