@@ -258,7 +258,13 @@ public class Parser {
 		return grammar.or("type",
 				grammar.sequence(null,
 						IDENTIFIER.withName("identifier")
-				).setEvaluator(pn -> targetGrammar.getSymbol(pn.getParsedString())).withName("type"),
+				).setEvaluator(pn -> {
+					String str = pn.getParsedString();
+					Symbol symbol = targetGrammar.getSymbol(str);
+					if(symbol == null)
+						throw new RuntimeException("Unknown type '" + str + "'");
+					return symbol;
+				}).withName("type"),
 				LIST.withName("list"),
 				TUPLE.withName("tupe"),
 				CHARACTER_CLASS.withName("character-class")
