@@ -9,8 +9,10 @@
  */
 package de.nls.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import javax.swing.text.BadLocationException;
@@ -35,8 +37,39 @@ import javax.swing.text.View;
  * @author Robert Futrell
  * @version 1.0
  */
-class OutlineHighlightPainter extends
+abstract class HighlightPainter extends
 							DefaultHighlighter.DefaultHighlightPainter {
+
+	static class Outline extends HighlightPainter {
+
+		Outline(Color color) {
+			super(color);
+		}
+		protected void draw(Graphics g, int x, int y, int w, int h) {
+			g.drawRect(x, y, w, h);
+		}
+	}
+
+	static class Squiggle extends HighlightPainter {
+		Squiggle(Color color) {
+			super(color);
+		}
+
+		// https://github.com/tips4java/tips4java/blob/main/source/SquigglePainter.java
+		protected void draw(Graphics g, int x, int y, int w, int h) {
+//			g.setColor(getColor().brighter());
+			g.fillRect(x, y, w, h);
+//			final int squiggle = 2;
+//			final int twoSquiggle = 2 * squiggle;
+//			int iy = y + h - squiggle;
+//			((Graphics2D) g).setStroke(new BasicStroke(1.5f));
+//			g.setColor(getColor());
+//			for(int ix = x; ix <= x + w - twoSquiggle; ix += twoSquiggle) {
+//				g.drawArc(ix, iy, squiggle, squiggle, 0, 180);
+//				g.drawArc(ix + squiggle, iy, squiggle, squiggle, 180, 180);
+//			}
+		}
+	}
 
 	/**
 	 * DefaultHighlightPainter doesn't allow changing color, so we must cache
@@ -52,7 +85,7 @@ class OutlineHighlightPainter extends
 	 * @param color The color to draw the bounding boxes with.  This cannot
 	 *        be <code>null</code>.
 	 */
-	OutlineHighlightPainter(Color color) {
+	HighlightPainter(Color color) {
 		super(color);
 		setColor(color);
 	}
@@ -113,7 +146,8 @@ class OutlineHighlightPainter extends
 			} else {
 				alloc = viewBounds.getBounds();
 			}
-			g.drawRect(alloc.x, alloc.y, alloc.width - 1, alloc.height - 1);
+			// g.drawRect(alloc.x, alloc.y, alloc.width - 1, alloc.height - 1);
+			draw(g, alloc.x, alloc.y, alloc.width - 1, alloc.height - 1);
 			return alloc;
 		}
 
@@ -124,15 +158,16 @@ class OutlineHighlightPainter extends
 					Position.Bias.Backward, viewBounds);
 			Rectangle r = (shape instanceof Rectangle) ? (Rectangle) shape :
 					shape.getBounds();
-			g.drawRect(r.x, r.y, r.width - 1, r.height - 1);
+			// g.drawRect(r.x, r.y, r.width - 1, r.height - 1);
+			draw(g, r.x, r.y, r.width - 1, r.height - 1);
 			return r;
 		} catch (BadLocationException e) { // Never happens
 			e.printStackTrace();
 			return null;
 		}
-
 	}
 
+	protected abstract void draw(Graphics g, int x, int y, int w, int h);
 
 	/**
 	 * Sets the color to paint the bounding boxes with.

@@ -40,8 +40,8 @@ public class ParameterizedCompletionContext implements KeyListener {
 		this.tc = tc;
 	}
 
-	public final OutlineHighlightPainter highlightPainter = new OutlineHighlightPainter(Color.GRAY);
-	public final OutlineHighlightPainter cursorHighlightPainter = new OutlineHighlightPainter(new Color(0x00b400));
+	public final HighlightPainter highlightPainter = new HighlightPainter.Outline(Color.GRAY);
+	public final HighlightPainter cursorHighlightPainter = new HighlightPainter.Outline(new Color(0x00b400));
 
 	private final ArrayList<Param> parameters = new ArrayList<>();
 
