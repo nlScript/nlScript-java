@@ -52,10 +52,13 @@ public class DefaultParsedNode {
 		if(symbol instanceof Terminal.Literal)
 			return symbol.getSymbol();
 
+		String name = getName();
+		if(name.equals(Named.UNNAMED))
+			name = symbol.getSymbol();
 		if(symbol.isTerminal()) {
 			return getParsedString().length() > 0
 					? Autocompleter.VETO
-					: "${" + getName() + "}";
+					: "${" + name + "}";
 		}
 		return null;
 	}

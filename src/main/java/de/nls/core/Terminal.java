@@ -92,7 +92,7 @@ public abstract class Terminal extends Symbol {
 			char c = lexer.peek();
 			if(Character.isDigit(c))
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
-			return new Matcher(ParsingState.FAILED, pos, "");
+			return new Matcher(ParsingState.FAILED, pos, Character.toString(c));
 		}
 	}
 
@@ -133,7 +133,7 @@ public abstract class Terminal extends Symbol {
 			char c = lexer.peek();
 			if(Character.isLetter(c))
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
-			return new Matcher(ParsingState.FAILED, pos, "");
+			return new Matcher(ParsingState.FAILED, pos, Character.toString(c));
 		}
 	}
 
@@ -150,7 +150,7 @@ public abstract class Terminal extends Symbol {
 			char c = lexer.peek();
 			if(c == ' ' || c == '\t')
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
-			return new Matcher(ParsingState.FAILED, pos, "");
+			return new Matcher(ParsingState.FAILED, pos, Character.toString(c));
 		}
 	}
 
@@ -210,7 +210,7 @@ public abstract class Terminal extends Symbol {
 			char c = lexer.peek();
 			if(ranges.checkCharacter(c))
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
-			return new Matcher(ParsingState.FAILED, pos, "");
+			return new Matcher(ParsingState.FAILED, pos, Character.toString(c));
 		}
 
 		@Override

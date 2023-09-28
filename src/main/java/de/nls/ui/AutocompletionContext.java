@@ -1,10 +1,15 @@
 package de.nls.ui;
 
+import de.nls.ParseException;
+import de.nls.core.DefaultParsedNode;
+import de.nls.core.Matcher;
+
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
@@ -20,13 +25,43 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 	private final ACProvider provider;
 	private final ACPopup popup;
 
+	private final ErrorHighlight errorHighlight;
+
 	private final boolean insertAsFarAsPossible = true;
+
+	private static class ErrorHighlight {
+		private final HighlightPainter errorHighlight = new HighlightPainter.Squiggle(new Color(255, 100, 100));
+
+		private final JTextComponent tc;
+
+		private Object highlightTag;
+
+		public ErrorHighlight(JTextComponent tc) {
+			this.tc = tc;
+		}
+
+		void setError(int i0, int i1) {
+			clearError();
+			try {
+				int start = i0 == 0 ? 0 : i0 - 1;
+				highlightTag = tc.getHighlighter().addHighlight(start, i1, errorHighlight);
+			} catch(BadLocationException ignored) {}
+		}
+
+		void clearError() {
+			if(highlightTag != null) {
+				tc.getHighlighter().removeHighlight(highlightTag);
+				highlightTag = null;
+			}
+		}
+	}
 
 	public AutocompletionContext(JTextComponent tc, ACProvider acProvider) {
 		this.tc = tc;
 		this.provider = acProvider;
 		final Window parent = SwingUtilities.getWindowAncestor(tc);
 		this.popup = new ACPopup(parent);
+		this.errorHighlight = new ErrorHighlight(tc);
 		this.tc.addKeyListener(new KeyListener() {
 			@Override public void keyTyped(KeyEvent e) {
 			}
@@ -242,7 +277,17 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		if(caret < entireText.trim().length())
 			autoInsertSingleOption = false;
 		String text = entireText.substring(0, caret);
-		IAutocompletion[] completions = provider.getAutocompletions(text);
+
+		errorHighlight.clearError();
+
+		IAutocompletion[] completions;
+		try {
+			completions = provider.getAutocompletions(text);
+		} catch (ParseException e) {
+			Matcher f = e.getFirstAutocompletingAncestorThatFailed().getMatcher();
+			errorHighlight.setError(f.pos, f.pos + f.parsed.length());
+			return;
+		}
 		popup.getModel().set(completions);
 		if (completions.length < 2) {
 			if (popup.getModel().getSize() == 1 && autoInsertSingleOption) {

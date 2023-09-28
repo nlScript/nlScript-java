@@ -90,7 +90,11 @@ public interface Autocompleter {
 				RDParser parser = new RDParser(bnf, new Lexer(""), EBNFParsedNodeFactory.INSTANCE);
 
 				ArrayList<Autocompletion> autocompletions = new ArrayList<>();
-				parser.parse(autocompletions);
+				try {
+					parser.parse(autocompletions);
+				} catch (ParseException e) {
+					throw new RuntimeException(e);
+				}
 
 				int n = autocompletions.size();
 				if (n > 1)

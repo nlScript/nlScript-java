@@ -1,6 +1,7 @@
 package de.nls.core;
 
 import de.nls.Autocompleter;
+import de.nls.ParseException;
 import de.nls.ParsedNode;
 import de.nls.Parser;
 import de.nls.ebnf.EBNFCore;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TestAutocompletion {
 
 	@Test
-	public void test01() {
+	public void test01() throws ParseException {
 		test("", "one ()");
 		test("o", "one (o)");
 		test("one", "${or} ()", "five ()");
@@ -24,7 +25,7 @@ public class TestAutocompletion {
 	}
 
 	@Test
-	public void test02() {
+	public void test02() throws ParseException {
 		Parser parser = new Parser();
 		parser.defineSentence("The first digit of the number is {first:digit}.", pn -> null);
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
@@ -34,7 +35,7 @@ public class TestAutocompletion {
 	}
 
 	@Test
-	public void test03() {
+	public void test03() throws ParseException {
 		Parser parser = new Parser();
 		parser.defineSentence("Define the output path {p:path}.", pn -> null);
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
@@ -44,7 +45,7 @@ public class TestAutocompletion {
 	}
 
 	@Test
-	public void test04() {
+	public void test04() throws ParseException {
 		ArrayList<String> sentencesParsed = new ArrayList<>();
 
 		Parser parser = new Parser();
@@ -58,14 +59,14 @@ public class TestAutocompletion {
 		});
 
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
-		DefaultParsedNode pn = parser.parse("1.22.333.", autocompletions);
+		parser.parse("1.22.333.", autocompletions);
 
 		ArrayList<String> expected = new ArrayList<>(Arrays.asList("1.", "22.", "333."));
 		assertEquals(expected, sentencesParsed);
 	}
 
 	@Test
-	public void test05() {
+	public void test05() throws ParseException {
 		final ArrayList<String> definedChannels = new ArrayList<>();
 
 		Parser parser = new Parser();
@@ -112,7 +113,7 @@ public class TestAutocompletion {
 	}
 
 	@Test
-	public void test06() {
+	public void test06() throws ParseException {
 		EBNFCore ebnf = new EBNFCore();
 
 		Rule sentence = ebnf.sequence("sentence",
@@ -144,7 +145,7 @@ public class TestAutocompletion {
 	}
 
 	@Test
-	public void test07() {
+	public void test07() throws ParseException {
 		Parser parser = new Parser();
 
 		parser.defineType("led", "385nm", e -> null, e -> "385nm");
@@ -167,7 +168,7 @@ public class TestAutocompletion {
 	}
 
 	@Test
-	public void test08() {
+	public void test08() throws ParseException {
 		Parser parser = new Parser();
 
 		parser.defineType("my-color", "blue", null);
@@ -184,14 +185,14 @@ public class TestAutocompletion {
 		assertEquals("(${r}, ${g}, ${b})", autocompletions.get(2).getCompletion());
 	}
 
-	private void test(String input, String... expectedCompletion) {
+	private void test(String input, String... expectedCompletion) throws ParseException {
 		System.out.println("Testing " + input);
 		BNF grammar = makeGrammar();
 		Lexer l = new Lexer(input);
 		RDParser test = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		DefaultParsedNode pn = test.parse(autocompletions);
-		System.out.println(GraphViz.toVizDotLink(test.buildAst(pn)));
+		System.out.println(GraphViz.toVizDotLink(pn));
 
 		System.out.println("input: " + input);
 		System.out.println("completions: " + autocompletions);

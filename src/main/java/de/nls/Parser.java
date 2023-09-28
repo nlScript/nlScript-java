@@ -95,11 +95,16 @@ public class Parser {
 				grammar.getBNF(),
 				new Lexer(pattern),
 				EBNFParsedNodeFactory.INSTANCE);
-		DefaultParsedNode pn = parser.parse();
+		DefaultParsedNode pn;
+		try {
+			pn = parser.parse();
+		} catch (ParseException e) {
+			throw new RuntimeException("Parsing failed", e);
+		}
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException("Parsing failed");
-		pn = parser.buildAst(pn);
-		System.out.println(GraphViz.toVizDotLink(pn));
+		// pn = parser.buildAst(pn);
+//		System.out.println(GraphViz.toVizDotLink(pn));
 		Named<?>[] rhs = (Named<?>[]) pn.evaluate();
 
 		Rule newRule = targetGrammar.sequence(type, rhs);
@@ -120,18 +125,14 @@ public class Parser {
 		compiled = true;
 	}
 
-	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions) {
+	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions) throws ParseException {
 		if(!compiled)
 			compile();
 		symbol2Autocompletion.clear();
-		EBNFParser rdParser = new EBNFParser(targetGrammar.getBNF(), new Lexer(text));
+		BNF grammar = targetGrammar.getBNF();
+		EBNFParser rdParser = new EBNFParser(grammar, new Lexer(text));
 		rdParser.addParseStartListener(this::fireParsingStarted);
-		ParsedNode pn = (ParsedNode) rdParser.parse(autocompletions);
-		System.out.println(GraphViz.toVizDotLink(pn));
-		if(pn.getMatcher().state == ParsingState.SUCCESSFUL)
-			pn = (ParsedNode) rdParser.buildAst(pn);
-		System.out.println(GraphViz.toVizDotLink(pn));
-		return pn;
+		return (ParsedNode) rdParser.parse(autocompletions);
 	}
 
 	private Rule quantifier() {

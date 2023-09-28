@@ -48,6 +48,10 @@ public class GraphViz {
 		String parsed = root.getParsedString();
 		parsed = parsed.replaceAll("\\n", "\\n");
 		String name = root.getName();
+		if(name.equals(Named.UNNAMED)) {
+			Symbol symbol = root.getSymbol();
+			name = symbol.getSymbol();
+		}
 		name = name.replaceAll("\\n", "\\n");
 		sb.append("  ")
 				.append(root.hashCode())

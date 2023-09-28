@@ -1,11 +1,12 @@
 package de.nls.core;
 
+import de.nls.ParseException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestRDParser {
 	@Test
-	public void testParse() {
+	public void testParse() throws ParseException {
 		BNF bnf = new BNF();
 		bnf.addProduction(new Production(new NonTerminal("EXPR"),
 				new NonTerminal("TERM"), Terminal.literal("+"), new NonTerminal("EXPR")));

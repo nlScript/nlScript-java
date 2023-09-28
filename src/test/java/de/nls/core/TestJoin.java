@@ -1,5 +1,6 @@
 package de.nls.core;
 
+import de.nls.ParseException;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Rule;
@@ -7,13 +8,12 @@ import de.nls.util.Range;
 import org.junit.jupiter.api.Test;
 
 import static de.nls.core.ParsingState.SUCCESSFUL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestJoin {
 
 	@Test
-	public void testKeepDelimiters() {
+	public void testKeepDelimiters() throws ParseException {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.join("join",
 				Terminal.DIGIT.withName(),
@@ -28,8 +28,6 @@ public class TestJoin {
 		Lexer l = new Lexer(input);
 		RDParser test = new RDParser(grammar.getBNF(), l, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode root = test.parse();
-		System.out.println(GraphViz.toVizDotLink(root));
-		root = test.buildAst(root);
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
@@ -48,7 +46,7 @@ public class TestJoin {
 	}
 
 	@Test
-	public void test() {
+	public void test() throws ParseException {
 		boolean[] withOpenClose = new boolean[] { true, true, false, false };
 		boolean[] withDelimiter = new boolean[] { true, false, true, false };
 		String[][] inputs = new String[][] {
@@ -168,12 +166,10 @@ public class TestJoin {
 		return grammar.getBNF();
 	}
 
-	private static void testSuccess(BNF grammar, String input, String... result) {
+	private static void testSuccess(BNF grammar, String input, String... result) throws ParseException {
 		Lexer l = new Lexer(input);
 		RDParser test = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode root = test.parse();
-		System.out.println(GraphViz.toVizDotLink(root));
-		root = test.buildAst(root);
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
@@ -201,9 +197,10 @@ public class TestJoin {
 	private static void testFailure(BNF grammar, String input) {
 		Lexer l = new Lexer(input);
 		RDParser parser = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
-		DefaultParsedNode root = parser.parse();
-		System.out.println(GraphViz.toVizDotLink(root));
-
-		assertNotEquals(SUCCESSFUL, root.getMatcher().state);
+		try {
+			DefaultParsedNode pn = parser.parse();
+			assertNotEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
+		} catch (ParseException ignored) {
+		}
 	}
 }

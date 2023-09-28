@@ -1,13 +1,13 @@
 package de.nls.core;
 
+import de.nls.ParseException;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Rule;
 import org.junit.jupiter.api.Test;
 
 import static de.nls.core.ParsingState.SUCCESSFUL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestOptional {
 	private static BNF makeGrammar() {
@@ -22,12 +22,12 @@ public class TestOptional {
 	}
 
 	@Test
-	public void test01() {
+	public void test01() throws ParseException {
 		testSuccess("");
 	}
 
 	@Test
-	public void test02() {
+	public void test02() throws ParseException {
 		testSuccess("1a");
 	}
 
@@ -41,14 +41,12 @@ public class TestOptional {
 		testFailure("s");
 	}
 
-	private static void testSuccess(String input) {
+	private static void testSuccess(String input) throws ParseException {
 		BNF grammar = makeGrammar();
 
 		Lexer l = new Lexer(input);
 		RDParser test = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode root = test.parse();
-		System.out.println(GraphViz.toVizDotLink(root));
-		root = test.buildAst(root);
 		System.out.println(GraphViz.toVizDotLink(root));
 
 		assertEquals(SUCCESSFUL, root.getMatcher().state);
@@ -78,9 +76,10 @@ public class TestOptional {
 
 		Lexer l = new Lexer(input);
 		RDParser parser = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
-		DefaultParsedNode root = parser.parse();
-		System.out.println(GraphViz.toVizDotLink(root));
-
-		assertNotEquals(SUCCESSFUL, root.getMatcher().state);
+		try {
+			DefaultParsedNode pn = parser.parse();
+			assertNotEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
+		} catch (ParseException ignored) {
+		}
 	}
 }

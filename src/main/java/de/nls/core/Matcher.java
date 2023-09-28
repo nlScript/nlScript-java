@@ -21,7 +21,7 @@ public class Matcher {
 			return false;
 		int tParsedLength = pos + parsed.length();
 		int oParsedLength = o.pos + o.parsed.length();
-		return tParsedLength > oParsedLength;
+		return tParsedLength >= oParsedLength;
 	}
 
 	public String toString() {

@@ -1,6 +1,7 @@
 package de.nls.core;
 
 import de.nls.Autocompleter;
+import de.nls.ParseException;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -19,24 +20,42 @@ public class RDParser {
 		this.parsedNodeFactory = parsedNodeFactory;
 	}
 
-	public DefaultParsedNode parse() {
+	public Lexer getLexer() {
+		return lexer;
+	}
+
+	public BNF getGrammar() {
+		return grammar;
+	}
+
+	public ParsedNodeFactory getParsedNodeFactory() {
+		return parsedNodeFactory;
+	}
+
+	public DefaultParsedNode parse() throws ParseException {
 		return parse(null);
 	}
 
-	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) {
+	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) throws ParseException {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
 		ArrayList<SymbolSequence> endOfInput = new ArrayList<>();
-		SymbolSequence parsedSequence = parseRecursive(seq, autocompletions, endOfInput);
+		SymbolSequence parsedSequence = parseRecursive(seq, endOfInput);
 		if(autocompletions != null)
 			collectAutocompletions(endOfInput, autocompletions);
 		if(autocompletions != null && autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
 			autocompletions.remove(autocompletions.size() - 1);
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
 		DefaultParsedNode ret = createParsedTree(parsedSequence, last);
+		// System.out.println(GraphViz.toVizDotLink(ret));
+		// TODO first call buildAst (and remove it from Parser)
+		ret = buildAst(ret);
+		if(ret.getMatcher().state == ParsingState.FAILED)
+			throw new ParseException(ret, last[0], this);
+
 		return ret;
 	}
 
-	public DefaultParsedNode buildAst(DefaultParsedNode pn) {
+	private DefaultParsedNode buildAst(DefaultParsedNode pn) {
 		DefaultParsedNode[] children = new DefaultParsedNode[pn.numChildren()];
 		for(int i = 0; i < pn.numChildren(); i++) {
 			children[i] = buildAst(pn.getChild(i));
@@ -113,7 +132,7 @@ public class RDParser {
 	 *   - for all productions U -> XYZ
 	 *     - in the symbol sequence, replace U with XYZ
 	 */
-	private SymbolSequence parseRecursive(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions, ArrayList<SymbolSequence> endOfInput) {
+	private SymbolSequence parseRecursive(SymbolSequence symbolSequence, ArrayList<SymbolSequence> endOfInput) {
 //		System.out.println("parseRecursive:");
 //		System.out.println("  symbol sequence = " + symbolSequence);
 //		System.out.println("  lexer           = " + lexer);
@@ -145,7 +164,7 @@ public class RDParser {
 		for(Production alternate : alternates) {
 			int lexerPos = lexer.getPosition();
 			SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate);
-			SymbolSequence parsedSequence = parseRecursive(nextSequence, autocompletions, endOfInput);
+			SymbolSequence parsedSequence = parseRecursive(nextSequence, endOfInput);
 			Matcher m = parsedSequence.getLastMatcher();
 			if(m != null) {
 				if (m.state == ParsingState.SUCCESSFUL)

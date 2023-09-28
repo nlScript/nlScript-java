@@ -1,6 +1,7 @@
 package de.nls.ui;
 
 
+import de.nls.ParseException;
 import de.nls.Parser;
 import de.nls.core.Autocompletion;
 
@@ -14,7 +15,7 @@ public class ACProvider {
 		this.parser = parser;
 	}
 
-	public IAutocompletion[] getAutocompletions(String text) {
+	public IAutocompletion[] getAutocompletions(String text) throws ParseException {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		parser.parse(text, autocompletions);
 		return autocompletions.stream().map(ac -> new IAutocompletion() {

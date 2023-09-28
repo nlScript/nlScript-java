@@ -1,5 +1,6 @@
 package de.nls.core;
 
+import de.nls.ParseException;
 import de.nls.ParsedNode;
 import de.nls.Parser;
 import de.nls.ebnf.EBNF;
@@ -16,12 +17,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestHighlevelParser {
 
-	private static Object evaluate(EBNF grammar, String input) {
+	private static Object evaluate(EBNF grammar, String input) throws ParseException {
 		Lexer lexer = new Lexer(input);
 		RDParser parser = new RDParser(grammar.getBNF(), lexer, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode p = parser.parse();
-		System.out.println(GraphViz.toVizDotLink(p));
-		p = parser.buildAst(p);
 		System.out.println(GraphViz.toVizDotLink(p));
 
 		return p.evaluate();
@@ -30,14 +29,15 @@ public class TestHighlevelParser {
 	private static void checkFailed(BNF grammar, String input) {
 		Lexer lexer = new Lexer(input);
 		RDParser parser = new RDParser(grammar, lexer, EBNFParsedNodeFactory.INSTANCE);
-		DefaultParsedNode p = parser.parse();
-		System.out.println(GraphViz.toVizDotLink(p));
-		if (p.getMatcher().state == ParsingState.SUCCESSFUL)
-			throw new RuntimeException();
+		try {
+			DefaultParsedNode pn = parser.parse();
+			assertNotEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
+		} catch (ParseException ignored) {
+		}
 	}
 
 	@Test
-	public void testQuantifier() {
+	public void testQuantifier() throws ParseException {
 		System.out.println("Test Quantifier");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
@@ -51,7 +51,7 @@ public class TestHighlevelParser {
 	}
 
 	@Test
-	public void testIdentifier() {
+	public void testIdentifier() throws ParseException {
 		System.out.println("Test Identifier");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
@@ -71,18 +71,17 @@ public class TestHighlevelParser {
 		}
 	}
 
-	private Object evaluateHighlevelParser(Parser hlp, String input) {
+	private Object evaluateHighlevelParser(Parser hlp, String input) throws ParseException {
 		Lexer lexer = new Lexer(input);
 		RDParser parser = new RDParser(hlp.getGrammar().getBNF(), lexer, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode p = parser.parse();
 		if(p.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException("Parsing failed");
-		p = parser.buildAst(p);
 		return p.evaluate();
 	}
 
 	@Test
-	public void testList() {
+	public void testList() throws ParseException {
 		System.out.println("Test List");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
@@ -95,7 +94,7 @@ public class TestHighlevelParser {
 		EBNFCore tgt = hlp.getTargetGrammar();
 		tgt.compile(list);
 		RDParser rdParser = new RDParser(tgt.getBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
-		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
+		DefaultParsedNode pn = rdParser.parse();
 		assertEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
 		Object[] result = (Object[]) pn.evaluate();
 
@@ -105,7 +104,7 @@ public class TestHighlevelParser {
 	}
 
 	@Test
-	public void testTuple() {
+	public void testTuple() throws ParseException {
 		System.out.println("Test Tuple");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
@@ -123,8 +122,6 @@ public class TestHighlevelParser {
 		System.out.println(GraphViz.toVizDotLink(pn));
 
 		assertEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
-		pn = rdParser.buildAst(pn);
-		System.out.println(GraphViz.toVizDotLink(pn));
 		Object[] result = (Object[]) pn.evaluate();
 
 		assertEquals(1, result[0]);
@@ -132,7 +129,7 @@ public class TestHighlevelParser {
 	}
 
 	@Test
-	public void testCharacterClass() {
+	public void testCharacterClass() throws ParseException {
 		System.out.println("Test Character Class");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
@@ -143,7 +140,7 @@ public class TestHighlevelParser {
 	}
 
 	@Test
-	public void testType() {
+	public void testType() throws ParseException {
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
 		grammar.compile(hlp.TYPE.getTarget());
@@ -156,7 +153,7 @@ public class TestHighlevelParser {
 		EBNFCore tgt = hlp.getTargetGrammar();
 		tgt.compile(tuple);
 		RDParser rdParser = new RDParser(tgt.getBNF(), new Lexer("(1, 2, 3)"), EBNFParsedNodeFactory.INSTANCE);
-		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
+		DefaultParsedNode pn = rdParser.parse();
 		assertEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
 		System.out.println(GraphViz.toVizDotLink(pn));
 		Object[] result = (Object[]) pn.evaluate();
@@ -176,7 +173,7 @@ public class TestHighlevelParser {
 		tgt = hlp.getTargetGrammar();
 		tgt.compile(list);
 		rdParser = new RDParser(tgt.getBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
-		pn = rdParser.buildAst(rdParser.parse());
+		pn = rdParser.parse();
 		System.out.println(GraphViz.toVizDotLink(pn));
 		assertEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
 		result = (Object[]) pn.evaluate();
@@ -196,14 +193,14 @@ public class TestHighlevelParser {
 		tgt = hlp.getTargetGrammar();
 		tgt.compile(identifier);
 		rdParser = new RDParser(tgt.getBNF(), new Lexer("3"), EBNFParsedNodeFactory.INSTANCE);
-		pn = rdParser.buildAst(rdParser.parse());
+		pn = rdParser.parse();
 		System.out.println(GraphViz.toVizDotLink(pn));
 		assertEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
 		assertEquals(3, pn.evaluate());
 	}
 
 	@Test
-	public void testVariable() {
+	public void testVariable() throws ParseException {
 		System.out.println("Test Variable");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
@@ -280,7 +277,7 @@ public class TestHighlevelParser {
 	}
 
 	@Test
-	public void testNoVariable() {
+	public void testNoVariable() throws ParseException {
 		System.out.println("Test NoVariable");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
@@ -305,13 +302,12 @@ public class TestHighlevelParser {
 		assertEquals(Named.UNNAMED, evaluatedTerminal.getName());
 
 		String testToFail = "lj{l";
-		Parser hlp2 = hlp;
-		assertThrows(RuntimeException.class, () -> { evaluateHighlevelParser(hlp2, testToFail); }, "Parsing failed");
+		assertThrows(ParseException.class, () -> evaluateHighlevelParser(hlp, testToFail));
 
 	}
 
 	@Test
-	public void testExpression() {
+	public void testExpression() throws ParseException {
 		System.out.println("Test Expression");
 		Parser hlp = new Parser();
 		EBNF grammar = hlp.getGrammar();
@@ -325,13 +321,13 @@ public class TestHighlevelParser {
 		// now parse and evaluate the generated grammar:
 		tgt.compile(myType.getTarget());
 		RDParser rdParser = new RDParser(tgt.getBNF(), new Lexer("Today, let's wait for 5 minutes."), EBNFParsedNodeFactory.INSTANCE);
-		DefaultParsedNode pn = rdParser.buildAst(rdParser.parse());
+		DefaultParsedNode pn = rdParser.parse();
 		assertEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
 		System.out.println(GraphViz.toVizDotLink(pn));
 	}
 
 	@Test
-	public void testDefineType() {
+	public void testDefineType() throws ParseException {
 		System.out.println("Test define type");
 		Parser hlp = new Parser();
 		hlp.defineType("percentage", "{p:int} %", pn -> pn.evaluate("p"));

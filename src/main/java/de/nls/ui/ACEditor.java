@@ -1,9 +1,12 @@
 package de.nls.ui;
 
 import de.nls.Autocompleter;
+import de.nls.ParseException;
 import de.nls.ParsedNode;
 import de.nls.Parser;
 import de.nls.core.Autocompletion;
+import de.nls.core.GraphViz;
+import de.nls.core.ParsingState;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.LutLoader;
@@ -14,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
@@ -29,34 +33,35 @@ public class ACEditor {
 	private final JFrame frame;
 	// private final JTextArea textArea;
 	private final JTextComponent textArea;
+	private final JTextComponent outputArea;
 	private final AutocompletionContext autocompletionContext;
 	private final Parser parser;
 	private final JButton runButton;
 
-	private ActionListener onRun = new ActionListener() {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			run();
-		}
-	};
+	private ActionListener onRun = e -> run();
 
 	public ACEditor(Parser parser) {
 		this.parser = parser;
 		textArea = new JTextArea(20, 60);
 		textArea.setFont(new Font("monospaced", Font.BOLD, 12));
-		String text = "";
-		for(int i = 0; i < 100; i++) {
-			text += (i + 1) + "\n";
-		}
-		textArea.setText(text);
 
 		JScrollPane textAreaScrollPane = new JScrollPane(textArea);
 
 		TextLineNumber textLineNumber = new TextLineNumber(textArea);
 		textAreaScrollPane.setRowHeaderView(textLineNumber);
 
+		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		splitPane.add(textAreaScrollPane);
+
+		outputArea = new JTextArea(5, 60);
+		outputArea.setFont(new Font("monospaced", Font.PLAIN, 12));
+
+		JScrollPane outputAreaScrollPane = new JScrollPane(outputArea);
+//		outputAreaScrollPane.setRowHeaderView(new JLabel("x"));
+		splitPane.add(outputAreaScrollPane);
+
 		frame = new JFrame();
-		frame.getContentPane().add(textAreaScrollPane);
+		frame.getContentPane().add(splitPane);
 
 		JPanel buttons = new JPanel(new FlowLayout());
 		runButton = new JButton("Run");
@@ -105,8 +110,13 @@ public class ACEditor {
 	}
 
 	public void run() {
-		ParsedNode pn = parser.parse(getText(), null);
-		pn.evaluate();
+		outputArea.setText("");
+		try {
+			ParsedNode pn = parser.parse(getText(), null);
+			pn.evaluate();
+		} catch(ParseException e) {
+			outputArea.setText(e.getMessage());
+		}
 	}
 
 	public void setVisible(boolean b) {
@@ -170,7 +180,7 @@ public class ACEditor {
 		new ImagePlus("gray", out).show();
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ParseException {
 		new ACEditor(initParser2()).setVisible(true);
 		if(true)
 			return;

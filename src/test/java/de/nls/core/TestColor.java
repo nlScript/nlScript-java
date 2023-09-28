@@ -1,5 +1,6 @@
 package de.nls.core;
 
+import de.nls.ParseException;
 import de.nls.ParsedNode;
 import de.nls.Parser;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class TestColor {
 
 	@Test
-	public void test01() {
+	public void test01() throws ParseException {
 		Parser hlp = new Parser();
 		hlp.defineSentence("My favorite color is {c:color}.", pn -> {
 			int color = (Integer) pn.evaluate("c");
