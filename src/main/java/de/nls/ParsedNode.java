@@ -46,12 +46,12 @@ public class ParsedNode extends DefaultParsedNode {
 		return thisRule.equals(parentRule);
 	}
 
-	public String getAutocompletion() {
+	public String getAutocompletion(boolean justCheck) {
 		Rule rule = getRule();
 		if(rule != null && rule.getAutocompleter() != null && !parentHasSameRule()) {
-			return rule.getAutocompleter().getAutocompletion(this);
+			return rule.getAutocompleter().getAutocompletion(this, justCheck);
 		}
-		return super.getAutocompletion();
+		return super.getAutocompletion(justCheck);
 	}
 
 	public void notifyListeners() {

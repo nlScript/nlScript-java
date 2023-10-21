@@ -271,7 +271,7 @@ public class ACEditor {
 
 		parser.defineType("defined-channels", "'{channel:[A-Za-z0-9]:+}'",
 				e -> null,
-				e -> {
+				(e, justCheck) -> {
 					String ret = String.join(";;;", definedChannels);
 					System.out.println("defined-channels: autocomplete: " + ret);
 					return ret;
@@ -279,7 +279,7 @@ public class ACEditor {
 
 		parser.defineType("defined-positions", "'{position:[A-Za-z0-9]:+}'",
 				e -> e.getParsedString("position"),
-				e -> String.join(";;;", definedRegions));
+				(e, justCheck) -> String.join(";;;", definedRegions));
 
 		parser.defineType("time-unit", "second(s)", e -> 1);
 		parser.defineType("time-unit", "minute(s)", e -> 60);

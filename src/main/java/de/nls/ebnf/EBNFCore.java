@@ -147,14 +147,16 @@ public class EBNFCore {
 
 	public Rule tuple(String type, Named<?> child, String... names) {
 		NamedRule wsStar = star(null, Terminal.WHITESPACE.withName()).withName("ws*");
-		wsStar.get().setAutocompleter(pn -> "");
+		wsStar.get().setAutocompleter((pn, justCheck) -> "");
 		Symbol open      = sequence(null, Terminal.literal("(").withName("open"), wsStar).tgt;
 		Symbol close     = sequence(null, wsStar, Terminal.literal(")").withName("close")).tgt;
 		Symbol delimiter = sequence(null, wsStar, Terminal.literal(",").withName("delimiter"), wsStar).tgt;
 		Rule ret = join(type, child, open, close, delimiter, names);
-		ret.setAutocompleter(pn -> {
+		ret.setAutocompleter((pn, justCheck) -> {
 			if(!pn.getParsedString().isEmpty())
 				return null;
+			if(justCheck)
+				return Autocompleter.DOES_AUTOCOMPLETE;
 			StringBuilder sb = new StringBuilder("(");
 			Join rule = (Join) pn.getRule();
 			sb.append("${").append(rule.getNameForChild(0)).append("}");

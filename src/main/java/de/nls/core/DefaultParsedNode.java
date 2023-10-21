@@ -42,10 +42,10 @@ public class DefaultParsedNode {
 	}
 
 	public boolean doesAutocomplete() {
-		return getAutocompletion() != null;
+		return getAutocompletion(true) != null;
 	}
 
-	public String getAutocompletion() {
+	public String getAutocompletion(boolean justCheck) {
 		if(symbol == null)
 			return null;
 
@@ -56,7 +56,7 @@ public class DefaultParsedNode {
 		if(name.equals(Named.UNNAMED))
 			name = symbol.getSymbol();
 		if(symbol.isTerminal()) {
-			return getParsedString().length() > 0
+			return !getParsedString().isEmpty()
 					? Autocompleter.VETO
 					: "${" + name + "}";
 		}

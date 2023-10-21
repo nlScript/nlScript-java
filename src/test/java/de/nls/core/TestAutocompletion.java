@@ -87,7 +87,7 @@ public class TestAutocompletion {
 
 		parser.defineType("defined-channels", "'{channel:[A-Za-z0-9]:+}'",
 				e -> null,
-				e -> String.join(";;;", definedChannels));
+				(e, justCheck) -> String.join(";;;", definedChannels));
 
 		parser.defineSentence(
 				"Use channel {channel:defined-channels}.",
@@ -148,13 +148,13 @@ public class TestAutocompletion {
 	public void test07() throws ParseException {
 		Parser parser = new Parser();
 
-		parser.defineType("led", "385nm", e -> null, e -> "385nm");
-		parser.defineType("led", "470nm", e -> null, e -> "470nm");
-		parser.defineType("led", "567nm", e -> null, e -> "567nm");
-		parser.defineType("led", "625nm", e -> null, e -> "625nm");
+		parser.defineType("led", "385nm", e -> null, (e, justCheck) -> "385nm");
+		parser.defineType("led", "470nm", e -> null, (e, justCheck) -> "470nm");
+		parser.defineType("led", "567nm", e -> null, (e, justCheck) -> "567nm");
+		parser.defineType("led", "625nm", e -> null, (e, justCheck) -> "625nm");
 
-		parser.defineType("led-power", "{<led-power>:int}%", e ->null,true);
-		parser.defineType("led-setting", "{led-power:led-power} at {wavelength:led}", e ->null,true);
+		parser.defineType("led-power", "{<led-power>:int}%", e -> null,true);
+		parser.defineType("led-setting", "{led-power:led-power} at {wavelength:led}", e -> null,true);
 
 		parser.defineSentence(
 				"Excite with {led-setting:led-setting}.",
@@ -221,8 +221,8 @@ public class TestAutocompletion {
 								Terminal.literal("two").withName(),
 								Terminal.literal("three").withName(),
 								Terminal.literal("four").withName()
-						).setAutocompleter(pn -> {
-							if(pn.getParsedString().length() > 0)
+						).setAutocompleter((pn, justCheck) -> {
+							if(!pn.getParsedString().isEmpty())
 								return Autocompleter.VETO;
 							return "${" + pn.getName() + "}";
 						}).withName("or")

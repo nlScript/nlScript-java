@@ -49,8 +49,10 @@ public class RDParser {
 		// System.out.println(GraphViz.toVizDotLink(ret));
 		// TODO first call buildAst (and remove it from Parser)
 		ret = buildAst(ret);
-		if(ret.getMatcher().state == ParsingState.FAILED)
+		if(ret.getMatcher().state == ParsingState.FAILED) {
+			System.out.println(GraphViz.toVizDotLink(ret));
 			throw new ParseException(ret, last[0], this);
+		}
 
 		return ret;
 	}
@@ -105,7 +107,7 @@ public class RDParser {
 
 		int autocompletingParentStart = autocompletingParent.getMatcher().pos;
 		String alreadyEntered = lexer.substring(autocompletingParentStart);
-		String completion = autocompletingParent.getAutocompletion();
+		String completion = autocompletingParent.getAutocompletion(false);
 		if(completion != null && !completion.isEmpty()) {
 			for(String c : completion.split(";;;")) {
 				if(c.equals(Autocompleter.VETO)) {

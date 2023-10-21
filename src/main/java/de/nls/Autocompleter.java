@@ -19,7 +19,9 @@ public interface Autocompleter {
 
 	String VETO = "VETO";
 
-	String getAutocompletion(ParsedNode pn);
+	String DOES_AUTOCOMPLETE = "DOES_AUTOCOMPLETE";
+
+	String getAutocompletion(ParsedNode pn, boolean justCheck);
 
 	class IfNothingYetEnteredAutocompleter implements Autocompleter {
 
@@ -30,14 +32,14 @@ public interface Autocompleter {
 		}
 
 		@Override
-		public String getAutocompletion(ParsedNode pn) {
+		public String getAutocompletion(ParsedNode pn, boolean justCheck) {
 			return pn.getParsedString().isEmpty() ? completion : "";
 		}
 	}
 
-	Autocompleter DEFAULT_INLINE_AUTOCOMPLETER = pn -> {
+	Autocompleter DEFAULT_INLINE_AUTOCOMPLETER = (pn, justCheck) -> {
 		String alreadyEntered = pn.getParsedString();
-		if(alreadyEntered.length() > 0)
+		if(!alreadyEntered.isEmpty())
 			return Autocompleter.VETO;
 		String name = pn.getName();
 		if(name != null)
@@ -62,10 +64,14 @@ public interface Autocompleter {
 		}
 
 		@Override
-		public String getAutocompletion(ParsedNode pn) {
+		public String getAutocompletion(ParsedNode pn, boolean justCheck) {
 			String alreadyEntered = pn.getParsedString();
-			if (alreadyEntered.length() > 0)
+			if (!alreadyEntered.isEmpty())
 				return null;
+
+			if(justCheck)
+				return Autocompleter.DOES_AUTOCOMPLETE;
+
 			StringBuilder autocompletionString = new StringBuilder();
 
 			Rule sequence = pn.getRule();
@@ -110,7 +116,9 @@ public interface Autocompleter {
 	}
 
 	class PathAutocompleter implements Autocompleter {
-		public String getAutocompletion(ParsedNode p) {
+		public String getAutocompletion(ParsedNode p, boolean justCheck) {
+			if(justCheck)
+				return DOES_AUTOCOMPLETE;
 			String ret = CompletePath.getCompletion(p.getParsedString());
 			System.out.println("getAutocompletion: " + ret);
 			return ret;
