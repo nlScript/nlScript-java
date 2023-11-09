@@ -119,9 +119,7 @@ public interface Autocompleter {
 		public String getAutocompletion(ParsedNode p, boolean justCheck) {
 			if(justCheck)
 				return DOES_AUTOCOMPLETE;
-			String ret = CompletePath.getCompletion(p.getParsedString());
-			System.out.println("getAutocompletion: " + ret);
-			return ret;
+			return CompletePath.getCompletion(p.getParsedString());
 		}
 	}
 }
