@@ -50,7 +50,6 @@ public class ACPopup extends JWindow {
 				if(text.equals(""))
 					text = "<empty>";
 
-				System.out.println("label text = " + text);
 				JLabel label = (JLabel) super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
 				Font font = label.getFont();
 				font = font.deriveFont(Font.PLAIN);
@@ -70,8 +69,6 @@ public class ACPopup extends JWindow {
 		jList.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				int idx = jList.locationToIndex(e.getPoint());
-				System.out.println("popup: clicked " + model.getElementAt(idx));
 			}
 
 			@Override
