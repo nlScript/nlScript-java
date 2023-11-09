@@ -33,7 +33,7 @@ public class Parser {
 
 	private final EBNF targetGrammar = new EBNF();
 
-	private HashMap<String, String> symbol2Autocompletion = new HashMap<>();
+	private final HashMap<String, String> symbol2Autocompletion = new HashMap<>();
 
 	private boolean compiled = false;
 
@@ -59,7 +59,7 @@ public class Parser {
 		return grammar;
 	}
 
-	public EBNFCore getTargetGrammar() {
+	public EBNF getTargetGrammar() {
 		return targetGrammar;
 	}
 
