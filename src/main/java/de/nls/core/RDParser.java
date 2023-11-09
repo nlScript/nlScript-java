@@ -4,6 +4,7 @@ import de.nls.Autocompleter;
 import de.nls.ParseException;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -70,20 +71,33 @@ public class RDParser {
 	}
 
 	private void collectAutocompletions(ArrayList<SymbolSequence> endOfInput, ArrayList<Autocompletion> autocompletions) {
+		assert autocompletions != null;
+		ArrayList<DefaultParsedNode> autocompletingParents = new ArrayList<>();
 		for(SymbolSequence seq : endOfInput)
-			addAutocompletions(seq, autocompletions);
+			collectAutocompletingParents(seq, autocompletingParents);
+
+		HashSet<String> done = new HashSet<>();
+		for(DefaultParsedNode autocompletingParent : autocompletingParents) {
+			Production prod = autocompletingParent.getProduction();
+			String key = null;
+			if(prod != null) {
+				key = prod.getLeft().getSymbol() + ":";
+				for(Symbol s : prod.getRight())
+					key += s.getSymbol();
+			} else {
+				key = autocompletingParent.getSymbol().getSymbol();
+			}
+			if(!done.contains(key)) {
+				addAutocompletions(autocompletingParent, autocompletions);
+				done.add(key);
+			}
+		}
 	}
 
-	/**
-	 * Removes all entries and puts null at index 0 if further autocompletion should be prohibited.
-	 */
-	private void addAutocompletions(SymbolSequence symbolSequence, ArrayList<Autocompletion> autocompletions) {
-		assert autocompletions != null;
-		if(autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
-			return;
-
+	private void collectAutocompletingParents(SymbolSequence symbolSequence, ArrayList<DefaultParsedNode> autocompletingParents) {
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
-		createParsedTree(symbolSequence, last);
+		DefaultParsedNode treeRoot = createParsedTree(symbolSequence, last);
+//		System.out.println(GraphViz.toVizDotLink(treeRoot));
 
 		// get a trace to the root
 		ArrayList<DefaultParsedNode> pathToRoot = new ArrayList<>();
@@ -102,7 +116,15 @@ public class RDParser {
 				break;
 			}
 		}
-		if(autocompletingParent == null)
+		if(autocompletingParent != null)
+			autocompletingParents.add(autocompletingParent);
+	}
+
+	/**
+	 * Removes all entries and puts null at index 0 if further autocompletion should be prohibited.
+	 */
+	private void addAutocompletions(DefaultParsedNode autocompletingParent, ArrayList<Autocompletion> autocompletions) {
+		if(autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
 			return;
 
 		int autocompletingParentStart = autocompletingParent.getMatcher().pos;
