@@ -2,8 +2,15 @@ package de.nls.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class BNF {
+
+	static final Logger logger = Logger.getLogger(BNF.class.getName());
+	static {
+		logger.setLevel(Level.INFO);
+	}
 
 	public static final NonTerminal ARTIFICIAL_START_SYMBOL = new NonTerminal("S'");
 	public static final Terminal    ARTIFICIAL_STOP_SYMBOL  = Terminal.END_OF_INPUT;
@@ -37,7 +44,7 @@ public class BNF {
 	public Production addProduction(Production p) {
 		int existing = productions.indexOf(p);
 		if(existing >= 0) {
-			System.out.println("Production already exists: " + productions.get(existing));
+			logger.info("Production already exists: " + productions.get(existing));
 			return productions.get(existing);
 		}
 		productions.add(p);
