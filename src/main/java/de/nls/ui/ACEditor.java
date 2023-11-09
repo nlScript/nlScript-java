@@ -32,8 +32,13 @@ public class ACEditor {
 	private final AutocompletionContext autocompletionContext;
 	private final Parser parser;
 	private final JButton runButton;
+	private final JPanel buttonsPanel;
 
 	private ActionListener onRun = e -> run();
+
+	private Runnable beforeRun = () -> {};
+
+	private Runnable afterRun = () -> {};
 
 	public ACEditor(Parser parser) {
 		this.parser = parser;
@@ -58,11 +63,11 @@ public class ACEditor {
 		frame = new JFrame();
 		frame.getContentPane().add(splitPane);
 
-		JPanel buttons = new JPanel(new FlowLayout());
+		buttonsPanel = new JPanel(new FlowLayout());
 		runButton = new JButton("Run");
 		runButton.addActionListener(onRun);
-		buttons.add(runButton);
-		frame.getContentPane().add(buttons, BorderLayout.SOUTH);
+		buttonsPanel.add(runButton);
+		frame.getContentPane().add(buttonsPanel, BorderLayout.SOUTH);
 
 		frame.pack();
 		autocompletionContext = new AutocompletionContext(textArea, new ACProvider(parser));
@@ -98,20 +103,48 @@ public class ACEditor {
 //		});
 	}
 
+	public void setMenuBar(JMenuBar menuBar) {
+		frame.setJMenuBar(menuBar);
+	}
+
+	public JPanel getButtonsPanel() {
+		return buttonsPanel;
+	}
+
 	public void setOnRun(ActionListener l) {
 		runButton.removeActionListener(onRun);
 		onRun = l;
 		runButton.addActionListener(onRun);
 	}
 
+	public void setBeforeRun(Runnable r) {
+		this.beforeRun = r;
+	}
+
+	public void setAfterRun(Runnable r) {
+		this.afterRun = r;
+	}
+
 	public void run() {
+		run(false);
+	}
+
+	public void run(boolean selectedLines) {
 		outputArea.setText("");
-		try {
-			ParsedNode pn = parser.parse(getText(), null);
-			pn.evaluate();
-		} catch(ParseException e) {
-			outputArea.setText(e.getMessage());
-		}
+		ExecutorService exec = Executors.newSingleThreadExecutor();
+		exec.submit(new Runnable() {
+			public void run() {
+				try {
+					beforeRun.run();
+					String textToEvaluate = selectedLines ? getSelectedLines() : getText();
+					ParsedNode pn = parser.parse(textToEvaluate, null);
+					pn.evaluate();
+					afterRun.run();
+				} catch(ParseException e) {
+					outputArea.setText(e.getMessage());
+				}
+			}
+		});
 	}
 
 	public void setVisible(boolean b) {
