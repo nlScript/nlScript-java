@@ -26,7 +26,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 
 	private final ErrorHighlight errorHighlight;
 
-	private final boolean insertAsFarAsPossible = true;
+	private boolean insertAsFarAsPossible = true;
 
 	private static class ErrorHighlight {
 		private final HighlightPainter errorHighlight = new HighlightPainter.Squiggle(new Color(255, 100, 100));
@@ -258,8 +258,8 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 
 	public void doAutocompletion(int caret, boolean autoInsertSingleOption) {
 		String entireText = tc.getText();
-		if(caret < entireText.trim().length())
-			autoInsertSingleOption = false;
+//		if(caret < entireText.trim().length())
+//			autoInsertSingleOption = false;
 		String text = entireText.substring(0, caret);
 
 		errorHighlight.clearError();
@@ -277,7 +277,11 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			if (popup.getModel().getSize() == 1 && autoInsertSingleOption) {
 				final IAutocompletion completion = popup.getModel().getElementAt(0);
 				SwingUtilities.invokeLater(() -> {
+					boolean tmp = insertAsFarAsPossible;
+					if(caret < entireText.trim().length())
+						insertAsFarAsPossible = false;
 					insertCompletion(caret, completion);
+					insertAsFarAsPossible = tmp;
 				});
 			}
 			hidePopup();
