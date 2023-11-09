@@ -1,7 +1,6 @@
 package de.nls.ui;
 
 import de.nls.ParseException;
-import de.nls.core.DefaultParsedNode;
 import de.nls.core.Matcher;
 
 import javax.swing.SwingUtilities;
@@ -67,10 +66,9 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			}
 
 			@Override public void keyPressed(KeyEvent e) {
-				if(e.isConsumed()) {
-					System.out.println("AutocompletionContext.keyPressed: consumed=true");
+				if(e.isConsumed())
 					return;
-				}
+
 				if (popup.isVisible()) {
 					int kc = e.getKeyCode();
 					if (kc == KeyEvent.VK_DOWN || kc == KeyEvent.VK_RIGHT) {
@@ -82,14 +80,10 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 						e.consume();
 					}
 					if (kc == KeyEvent.VK_ENTER) {
-						System.out.println("Enter");
 						final IAutocompletion completion = popup.getSelected();
 						if(completion != null) {
 							hidePopup(); // need to hide it before changing the document
 							insertCompletion(tc.getCaretPosition(), completion);
-//							// if we made a choice in the popup menu, insert it and cycle to next parameter
-//							if(parameterizedCompletion != null)
-//								parameterizedCompletion.next();
 						}
 						e.consume();
 					}
@@ -112,7 +106,6 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		tc.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				System.out.println("insertUpdate: " + tc.getText());
 				int caret = e.getOffset() + e.getLength();
 				justInserted.set(true);
 				if(!insertedByAutocompletion || insertAsFarAsPossible) {
@@ -121,10 +114,8 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 						// e.g. '${name}' was inserted. If we autocompleted here, we'd autocomplete after 'name' and
 						// ignore the parameterization.
 						// If it was indeed a parameterized completion, autocomplete will be called in parameterChanged().
-						System.out.println("Don't autocomplete because it a parameterize autocompletion was inserted");
 						return;
 					}
-					System.out.println("insertUpdate: doAutocompletion caret = " + caret + " (after " + tc.getText().charAt(caret - 1) + ")");
 					doAutocompletion(caret, true);
 				}
 			}
@@ -149,7 +140,6 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 				justInserted.set(false);
 		});
 
-
 		parent.addComponentListener(new ComponentListener() {
 			@Override
 			public void componentResized(ComponentEvent e) {
@@ -171,7 +161,6 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 				hidePopup();
 			}
 		});
-
 	}
 
 	private ParameterizedCompletionContext parameterizedCompletion = null;
@@ -189,14 +178,12 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		 * the beginning of the insertion (e.g. "${percentage} %"), we would insert the very same completion again
 		 * when trying to auto-complete the first parameter.
 		 */
-		if(caret == lastInsertionPosition && completion.getCompletion().equals(lastInserted)) {
-			System.out.println("Skip insertion");
+		if(caret == lastInsertionPosition && completion.getCompletion().equals(lastInserted))
 			return;
-		}
+
 
 		lastInserted = repl;
 		lastInsertionPosition = caret;
-		System.out.println("insertCompletion: caret = " + caret + ", compl = " + repl);
 
 		tc.moveCaretPosition(caret - alreadyEntered.length());
 
@@ -212,16 +199,13 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		else {
 			tc.replaceSelection(repl);
 		}
-		System.out.println("insert completion caret is now " + tc.getCaretPosition());
 		insertedByAutocompletion = false;
 	}
 
 	@Override
 	public void parameterChanged(ParameterizedCompletionContext source, int pIdx, boolean wasLast) {
-		System.out.println("parameterChanged: " + pIdx);
 		if(source != parameterizedCompletion) {
 			// This should not happen, because we cancel the current parameterization before making a new one.
-			System.out.println("skipping");
 			cancelParameterizedCompletion();
 			new Exception().printStackTrace();
 			return;
@@ -237,7 +221,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			doAutocompletion(tc.getCaretPosition(), true);
 			return;
 		}
-		System.out.println(parameterizedCompletion.getParametersSize());
+//		System.out.println(parameterizedCompletion.getParametersSize());
 		// if (parameterizedCompletion.getParametersSize() > 2) // 1 parameter + the end cursor parameter
 			doAutocompletion(tc.getCaretPosition(), false);
 	}
@@ -293,7 +277,6 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			if (popup.getModel().getSize() == 1 && autoInsertSingleOption) {
 				final IAutocompletion completion = popup.getModel().getElementAt(0);
 				SwingUtilities.invokeLater(() -> {
-					System.out.println("Only one option left [" + completion.getCompletion() + "], insert it automatically.");
 					insertCompletion(caret, completion);
 				});
 			}
