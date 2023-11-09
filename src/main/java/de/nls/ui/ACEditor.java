@@ -5,28 +5,23 @@ import de.nls.ParseException;
 import de.nls.ParsedNode;
 import de.nls.Parser;
 import de.nls.core.Autocompletion;
-import de.nls.core.GraphViz;
-import de.nls.core.ParsingState;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.plugin.LutLoader;
-import ij.process.ColorProcessor;
-import ij.process.ImageProcessor;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.IndexColorModel;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ACEditor {
 
@@ -135,10 +130,31 @@ public class ACEditor {
 		return textArea.getText();
 	}
 
+	public int getSelectedLinesStart() {
+		JTextArea jta = (JTextArea) textArea;
+		int start = jta.getSelectionStart();
+		try {
+			start = jta.getLineStartOffset(jta.getLineOfOffset(start));
+		} catch(BadLocationException ignored) {
 		}
+		return start;
 	}
 
+	public String getSelectedLines() {
+		if(!(textArea instanceof JTextArea))
+			return textArea.getSelectedText();
+		JTextArea jta = (JTextArea) textArea;
+		int start = jta.getSelectionStart();
+		int end = jta.getSelectionEnd();
+		try {
+			start = jta.getLineStartOffset(jta.getLineOfOffset(start));
+			end = jta.getLineEndOffset(jta.getLineOfOffset(end));
+		} catch(BadLocationException ignored) {
 		}
+		try {
+			return jta.getText(start, end - start);
+		} catch(BadLocationException e) {
+			return textArea.getSelectedText();
 		}
 	}
 }
