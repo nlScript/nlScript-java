@@ -19,6 +19,8 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -142,6 +144,11 @@ public class ACEditor {
 					afterRun.run();
 				} catch(ParseException e) {
 					outputArea.setText(e.getMessage());
+				} catch(Throwable e) {
+					StringWriter sw = new StringWriter();
+					PrintWriter pw = new PrintWriter(sw);
+					e.printStackTrace(pw);
+					outputArea.setText(pw.toString());
 				}
 			}
 		});
