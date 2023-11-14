@@ -146,10 +146,6 @@ public class ParameterizedCompletionContext implements KeyListener {
 			next();
 			e.consume();
 		}
-		else if(kc == KeyEvent.VK_ESCAPE) {
-			cancel();
-			e.consume();
-		}
 	}
 
 	@Override

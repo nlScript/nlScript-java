@@ -92,6 +92,11 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 						hidePopup();
 					}
 				}
+				else if(parameterizedCompletion != null) {
+					if(e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+						cancelParameterizedCompletion();
+					}
+				}
 				else {
 					if(e.getKeyCode() == KeyEvent.VK_SPACE && e.isControlDown()) {
 						doAutocompletion(tc.getCaretPosition(), true);
