@@ -107,9 +107,9 @@ public abstract class Terminal extends Symbol {
 			String symbol = getSymbol();
 			for(int i = 0; i < symbol.length(); i++) {
 				if(lexer.isAtEnd(i))
-					return new Matcher(ParsingState.END_OF_INPUT, pos, lexer.substring(pos, pos + i));
+					return new Matcher(ParsingState.END_OF_INPUT, pos, lexer.substring(pos, pos + i + 1));
 				if(lexer.peek(i) != symbol.charAt(i))
-					return new Matcher(ParsingState.FAILED, pos, lexer.substring(pos, pos + i));
+					return new Matcher(ParsingState.FAILED, pos, lexer.substring(pos, pos + i + 1));
 			}
 			return new Matcher(ParsingState.SUCCESSFUL, pos, symbol);
 		}
