@@ -248,7 +248,10 @@ public class Parser {
 		return grammar.sequence("character-class",
 				Terminal.literal("[").withName(),
 				grammar.plus(null,
-						Terminal.characterClass("[^]]").withName()
+						grammar.or(null,
+							Terminal.characterClass("[^]]").withName(),
+							Terminal.literal("\\]").withName()
+						).withName()
 				).withName("plus"),
 				Terminal.literal("]").withName()
 		).setEvaluator(pn -> {
