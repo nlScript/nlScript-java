@@ -214,7 +214,7 @@ public class RDParser {
 		for(Symbol symbol : leafSequence.sequence) {
 			Matcher matcher = i < nParsedMatchers
 					? leafSequence.parsedMatchers.get(i)
-					: new Matcher(ParsingState.NOT_PARSED, 0, "");
+					: new Matcher(ParsingState.NOT_PARSED, 0, ""); // TODO maybe this should not be 0
 			i++;
 
 			DefaultParsedNode pn = parsedNodeFactory.createNode(matcher, symbol, null);
