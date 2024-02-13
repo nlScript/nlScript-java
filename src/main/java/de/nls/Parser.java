@@ -267,7 +267,7 @@ public class Parser {
 					return symbol;
 				}).withName("type"),
 				LIST.withName("list"),
-				TUPLE.withName("tupe"),
+				TUPLE.withName("tuple"),
 				CHARACTER_CLASS.withName("character-class")
 		);
 	}
