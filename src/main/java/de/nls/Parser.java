@@ -5,6 +5,7 @@ import de.nls.ebnf.EBNF;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.EBNFParser;
+import de.nls.ebnf.Join;
 import de.nls.ebnf.NamedRule;
 import de.nls.ebnf.Rule;
 import de.nls.util.Range;
@@ -188,6 +189,7 @@ public class Parser {
 		return identifier("entry-name");
 	}
 
+	// evaluates to the target grammar's list rule (i.e. Join).
 	private Rule list() {
 		return grammar.sequence("list",
 				Terminal.literal("list").withName(),
@@ -204,7 +206,7 @@ public class Parser {
 			Named<?> namedEntry = (entry instanceof Terminal)
 					? ((Terminal) entry).withName(identifier)
 					: ((NonTerminal) entry).withName(identifier);
-			return targetGrammar.list(null, namedEntry).getTarget();
+			return targetGrammar.list(null, namedEntry);
 		});
 	}
 
@@ -297,6 +299,22 @@ public class Parser {
 		).setEvaluator(pn -> {
 			String variableName = (String) pn.evaluate("variable-name");
 			Object typeObject = pn.evaluate("opt-type", "seq-type", "type");
+			Object quantifierObject = pn.evaluate("opt-quantifier", "seq-quantifier", "quantifier");
+
+
+			// typeObject is either
+			// - a type (symbol) from the target grammar, or
+			// - a character-class (i.e. a terminal), or
+			// - a tuple (i.e. symbol of the tuple in the target grammar), or
+			// - a list (i.e. a Rule, or more specifically a Join).
+			if(typeObject instanceof Join) {
+				Join join = (Join) typeObject;
+				if(quantifierObject != null)
+					join.setCardinality((Range) quantifierObject);
+				return join.getTarget().withName(variableName);
+			}
+
+
 			Symbol symbol = typeObject == null
 					? Terminal.literal(variableName)
 					: (Symbol) typeObject;
@@ -305,7 +323,6 @@ public class Parser {
 					? ((Terminal) symbol).withName(variableName)
 					: ((NonTerminal) symbol).withName(variableName);
 
-			Object quantifierObject = pn.evaluate("opt-quantifier", "seq-quantifier", "quantifier");
 			if(quantifierObject != null) {
 				Range range = (Range) quantifierObject;
 				     if(range.equals(Range.STAR))     symbol = targetGrammar.star(    null, namedSymbol).getTarget();
