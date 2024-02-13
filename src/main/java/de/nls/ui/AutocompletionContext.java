@@ -295,15 +295,17 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		}
 		popup.getModel().set(completions);
 		if (completions.length < 2) {
-			if (popup.getModel().getSize() == 1 && autoInsertSingleOption) {
+			if (popup.getModel().getSize() == 1) {
 				final IAutocompletion completion = popup.getModel().getElementAt(0);
-				SwingUtilities.invokeLater(() -> {
-					boolean tmp = insertAsFarAsPossible;
-					if(caret < entireText.trim().length())
-						insertAsFarAsPossible = false;
-					insertCompletion(caret, completion);
-					insertAsFarAsPossible = tmp;
-				});
+				if(autoInsertSingleOption || !completion.getCompletion().contains("${")) {
+					SwingUtilities.invokeLater(() -> {
+						boolean tmp = insertAsFarAsPossible;
+						if (caret < entireText.trim().length())
+							insertAsFarAsPossible = false;
+						insertCompletion(caret, completion);
+						insertAsFarAsPossible = tmp;
+					});
+				}
 			}
 			hidePopup();
 			return;
