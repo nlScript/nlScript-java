@@ -37,6 +37,8 @@ public class ACEditor {
 	private final JButton runButton;
 	private final JPanel buttonsPanel;
 
+	private Thread runThread = null;
+
 	private ActionListener onRun = e -> run();
 
 	private Runnable beforeRun = () -> {};
@@ -106,6 +108,10 @@ public class ACEditor {
 //		});
 	}
 
+	public JFrame getFrame() {
+		return frame;
+	}
+
 	public void setMenuBar(JMenuBar menuBar) {
 		frame.setJMenuBar(menuBar);
 	}
@@ -134,8 +140,7 @@ public class ACEditor {
 
 	public void run(boolean selectedLines) {
 		outputArea.setText("");
-		ExecutorService exec = Executors.newSingleThreadExecutor();
-		exec.submit(new Runnable() {
+		runThread = new Thread(new Runnable() {
 			public void run() {
 				try {
 					beforeRun.run();
@@ -155,6 +160,11 @@ public class ACEditor {
 				}
 			}
 		});
+		runThread.start();
+	}
+
+	public Thread getRunThread() {
+		return runThread;
 	}
 
 	public void setVisible(boolean b) {
