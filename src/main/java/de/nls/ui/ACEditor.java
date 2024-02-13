@@ -5,6 +5,7 @@ import de.nls.ParseException;
 import de.nls.ParsedNode;
 import de.nls.Parser;
 import de.nls.core.Autocompletion;
+import de.nls.core.GraphViz;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -140,6 +141,7 @@ public class ACEditor {
 					beforeRun.run();
 					String textToEvaluate = selectedLines ? getSelectedLines() : getText();
 					ParsedNode pn = parser.parse(textToEvaluate, null);
+					System.out.println(GraphViz.toVizDotLink(pn));
 					pn.evaluate();
 					afterRun.run();
 				} catch(ParseException e) {
@@ -149,6 +151,7 @@ public class ACEditor {
 					PrintWriter pw = new PrintWriter(sw);
 					e.printStackTrace(pw);
 					outputArea.setText(pw.toString());
+					e.printStackTrace();
 				}
 			}
 		});
