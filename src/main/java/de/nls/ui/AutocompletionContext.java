@@ -16,6 +16,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AutocompletionContext implements ParameterizedCompletionContext.ParameterChangeListener {
@@ -61,6 +63,19 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		final Window parent = SwingUtilities.getWindowAncestor(tc);
 		this.popup = new ACPopup(parent);
 		this.errorHighlight = new ErrorHighlight(tc);
+
+		this.popup.addMouseListenerToList(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if(e.getClickCount() == 2) {
+					final IAutocompletion completion = popup.getSelected();
+					if(completion != null) {
+						hidePopup(); // need to hide it before changing the document
+						insertCompletion(tc.getCaretPosition(), completion);
+					}
+					e.consume();
+				}
+			}
+		});
 		this.tc.addKeyListener(new KeyListener() {
 			@Override public void keyTyped(KeyEvent e) {
 			}

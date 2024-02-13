@@ -66,28 +66,14 @@ public class ACPopup extends JWindow {
 		setLocation(200, 200);
 		setSize(350, 250);
 		setFocusableWindowState(false);
+	}
 
-		jList.addMouseListener(new MouseListener() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-			}
+	public void addMouseListenerToList(MouseListener l) {
+		jList.addMouseListener(l);
+	}
 
-			@Override
-			public void mousePressed(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-			}
-		});
+	public void removeMouseListenerFromList(MouseListener l) {
+		jList.removeMouseListener(l);
 	}
 
 	public IAutocompletion getSelected() {
