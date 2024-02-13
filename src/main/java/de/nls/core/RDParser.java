@@ -262,7 +262,7 @@ public class RDParser {
 	}
 
 	private static Matcher matcherFromChildSequence(List<DefaultParsedNode> children) {
-		int pos = children.size() > 0 ? children.get(0).getMatcher().pos : 0;
+		int pos = -1;
 		ParsingState state = ParsingState.NOT_PARSED;
 		StringBuilder parsed = new StringBuilder();
 		for(DefaultParsedNode child : children) {
@@ -273,12 +273,16 @@ public class RDParser {
 			Matcher matcher = child.getMatcher();
 			ParsingState childState = matcher.state;
 			if (childState != ParsingState.NOT_PARSED) {
+				if(pos == -1)
+					pos = matcher.pos; // parent pos is the pos of the first child which is not NOT_PARSED
 				if (state == ParsingState.NOT_PARSED || !childState.isBetterThan(state)) {
 					state = childState;
 				}
 			}
 			parsed.append(matcher.parsed);
 		}
+		if(pos == -1)
+			pos = 0;
 		return new Matcher(state, pos, parsed.toString());
 	}
 
