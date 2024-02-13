@@ -243,7 +243,8 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		}
 //		System.out.println(parameterizedCompletion.getParametersSize());
 		// if (parameterizedCompletion.getParametersSize() > 2) // 1 parameter + the end cursor parameter
-			doAutocompletion(tc.getCaretPosition(), false);
+//			doAutocompletion(tc.getCaretPosition(), false);
+		doAutocompletion(tc.getCaretPosition(), false);
 	}
 
 	public void hidePopup() {
