@@ -66,8 +66,8 @@ public interface Autocompleter {
 		@Override
 		public String getAutocompletion(ParsedNode pn, boolean justCheck) {
 			String alreadyEntered = pn.getParsedString();
-			if (!alreadyEntered.isEmpty())
-				return null;
+//			if (!alreadyEntered.isEmpty())
+//				return Autocompleter.VETO;
 
 			if(justCheck)
 				return Autocompleter.DOES_AUTOCOMPLETE;
@@ -111,6 +111,9 @@ public interface Autocompleter {
 				symbol2Autocompletion.put(key, autocompletionStringForChild);
 				autocompletionString.append(autocompletionStringForChild);
 			}
+			int idx = autocompletionString.indexOf("${");
+			if(idx >= 0 && alreadyEntered.length() > idx)
+				return VETO;
 			return autocompletionString.toString();
 		}
 	}
