@@ -33,8 +33,9 @@ public class ACPopup extends JWindow {
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				String text = ((IAutocompletion) value).getCompletion();
 				List<ParameterizedCompletionContext.ParsedParam> parsedParams = new ArrayList<>();
-				String insertionString = ParameterizedCompletionContext.parseParameters(text, parsedParams);
-				if(parsedParams.size() > 0) {
+				if(text.contains("${")) {
+					String insertionString = escapeHTML(text);
+					insertionString = ParameterizedCompletionContext.parseParameters(insertionString, parsedParams);
 					StringBuilder sb = new StringBuilder(insertionString);
 					for (int i = parsedParams.size() - 1; i >= 0; i--) {
 						ParameterizedCompletionContext.ParsedParam param = parsedParams.get(i);
@@ -158,7 +159,7 @@ public class ACPopup extends JWindow {
 	 * @param y The y-coordinate, in screen coordinates.
 	 * @return The bounds of the monitor that contains the specified point.
 	 */
-	public static Rectangle getScreenBoundsForPoint(int x, int y) {
+	private static Rectangle getScreenBoundsForPoint(int x, int y) {
 		GraphicsEnvironment env = GraphicsEnvironment.
 				getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = env.getScreenDevices();
@@ -171,5 +172,15 @@ public class ACPopup extends JWindow {
 		}
 		// If point is outside all monitors, default to default monitor (?)
 		return env.getMaximumWindowBounds();
+	}
+
+	private String escapeHTML(String html) {
+		return html
+				.replace("&", "&amp;")
+				.replace("\\", "&#39;")
+				.replace("\"", "&quot;")
+				// Note: "&apos;" is not defined in HTML 4.01.
+				.replace("<", "&lt;")
+				.replace(">", "&gt;");
 	}
 }
