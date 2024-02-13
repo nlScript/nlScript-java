@@ -14,7 +14,7 @@ public class Join extends Rule {
 	private final Symbol open;
 	private final Symbol close;
 	private final Symbol delimiter;
-	private final Range cardinality;
+	private Range cardinality;
 	private boolean onlyKeepEntries = true;
 
 	public Join(NonTerminal tgt, Symbol entry, Symbol open, Symbol close, Symbol delimiter, Range cardinality) {
@@ -32,6 +32,10 @@ public class Join extends Rule {
 
 	public Range getCardinality() {
 		return cardinality;
+	}
+
+	public void setCardinality(Range cardinality) {
+		this.cardinality = cardinality;
 	}
 
 	public void setOnlyKeepEntries(boolean onlyKeepEntries) {
