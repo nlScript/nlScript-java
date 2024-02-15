@@ -6,6 +6,7 @@ import de.nls.Parser;
 import de.nls.ebnf.EBNF;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
+import de.nls.ebnf.Join;
 import de.nls.ebnf.Plus;
 import de.nls.ebnf.Repeat;
 import de.nls.ebnf.Rule;
@@ -88,11 +89,11 @@ public class TestHighlevelParser {
 		grammar.compile(hlp.LIST.getTarget());
 
 		String test = "list<int>";
-		NonTerminal list = (NonTerminal) evaluateHighlevelParser(hlp, test);
+		Join list = (Join) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		EBNFCore tgt = hlp.getTargetGrammar();
-		tgt.compile(list);
+		tgt.compile(list.getTarget());
 		RDParser rdParser = new RDParser(tgt.getBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode pn = rdParser.parse();
 		assertEquals(ParsingState.SUCCESSFUL, pn.getMatcher().state);
@@ -167,11 +168,11 @@ public class TestHighlevelParser {
 		grammar = hlp.getGrammar();
 		grammar.compile(hlp.TYPE.getTarget());
 		test = "list<int>";
-		NonTerminal list = (NonTerminal) evaluateHighlevelParser(hlp, test);
+		Join list = (Join) evaluateHighlevelParser(hlp, test);
 
 		// now parse and evaluate the generated grammar:
 		tgt = hlp.getTargetGrammar();
-		tgt.compile(list);
+		tgt.compile(list.getTarget());
 		rdParser = new RDParser(tgt.getBNF(), new Lexer("1, 2, 3"), EBNFParsedNodeFactory.INSTANCE);
 		pn = rdParser.parse();
 		System.out.println(GraphViz.toVizDotLink(pn));
