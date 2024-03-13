@@ -2,6 +2,7 @@ package de.nls.ebnf;
 
 import de.nls.Autocompleter;
 import de.nls.Evaluator;
+import de.nls.core.Terminal;
 import de.nls.util.CompletePath;
 import de.nls.util.Range;
 
@@ -9,10 +10,11 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
-import static de.nls.core.Terminal.*;
+import static de.nls.core.Terminal.literal;
 
 public class EBNF extends EBNFCore {
 
+//	public static final String LETTER_NAME          = "letter";
 	public static final String SIGN_NAME            = "sign";
 	public static final String INTEGER_NAME         = "int";
 	public static final String FLOAT_NAME           = "float";
@@ -23,6 +25,7 @@ public class EBNF extends EBNFCore {
 	public static final String TIME_NAME            = "time";
 	public static final String COLOR_NAME           = "color";
 
+//	public final Rule LETTER;
 	public final Rule SIGN;
 	public final Rule INTEGER;
 	public final Rule FLOAT;
@@ -34,6 +37,7 @@ public class EBNF extends EBNFCore {
 	public final Rule COLOR;
 
 	public EBNF() {
+//		LETTER          = makeLetter();
 		SIGN            = makeSign();
 		INTEGER         = makeInteger();
 		FLOAT           = makeFloat();
@@ -57,22 +61,29 @@ public class EBNF extends EBNFCore {
 		// int -> (-|+)?digit+
 		Rule ret = sequence(INTEGER_NAME,
 				optional(null, SIGN.withName("sign")).withName("optional"),
-				plus(null, DIGIT.withName()).withName("plus")
+				plus(null, Terminal.DIGIT.withName()).withName("plus")
 		);
 		ret.setEvaluator(pn -> Integer.parseInt(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		return ret;
 	}
 
+//	private Rule makeLetter() {
+//		Rule ret = sequence(LETTER_NAME, Terminal.LETTER.withName());
+//		ret.setEvaluator(pn -> pn.getParsedString().charAt(0));
+//		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
+//		return ret;
+//	}
+
 	private Rule makeFloat() {
 		// float -> (-|+)?digit+(.digit*)?
 		Rule ret = sequence(FLOAT_NAME,
 				optional(null, SIGN.withName()).withName(),
-				plus(null, DIGIT.withName()).withName(),
+				plus(null, Terminal.DIGIT.withName()).withName(),
 				optional(null,
 						sequence(null,
 								literal(".").withName(),
-								star(null, DIGIT.withName()).withName("star")
+								star(null, Terminal.DIGIT.withName()).withName("star")
 						).withName("sequence")
 				).withName()
 		);
@@ -97,13 +108,13 @@ public class EBNF extends EBNFCore {
 	}
 
 	private Rule makeWhitespaceStar() {
-		Rule ret = star(WHITESPACE_STAR_NAME, WHITESPACE.withName());
+		Rule ret = star(WHITESPACE_STAR_NAME, Terminal.WHITESPACE.withName());
 		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(" "));
 		return ret;
 	}
 
 	private Rule makeWhitespacePlus() {
-		Rule ret = plus(WHITESPACE_PLUS_NAME, WHITESPACE.withName());
+		Rule ret = plus(WHITESPACE_PLUS_NAME, Terminal.WHITESPACE.withName());
 		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(" "));
 		return ret;
 	}
@@ -170,11 +181,11 @@ public class EBNF extends EBNFCore {
 
 	private Rule makeTime() {
 		Rule ret = sequence(TIME_NAME,
-				optional(null, DIGIT.withName()).withName(),
-				DIGIT.withName(),
+				optional(null, Terminal.DIGIT.withName()).withName(),
+				Terminal.DIGIT.withName(),
 				literal(":").withName(),
-				DIGIT.withName(),
-				DIGIT.withName());
+				Terminal.DIGIT.withName(),
+				Terminal.DIGIT.withName());
 		ret.setEvaluator(pn -> LocalTime.parse(pn.getParsedString(), DateTimeFormatter.ofPattern("H:mm")));
 		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${HH}:${MM}"));
 		return ret;
@@ -182,7 +193,7 @@ public class EBNF extends EBNFCore {
 
 	private Rule makePath() {
 		Rule innerPath = plus(null,
-				characterClass("[^'<>|?*\n]").withName("inner-path"));
+				Terminal.characterClass("[^'<>|?*\n]").withName("inner-path"));
 		innerPath.setEvaluator(Evaluator.DEFAULT_EVALUATOR);
 		innerPath.setAutocompleter(Autocompleter.PATH_AUTOCOMPLETER);
 

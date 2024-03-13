@@ -114,6 +114,7 @@ public class ACEditor {
 
 	public void setMenuBar(JMenuBar menuBar) {
 		frame.setJMenuBar(menuBar);
+		frame.pack();
 	}
 
 	public JPanel getButtonsPanel() {
