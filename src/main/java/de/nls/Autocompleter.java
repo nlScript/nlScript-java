@@ -69,8 +69,8 @@ public interface Autocompleter {
 //			if (!alreadyEntered.isEmpty())
 //				return Autocompleter.VETO;
 
-			if(justCheck)
-				return Autocompleter.DOES_AUTOCOMPLETE;
+//			if(justCheck)
+//				return Autocompleter.DOES_AUTOCOMPLETE;
 
 			StringBuilder autocompletionString = new StringBuilder();
 
@@ -113,7 +113,7 @@ public interface Autocompleter {
 			}
 			int idx = autocompletionString.indexOf("${");
 			if(idx >= 0 && alreadyEntered.length() > idx)
-				return VETO;
+				return null;
 			return autocompletionString.toString();
 		}
 	}
