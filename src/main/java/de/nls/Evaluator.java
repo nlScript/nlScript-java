@@ -20,10 +20,9 @@ public interface Evaluator {
 		if(!allAreCharacters)
 			return ret;
 
-//		StringBuilder b = new StringBuilder();
-//		Arrays.stream(ret).forEach(b::append);
-//		return b.toString();
-		return ret;
+		StringBuilder b = new StringBuilder();
+		Arrays.stream(ret).forEach(b::append);
+		return b.toString();
 	});
 
 	Evaluator FIRST_CHILD_EVALUATOR = (pn -> pn.evaluate(0));
