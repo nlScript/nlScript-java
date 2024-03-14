@@ -14,7 +14,8 @@ import static de.nls.core.Terminal.literal;
 
 public class EBNF extends EBNFCore {
 
-//	public static final String LETTER_NAME          = "letter";
+	public static final String DIGIT_NAME           = "digit";
+	public static final String LETTER_NAME          = "letter";
 	public static final String SIGN_NAME            = "sign";
 	public static final String INTEGER_NAME         = "int";
 	public static final String FLOAT_NAME           = "float";
@@ -25,7 +26,8 @@ public class EBNF extends EBNFCore {
 	public static final String TIME_NAME            = "time";
 	public static final String COLOR_NAME           = "color";
 
-//	public final Rule LETTER;
+	public final Rule DIGIT;
+	public final Rule LETTER;
 	public final Rule SIGN;
 	public final Rule INTEGER;
 	public final Rule FLOAT;
@@ -37,7 +39,8 @@ public class EBNF extends EBNFCore {
 	public final Rule COLOR;
 
 	public EBNF() {
-//		LETTER          = makeLetter();
+		DIGIT           = makeDigit();
+		LETTER          = makeLetter();
 		SIGN            = makeSign();
 		INTEGER         = makeInteger();
 		FLOAT           = makeFloat();
@@ -68,12 +71,19 @@ public class EBNF extends EBNFCore {
 		return ret;
 	}
 
-//	private Rule makeLetter() {
-//		Rule ret = sequence(LETTER_NAME, Terminal.LETTER.withName());
-//		ret.setEvaluator(pn -> pn.getParsedString().charAt(0));
-//		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
-//		return ret;
-//	}
+	private Rule makeLetter() {
+		Rule ret = sequence(LETTER_NAME, Terminal.LETTER.withName());
+		ret.setEvaluator(pn -> pn.getParsedString().charAt(0));
+		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
+		return ret;
+	}
+
+	private Rule makeDigit() {
+		Rule ret = sequence(DIGIT_NAME, Terminal.DIGIT.withName());
+		ret.setEvaluator(pn -> pn.getParsedString().charAt(0));
+		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
+		return ret;
+	}
 
 	private Rule makeFloat() {
 		// float -> (-|+)?digit+(.digit*)?

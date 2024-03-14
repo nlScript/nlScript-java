@@ -217,10 +217,11 @@ public class TestHighlevelParser {
 		assertEquals(5, repeat.getTo());
 		assertEquals(EBNF.INTEGER_NAME, repeat.getEntry().getSymbol());
 
+		Named<Terminal> evaluatedTerminal;
 		test = "{blubb:digit}";
-		Named<Terminal> evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
-		assertEquals("blubb", evaluatedTerminal.getName());
-		assertEquals(Terminal.DIGIT, evaluatedTerminal.getSymbol());
+		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
+		assertEquals("blubb", evaluatedNonTerminal.getName());
+		assertEquals(EBNF.DIGIT_NAME, evaluatedNonTerminal.getSymbol().getSymbol());
 
 		test = "{blubb:int:*}";
 		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
