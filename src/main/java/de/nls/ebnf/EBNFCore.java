@@ -169,6 +169,13 @@ public class EBNFCore {
 		return ret;
 	}
 
+	public Rule makeCharacterClass(String name, String pattern) {
+		Rule ret = sequence(name,
+				Terminal.characterClass(pattern).withName("character-class"));
+		ret.setEvaluator(pn -> pn.getParsedString("character-class").charAt(0));
+		return ret;
+	}
+
 	public Rule sequence(String type, Named<?>... children) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		Sequence sequence = new Sequence(tgt, getSymbols(children));

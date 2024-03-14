@@ -256,7 +256,8 @@ public class Parser {
 				Terminal.literal("]").withName()
 		).setEvaluator(pn -> {
 			String pattern = pn.getParsedString();
-			return Terminal.characterClass(pattern);
+			// return Terminal.characterClass(pattern);
+			return targetGrammar.makeCharacterClass(null, pattern).getTarget();
 		});
 	}
 
@@ -316,7 +317,6 @@ public class Parser {
 					join.setCardinality((Range) quantifierObject);
 				return join.getTarget().withName(variableName);
 			}
-
 
 			Symbol symbol = typeObject == null
 					? Terminal.literal(variableName)
