@@ -6,6 +6,7 @@ import de.nls.core.Terminal;
 import de.nls.util.CompletePath;
 import de.nls.util.Range;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ public class EBNF extends EBNFCore {
 	public static final String INTEGER_RANGE_NAME   = "integer-range";
 	public static final String PATH_NAME            = "path";
 	public static final String TIME_NAME            = "time";
+	public static final String DATE_NAME            = "date";
 	public static final String COLOR_NAME           = "color";
 
 	public final Rule DIGIT;
@@ -40,6 +42,7 @@ public class EBNF extends EBNFCore {
 	public final Rule INTEGER_RANGE;
 	public final Rule PATH;
 	public final Rule TIME;
+	public final Rule DATE;
 	public final Rule COLOR;
 
 	public EBNF() {
@@ -55,6 +58,7 @@ public class EBNF extends EBNFCore {
 		INTEGER_RANGE   = makeIntegerRange();
 		PATH            = makePath();
 		TIME            = makeTime();
+		DATE            = makeDate();
 		COLOR           = makeColor();
 	}
 
@@ -232,6 +236,35 @@ public class EBNF extends EBNFCore {
 				sequence(null, Terminal.literal("Friday")   .withName()).setEvaluator(pn -> 4) .withName("friday"),
 				sequence(null, Terminal.literal("Saturday") .withName()).setEvaluator(pn -> 5) .withName("saturday"),
 				sequence(null, Terminal.literal("Sunday")   .withName()).setEvaluator(pn -> 6) .withName("sunday"));
+	}
+
+	private Rule makeDate() {
+		Rule day = sequence(null,
+				// optional(null, Terminal.DIGIT.withName()).withName(),
+				Terminal.DIGIT.withName(),
+				Terminal.DIGIT.withName());
+		day.setAutocompleter((pn, justCheck) -> {
+			if(pn.getParsedString().isEmpty()) {
+				return "${day}";
+			}
+			return Autocompleter.VETO;
+		});
+		Rule year = sequence(null,
+				Terminal.DIGIT.withName(),
+				Terminal.DIGIT.withName(),
+				Terminal.DIGIT.withName(),
+				Terminal.DIGIT.withName());
+		Rule ret = sequence(DATE_NAME,
+				day.withName("day"),
+				literal(" ").withName(),
+				MONTH.withName("month"),
+				literal(" ").withName(),
+				year.withName("year"));
+		ret.setEvaluator(pn -> LocalDate.parse(pn.getParsedString(), DateTimeFormatter.ofPattern("d MMMM yyyy")));
+		// ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${Day} ${Month} ${Year}"));
+		ret.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this, new HashMap<>()));
+
+		return ret;
 	}
 
 	private Rule makePath() {
