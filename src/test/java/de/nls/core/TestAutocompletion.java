@@ -7,6 +7,7 @@ import de.nls.Parser;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Rule;
+import de.nls.ui.ACEditor;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -109,7 +110,6 @@ public class TestAutocompletion {
 		expected.add(new Autocompletion("A488", ""));
 
 		assertEquals(expected, autocompletions);
-
 	}
 
 	@Test
@@ -165,6 +165,39 @@ public class TestAutocompletion {
 		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
 		assertEquals(1, autocompletions.size());
 		assertEquals("385nm", autocompletions.get(0).getCompletion());
+
+		autocompletions.clear();
+		root = parser.parse("Excite with 10% at ", autocompletions);
+		System.out.println(autocompletions);
+	}
+
+	public static void main(String[] args) throws ParseException {
+		Parser parser = new Parser();
+
+		parser.defineType("led", "385nm", e -> null, (e, justCheck) -> "385nm");
+		parser.defineType("led", "470nm", e -> null, (e, justCheck) -> "470nm");
+		parser.defineType("led", "567nm", e -> null, (e, justCheck) -> "567nm");
+		parser.defineType("led", "625nm", e -> null, (e, justCheck) -> "625nm");
+
+		parser.defineType("led-power", "{<led-power>:int}%", e -> null,true);
+		parser.defineType("led-setting", "{led-power:led-power} at {wavelength:led}", e -> null,true);
+
+		parser.defineSentence(
+				"Excite with {led-setting:led-setting}.",
+				e ->null);
+
+		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
+		ParsedNode root = parser.parse("Excite with 10% at 3", autocompletions);
+		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
+		assertEquals(1, autocompletions.size());
+		assertEquals("385nm", autocompletions.get(0).getCompletion());
+
+		autocompletions.clear();
+		root = parser.parse("Excite with 10% at ", autocompletions);
+		System.out.println(autocompletions);
+
+		ACEditor editor = new ACEditor(parser);
+		editor.setVisible(true);
 	}
 
 	@Test
