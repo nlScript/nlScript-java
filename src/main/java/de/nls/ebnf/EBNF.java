@@ -19,6 +19,7 @@ public class EBNF extends EBNFCore {
 	public static final String SIGN_NAME            = "sign";
 	public static final String INTEGER_NAME         = "int";
 	public static final String FLOAT_NAME           = "float";
+	public static final String MONTH_NAME           = "month";
 	public static final String WHITESPACE_STAR_NAME = "whitespace-star";
 	public static final String WHITESPACE_PLUS_NAME = "whitespace-plus";
 	public static final String INTEGER_RANGE_NAME   = "integer-range";
@@ -31,6 +32,7 @@ public class EBNF extends EBNFCore {
 	public final Rule SIGN;
 	public final Rule INTEGER;
 	public final Rule FLOAT;
+	public final Rule MONTH;
 	public final Rule WHITESPACE_STAR;
 	public final Rule WHITESPACE_PLUS;
 	public final Rule INTEGER_RANGE;
@@ -44,6 +46,7 @@ public class EBNF extends EBNFCore {
 		SIGN            = makeSign();
 		INTEGER         = makeInteger();
 		FLOAT           = makeFloat();
+		MONTH           = makeMonth();
 		WHITESPACE_STAR = makeWhitespaceStar();
 		WHITESPACE_PLUS = makeWhitespacePlus();
 		INTEGER_RANGE   = makeIntegerRange();
@@ -199,6 +202,22 @@ public class EBNF extends EBNFCore {
 		ret.setEvaluator(pn -> LocalTime.parse(pn.getParsedString(), DateTimeFormatter.ofPattern("H:mm")));
 		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${HH}:${MM}"));
 		return ret;
+	}
+
+	private Rule makeMonth() {
+		return or(MONTH_NAME,
+			sequence(null, Terminal.literal("January")  .withName()).setEvaluator(pn -> 0) .withName("january"),
+			sequence(null, Terminal.literal("February") .withName()).setEvaluator(pn -> 1) .withName("february"),
+			sequence(null, Terminal.literal("March")    .withName()).setEvaluator(pn -> 2) .withName("march"),
+			sequence(null, Terminal.literal("April")    .withName()).setEvaluator(pn -> 3) .withName("april"),
+			sequence(null, Terminal.literal("May")      .withName()).setEvaluator(pn -> 4) .withName("may"),
+			sequence(null, Terminal.literal("June")     .withName()).setEvaluator(pn -> 5) .withName("june"),
+			sequence(null, Terminal.literal("July")     .withName()).setEvaluator(pn -> 6) .withName("july"),
+			sequence(null, Terminal.literal("August")   .withName()).setEvaluator(pn -> 7) .withName("august"),
+			sequence(null, Terminal.literal("September").withName()).setEvaluator(pn -> 8) .withName("september"),
+			sequence(null, Terminal.literal("October")  .withName()).setEvaluator(pn -> 9) .withName("october"),
+			sequence(null, Terminal.literal("November") .withName()).setEvaluator(pn -> 10).withName("november"),
+			sequence(null, Terminal.literal("December") .withName()).setEvaluator(pn -> 11).withName("december"));
 	}
 
 	private Rule makePath() {
