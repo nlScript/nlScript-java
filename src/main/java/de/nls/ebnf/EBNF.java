@@ -20,6 +20,7 @@ public class EBNF extends EBNFCore {
 	public static final String INTEGER_NAME         = "int";
 	public static final String FLOAT_NAME           = "float";
 	public static final String MONTH_NAME           = "month";
+	public static final String WEEKDAY_NAME         = "weekday";
 	public static final String WHITESPACE_STAR_NAME = "whitespace-star";
 	public static final String WHITESPACE_PLUS_NAME = "whitespace-plus";
 	public static final String INTEGER_RANGE_NAME   = "integer-range";
@@ -33,6 +34,7 @@ public class EBNF extends EBNFCore {
 	public final Rule INTEGER;
 	public final Rule FLOAT;
 	public final Rule MONTH;
+	public final Rule WEEKDAY;
 	public final Rule WHITESPACE_STAR;
 	public final Rule WHITESPACE_PLUS;
 	public final Rule INTEGER_RANGE;
@@ -47,6 +49,7 @@ public class EBNF extends EBNFCore {
 		INTEGER         = makeInteger();
 		FLOAT           = makeFloat();
 		MONTH           = makeMonth();
+		WEEKDAY         = makeWeekday();
 		WHITESPACE_STAR = makeWhitespaceStar();
 		WHITESPACE_PLUS = makeWhitespacePlus();
 		INTEGER_RANGE   = makeIntegerRange();
@@ -218,6 +221,17 @@ public class EBNF extends EBNFCore {
 			sequence(null, Terminal.literal("October")  .withName()).setEvaluator(pn -> 9) .withName("october"),
 			sequence(null, Terminal.literal("November") .withName()).setEvaluator(pn -> 10).withName("november"),
 			sequence(null, Terminal.literal("December") .withName()).setEvaluator(pn -> 11).withName("december"));
+	}
+
+	private Rule makeWeekday() {
+		return or(WEEKDAY_NAME,
+				sequence(null, Terminal.literal("Monday")   .withName()).setEvaluator(pn -> 0) .withName("monday"),
+				sequence(null, Terminal.literal("Tuesday")  .withName()).setEvaluator(pn -> 1) .withName("tuesday"),
+				sequence(null, Terminal.literal("Wednesday").withName()).setEvaluator(pn -> 2) .withName("wednesday"),
+				sequence(null, Terminal.literal("Thursday") .withName()).setEvaluator(pn -> 3) .withName("thursday"),
+				sequence(null, Terminal.literal("Friday")   .withName()).setEvaluator(pn -> 4) .withName("friday"),
+				sequence(null, Terminal.literal("Saturday") .withName()).setEvaluator(pn -> 5) .withName("saturday"),
+				sequence(null, Terminal.literal("Sunday")   .withName()).setEvaluator(pn -> 6) .withName("sunday"));
 	}
 
 	private Rule makePath() {
