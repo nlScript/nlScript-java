@@ -7,6 +7,7 @@ import de.nls.util.CompletePath;
 import de.nls.util.Range;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ public class EBNF extends EBNFCore {
 	public static final String PATH_NAME            = "path";
 	public static final String TIME_NAME            = "time";
 	public static final String DATE_NAME            = "date";
+	public static final String DATETIME_NAME        = "date-time";
 	public static final String COLOR_NAME           = "color";
 
 	public final Rule DIGIT;
@@ -43,6 +45,7 @@ public class EBNF extends EBNFCore {
 	public final Rule PATH;
 	public final Rule TIME;
 	public final Rule DATE;
+	public final Rule DATETIME;
 	public final Rule COLOR;
 
 	public EBNF() {
@@ -59,6 +62,7 @@ public class EBNF extends EBNFCore {
 		PATH            = makePath();
 		TIME            = makeTime();
 		DATE            = makeDate();
+		DATETIME        = makeDatetime();
 		COLOR           = makeColor();
 	}
 
@@ -264,6 +268,20 @@ public class EBNF extends EBNFCore {
 		// ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${Day} ${Month} ${Year}"));
 		ret.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this, new HashMap<>()));
 
+		return ret;
+	}
+
+	private Rule makeDatetime() {
+		Rule ret = sequence(DATETIME_NAME,
+				DATE.withName("date"),
+				literal(" ").withName(),
+				TIME.withName("time"));
+		ret.setEvaluator(pn -> {
+			LocalDate date = (LocalDate) pn.evaluate("date");
+			LocalTime time = (LocalTime) pn.evaluate("time");
+			return LocalDateTime.of(date, time);
+		});
+		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${Day} ${Month} ${Year} ${HH}:${MM}"));
 		return ret;
 	}
 
