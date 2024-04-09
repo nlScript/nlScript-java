@@ -299,6 +299,56 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			Matcher f = e.getFirstAutocompletingAncestorThatFailed().getMatcher();
 			errorHighlight.setError(f.pos, f.pos + f.parsed.length());
 			return;
+
+		// we are in a parameterized completion context.
+		// we still want to autocomplete, but not beyond the end of the current parameter
+		BNF bnf = provider.getParser().getTargetGrammar().getBNF();
+		if(parameterizedCompletion != null) {
+			if(!completions.isEmpty()) {
+				boolean atLeastOnCompletionForCurrentParameter = false;
+				for (Autocompletion comp : completions) {
+					Symbol symbol = comp.forSymbol;
+
+					// if comp is an EntireSequence completion, we should just check the first
+					// we can do that using ParameterizedCompletionContext.parseParameters
+					if(comp instanceof Autocompletion.EntireSequence) {
+						ArrayList<ParameterizedCompletionContext.ParsedParam> tmp = new ArrayList<>();
+						ParameterizedCompletionContext.parseParameters((Autocompletion.EntireSequence) comp, tmp, 0);
+						comp = tmp.get(0).autocompletion;
+						symbol = comp.forSymbol;
+					}
+
+					if(symbol.equals(parameterizedCompletion.getForAutocompletion().forSymbol)) {
+						atLeastOnCompletionForCurrentParameter = true;
+						break;
+					}
+
+					// check if symbol is a descendent of the parameters autocompletion symbol
+					Symbol parameterSymbol = parameterizedCompletion.getCurrentParameter().autocompletion.forSymbol;
+					// symbol == parameterSymbol? -> fine
+					if(symbol.equals(parameterSymbol)) {
+						atLeastOnCompletionForCurrentParameter = true;
+						break;
+					}
+
+					if(parameterSymbol instanceof NonTerminal) {
+						// check recursively if symbol is in the list of child symbols
+						if(((NonTerminal) parameterSymbol).uses(symbol, bnf)) {
+							atLeastOnCompletionForCurrentParameter = true;
+							break;
+						}
+					}
+				}
+				if(!atLeastOnCompletionForCurrentParameter) {
+					SwingUtilities.invokeLater(() -> parameterizedCompletion.next());
+					// parameterizedCompletion.next();
+					return;
+				}
+			} else {
+				System.out.println("no completions");
+			}
+		} else {
+			System.out.println("parameterized completion == null");
 		}
 
 		popup.getModel().set(completions);
