@@ -1,6 +1,5 @@
 package de.nls.core;
 
-import de.nls.Autocompleter;
 import de.nls.ParseException;
 import de.nls.ParsedNode;
 import de.nls.Parser;
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,7 +32,7 @@ public class TestAutocompletion {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		parser.parse("The first digit of the number is ", autocompletions);
 		assertEquals(1, autocompletions.size());
-		assertEquals(new Autocompletion("${first}", ""), autocompletions.get(0));
+		assertEquals("${first}", autocompletions.get(0).getCompletion());
 	}
 
 	@Test
@@ -42,7 +42,7 @@ public class TestAutocompletion {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		parser.parse("", autocompletions);
 		assertEquals(2, autocompletions.size());
-		assertEquals(new Autocompletion("Define the output path", ""), autocompletions.get(1));
+		assertEquals("Define the output path", autocompletions.get(1).getCompletion());
 	}
 
 	@Test
@@ -88,7 +88,7 @@ public class TestAutocompletion {
 
 		parser.defineType("defined-channels", "'{channel:[A-Za-z0-9]:+}'",
 				e -> null,
-				(e, justCheck) -> String.join(";;;", definedChannels));
+				(e, justCheck) -> Autocompletion.literal(e, definedChannels));
 
 		parser.defineSentence(
 				"Use channel {channel:defined-channels}.",
@@ -105,11 +105,11 @@ public class TestAutocompletion {
 		System.out.println(GraphViz.toVizDotLink(root));
 		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
 
-		ArrayList<Autocompletion> expected = new ArrayList<>();
-		expected.add(new Autocompletion("DAPI", ""));
-		expected.add(new Autocompletion("A488", ""));
+		ArrayList<String> expected = new ArrayList<>();
+		expected.add("DAPI");
+		expected.add("A488");
 
-		assertEquals(expected, autocompletions);
+		assertEquals(expected, autocompletions.stream().map(Autocompletion::getCompletion).collect(Collectors.toList()));
 	}
 
 	@Test
@@ -148,10 +148,10 @@ public class TestAutocompletion {
 	public void test07() throws ParseException {
 		Parser parser = new Parser();
 
-		parser.defineType("led", "385nm", e -> null, (e, justCheck) -> "385nm");
-		parser.defineType("led", "470nm", e -> null, (e, justCheck) -> "470nm");
-		parser.defineType("led", "567nm", e -> null, (e, justCheck) -> "567nm");
-		parser.defineType("led", "625nm", e -> null, (e, justCheck) -> "625nm");
+		parser.defineType("led", "385nm", e -> null, (e, justCheck) -> Autocompletion.literal(e, "385nm"));
+		parser.defineType("led", "470nm", e -> null, (e, justCheck) -> Autocompletion.literal(e, "470nm"));
+		parser.defineType("led", "567nm", e -> null, (e, justCheck) -> Autocompletion.literal(e, "567nm"));
+		parser.defineType("led", "625nm", e -> null, (e, justCheck) -> Autocompletion.literal(e, "625nm"));
 
 		parser.defineType("led-power", "{<led-power>:int}%", e -> null,true);
 		parser.defineType("led-setting", "{led-power:led-power} at {wavelength:led}", e -> null,true);
@@ -174,10 +174,10 @@ public class TestAutocompletion {
 	public static void main(String[] args) throws ParseException {
 		Parser parser = new Parser();
 
-		parser.defineType("led", "385nm", e -> null, (e, justCheck) -> "385nm");
-		parser.defineType("led", "470nm", e -> null, (e, justCheck) -> "470nm");
-		parser.defineType("led", "567nm", e -> null, (e, justCheck) -> "567nm");
-		parser.defineType("led", "625nm", e -> null, (e, justCheck) -> "625nm");
+		parser.defineType("led", "385nm", e -> null, (e, justCheck) -> Autocompletion.literal(e, "385nm"));
+		parser.defineType("led", "470nm", e -> null, (e, justCheck) -> Autocompletion.literal(e, "470nm"));
+		parser.defineType("led", "567nm", e -> null, (e, justCheck) -> Autocompletion.literal(e, "567nm"));
+		parser.defineType("led", "625nm", e -> null, (e, justCheck) -> Autocompletion.literal(e, "625nm"));
 
 		parser.defineType("led-power", "{<led-power>:int}%", e -> null,true);
 		parser.defineType("led-setting", "{led-power:led-power} at {wavelength:led}", e -> null,true);
@@ -218,6 +218,24 @@ public class TestAutocompletion {
 		assertEquals("(${r}, ${g}, ${b})", autocompletions.get(2).getCompletion());
 	}
 
+	@Test
+	public void test09() throws ParseException {
+		Parser parser = new Parser();
+		parser.defineType("channel-name", "'{<name>:[A-Za-z0-9]:+}'",
+				e -> e.getParsedString("<name>"),
+				true);
+
+		parser.defineSentence(
+				"Define channel {channel-name:channel-name}.",
+				e -> null);
+
+		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
+		ParsedNode root = parser.parse("Define channel 'D", autocompletions);
+
+		System.out.println("autocompletions = " + autocompletions.stream().map(Autocompletion::getCompletion).collect(Collectors.toList()));
+
+	}
+
 	private void test(String input, String... expectedCompletion) throws ParseException {
 		System.out.println("Testing " + input);
 		BNF grammar = makeGrammar();
@@ -237,7 +255,7 @@ public class TestAutocompletion {
 	private String[] getCompletionStrings(ArrayList<Autocompletion> autocompletions) {
 		String[] ret = new String[autocompletions.size()];
 		for(int i = 0; i < ret.length; i++) {
-			ret[i] = autocompletions.get(i).getCompletion() + " (" + autocompletions.get(i).getAlreadyEnteredText() + ")";
+			ret[i] = autocompletions.get(i).getCompletion() + " (" + autocompletions.get(i).getAlreadyEntered() + ")";
 		}
 		return ret;
 	}
@@ -256,8 +274,8 @@ public class TestAutocompletion {
 								Terminal.literal("four").withName()
 						).setAutocompleter((pn, justCheck) -> {
 							if(!pn.getParsedString().isEmpty())
-								return Autocompleter.VETO;
-							return "${" + pn.getName() + "}";
+								return Autocompletion.veto(pn);
+							return Autocompletion.parameterized(pn, pn.getName());
 						}).withName("or")
 				).withName("star"),
 				Terminal.literal("five").withName()

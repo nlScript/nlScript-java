@@ -11,17 +11,16 @@ import java.time.LocalTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestTime {
-
 	@Test
 	public void test01() throws ParseException {
 		Parser hlp = new Parser();
 		hlp.defineSentence("The pizza comes at {t:time}.", pn -> {
 			LocalTime time = (LocalTime) pn.evaluate("t");
-			assertEquals(LocalTime.of(9, 30), time);
+			assertEquals(LocalTime.of(20, 30), time);
 			return null;
 		});
 
-		ParsedNode root = hlp.parse("The pizza comes at 9:30.", null);
+		ParsedNode root = hlp.parse("The pizza comes at 20:30.", null);
 		assertEquals(ParsingState.SUCCESSFUL, root.getMatcher().state);
 		root.evaluate();
 	}
@@ -30,7 +29,7 @@ public class TestTime {
 		Parser hlp = new Parser();
 		hlp.defineSentence("The pizza comes at {t:time}.", pn -> {
 			LocalTime time = (LocalTime) pn.evaluate("t");
-			assertEquals(LocalTime.of(9, 30), time);
+			assertEquals(LocalTime.of(20, 30), time);
 			return null;
 		});
 		new ACEditor(hlp).setVisible(true);

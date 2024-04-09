@@ -16,8 +16,8 @@ public class TestColor {
 	@Test
 	public void test01() throws ParseException {
 		Parser hlp = new Parser();
-		hlp.defineSentence("My favorite color is {c:color}.", pn -> {
-			int color = (Integer) pn.evaluate("c");
+		hlp.defineSentence("My favorite color is {text-color:color}.", pn -> {
+			int color = (Integer) pn.evaluate("text-color");
 			assertEquals(new Color(128, 255, 0).getRGB(), color);
 			return null;
 		});

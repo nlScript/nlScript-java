@@ -4,7 +4,6 @@ import de.nls.Autocompleter;
 import de.nls.ParseException;
 import de.nls.ParsedNode;
 import de.nls.Parser;
-import de.nls.core.Autocompletion;
 import de.nls.core.GraphViz;
 
 import javax.swing.JButton;

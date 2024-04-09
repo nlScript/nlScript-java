@@ -2,6 +2,7 @@ package de.nls.ebnf;
 
 import de.nls.Autocompleter;
 import de.nls.Evaluator;
+import de.nls.core.Autocompletion;
 import de.nls.core.Terminal;
 import de.nls.util.CompletePath;
 import de.nls.util.Range;
@@ -133,13 +134,13 @@ public class EBNF extends EBNFCore {
 
 	private Rule makeWhitespaceStar() {
 		Rule ret = star(WHITESPACE_STAR_NAME, Terminal.WHITESPACE.withName());
-		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(" "));
+		ret.setAutocompleter((pn, justCheck) -> Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? " " : ""));
 		return ret;
 	}
 
 	private Rule makeWhitespacePlus() {
 		Rule ret = plus(WHITESPACE_PLUS_NAME, Terminal.WHITESPACE.withName());
-		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(" "));
+		ret.setAutocompleter((pn, justCheck) -> Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? " " : ""));
 		return ret;
 	}
 
@@ -204,14 +205,24 @@ public class EBNF extends EBNFCore {
 	}
 
 	private Rule makeTime() {
-		Rule ret = sequence(TIME_NAME,
+		Rule hour = sequence(null,
 				optional(null, Terminal.DIGIT.withName()).withName(),
-				Terminal.DIGIT.withName(),
-				literal(":").withName(),
+				Terminal.DIGIT.withName());
+		hour.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
+
+		Rule minute = sequence(null,
 				Terminal.DIGIT.withName(),
 				Terminal.DIGIT.withName());
+		minute.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
+
+		Rule ret = sequence(TIME_NAME,
+				hour.withName("HH"),
+				literal(":").withName(),
+				minute.withName("MM"));
+
 		ret.setEvaluator(pn -> LocalTime.parse(pn.getParsedString(), DateTimeFormatter.ofPattern("H:mm")));
-		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${HH}:${MM}"));
+		ret.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this, new HashMap<>()));
+
 		return ret;
 	}
 
@@ -244,20 +255,15 @@ public class EBNF extends EBNFCore {
 
 	private Rule makeDate() {
 		Rule day = sequence(null,
-				// optional(null, Terminal.DIGIT.withName()).withName(),
-				Terminal.DIGIT.withName(),
+				optional(null, Terminal.DIGIT.withName()).withName(),
 				Terminal.DIGIT.withName());
-		day.setAutocompleter((pn, justCheck) -> {
-			if(pn.getParsedString().isEmpty()) {
-				return "${day}";
-			}
-			return Autocompleter.VETO;
-		});
+		day.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		Rule year = sequence(null,
 				Terminal.DIGIT.withName(),
 				Terminal.DIGIT.withName(),
 				Terminal.DIGIT.withName(),
 				Terminal.DIGIT.withName());
+		year.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		Rule ret = sequence(DATE_NAME,
 				day.withName("day"),
 				literal(" ").withName(),
@@ -265,7 +271,6 @@ public class EBNF extends EBNFCore {
 				literal(" ").withName(),
 				year.withName("year"));
 		ret.setEvaluator(pn -> LocalDate.parse(pn.getParsedString(), DateTimeFormatter.ofPattern("d MMMM yyyy")));
-		// ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${Day} ${Month} ${Year}"));
 		ret.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this, new HashMap<>()));
 
 		return ret;
@@ -281,7 +286,7 @@ public class EBNF extends EBNFCore {
 			LocalTime time = (LocalTime) pn.evaluate("time");
 			return LocalDateTime.of(date, time);
 		});
-		ret.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter("${Day} ${Month} ${Year} ${HH}:${MM}"));
+		ret.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this, new HashMap<>()));
 		return ret;
 	}
 

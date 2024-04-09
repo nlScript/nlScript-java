@@ -1,6 +1,8 @@
 package de.nls.ui;
 
-import javax.swing.text.BadLocationException;
+import de.nls.core.Autocompletion;
+import de.nls.ebnf.Rule;
+
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import java.awt.Color;
@@ -42,16 +44,16 @@ public class ParameterizedCompletionContext implements KeyListener {
 
 	private final ArrayList<Param> parameters = new ArrayList<>();
 
-	private Param addHighlight(String name, int i0, int i1) {
-		return addHighlight(name, i0, i1, highlightPainter);
+	private Param addHighlight(String name, Autocompletion autocompletion, int i0, int i1) {
+		return addHighlight(name, autocompletion, i0, i1, highlightPainter);
 	}
 
-	private Param addHighlight(String name, int i0, int i1, Highlighter.HighlightPainter highlightPainter) {
+	private Param addHighlight(String name, Autocompletion autocompletion, int i0, int i1, Highlighter.HighlightPainter highlightPainter) {
 		try {
 			int start = i0 == 0 ? 0 : i0 - 1;
 			Object tag = tc.getHighlighter().addHighlight(start, i1, highlightPainter);
 			Highlighter.Highlight hl = findHighlight(start, i1);
-			return new Param(name, hl, tag);
+			return new Param(name, autocompletion, hl, tag);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -78,6 +80,10 @@ public class ParameterizedCompletionContext implements KeyListener {
 		return -1;
 	}
 
+	public Param getCurrentParameter() {
+		return parameters.get(getParamIndexForCursorPosition(tc.getCaretPosition()));
+	}
+
 	private int getNextParamIndexForCursorPosition(int pos) {
 		for(int i = 0; i < parameters.size(); i++) {
 			Param p = parameters.get(i);
@@ -98,29 +104,23 @@ public class ParameterizedCompletionContext implements KeyListener {
 		return -1;
 	}
 
-	public void insertCompletion(int offset, String autocompletion) throws BadLocationException {
-		ArrayList<ParsedParam> parsedParams = new ArrayList<>();
-		String insertionString = parseParameters(autocompletion, parsedParams);
-		tc.getDocument().insertString(offset, insertionString, null);
-		parameters.clear();
-		for(ParsedParam pp : parsedParams)
-			parameters.add(addHighlight(pp.name, offset + pp.i0, offset + pp.i1));
-		int cursor = offset + insertionString.length();
-		parameters.add(addHighlight("", cursor, cursor, cursorHighlightPainter));
-		cycle(0);
-		tc.addKeyListener(this);
+	private Autocompletion forAutocompletion = null;
+
+	public Autocompletion getForAutocompletion() {
+		return forAutocompletion;
 	}
 
-	public void replaceSelection(String autocompletion) {
+	public void replaceSelection(Autocompletion autocompletion) {
+		this.forAutocompletion = autocompletion;
 		int offset = tc.getSelectionStart();
 		ArrayList<ParsedParam> parsedParams = new ArrayList<>();
 		String insertionString = parseParameters(autocompletion, parsedParams);
 		tc.replaceSelection(insertionString);
 		parameters.clear();
 		for(ParsedParam pp : parsedParams)
-			parameters.add(addHighlight(pp.name, offset + pp.i0, offset + pp.i1));
+			parameters.add(addHighlight(pp.name, pp.autocompletion, offset + pp.i0, offset + pp.i1));
 		int cursor = offset + insertionString.length();
-		parameters.add(addHighlight("", cursor, cursor, cursorHighlightPainter));
+		parameters.add(addHighlight("", null, cursor, cursor, cursorHighlightPainter));
 		cycle(0);
 		tc.addKeyListener(this);
 	}
@@ -150,6 +150,7 @@ public class ParameterizedCompletionContext implements KeyListener {
 
 	@Override
 	public void keyReleased(KeyEvent e) {
+
 	}
 
 	public int getParametersSize() {
@@ -216,36 +217,67 @@ public class ParameterizedCompletionContext implements KeyListener {
 		parameterChangeListeners.clear();
 	}
 
-	public static String parseParameters(String paramString, List<ParsedParam> ret) {
-		StringBuilder varName = null;
-		StringBuilder insertString = new StringBuilder();
-		final int l = paramString.length();
-		int hlStart = -1;
-		for(int i = 0; i < l; i++) {
-			char cha = paramString.charAt(i);
-			if(cha == '$' && i < l - 1 && paramString.charAt(i + 1) == '{') {
-				if(varName == null) {
-					varName = new StringBuilder();
-					hlStart = insertString.length();
-					i++;
+	public static String parseParameters(Autocompletion autocompletion, List<ParsedParam> ret) {
+		if(autocompletion instanceof Autocompletion.Literal)
+			return parseParameters((Autocompletion.Literal) autocompletion, ret);
+		if(autocompletion instanceof Autocompletion.Parameterized)
+			return parseParameters((Autocompletion.Parameterized) autocompletion, ret);
+		if(autocompletion instanceof Autocompletion.EntireSequence)
+			return parseParameters((Autocompletion.EntireSequence) autocompletion, ret, 0);
+		throw new RuntimeException("Unexpected autocompletion type: " + autocompletion.getClass());
+	}
+
+	public static String parseParameters(Autocompletion.Literal autocompletion, List<ParsedParam> ret) {
+		return autocompletion.getCompletion();
+	}
+
+	public static String parseParameters(Autocompletion.Parameterized autocompletion, List<ParsedParam> ret) {
+		String s = autocompletion.paramName;
+		ret.add(new ParsedParam(s, 0, s.length(), autocompletion));
+		return s;
+	}
+
+	public static String parseParameters(Autocompletion.EntireSequence autocompletion, List<ParsedParam> ret, int offset) {
+		List<List<Autocompletion>> sequenceOfCompletions = autocompletion.getSequenceOfCompletions();
+		Rule sequence = autocompletion.getSequence();
+		StringBuilder insertionString = new StringBuilder();
+		int i = 0;
+		for(List<Autocompletion> autocompletions : sequenceOfCompletions) {
+			int n = autocompletions.size();
+			if(n > 1) {
+				String name = sequence.getNameForChild(i);
+				Autocompletion.Parameterized p = new Autocompletion.Parameterized(sequence.getChildren()[i], name, name);
+				int i0 = offset + insertionString.length();
+				int i1 = i0 + name.length();
+				ret.add(new ParsedParam(name, i0, i1, p));
+				insertionString.append(name);
+			}
+			else if(n == 1) {
+				Autocompletion single = autocompletions.get(0);
+				if(single instanceof Autocompletion.Literal) {
+					insertionString.append(single.getCompletion());
 				}
-				else
-					throw new RuntimeException("Expected '}' before next '${'");
+				else if(single instanceof Autocompletion.Parameterized) {
+					Autocompletion.Parameterized parameterized = (Autocompletion.Parameterized) single;
+					String s = parameterized.paramName;
+					int i0 = offset + insertionString.length();
+					int i1 = i0 + s.length();
+					ret.add(new ParsedParam(s, i0, i1, parameterized));
+					insertionString.append(s);
+				}
+				else if(single instanceof Autocompletion.EntireSequence) {
+					Autocompletion.EntireSequence entire = (Autocompletion.EntireSequence) single;
+					int offs = insertionString.length();
+					String s = parseParameters(entire, ret, offs);
+					insertionString.append(s);
+				}
+				else {
+					System.out.println("Unknown/unexpected autocompletion");
+				}
 			}
-			else if(varName != null && cha == '}') {
-				int hlEnd = insertString.length();
-				ret.add(new ParsedParam(varName.toString(), hlStart, hlEnd));
-				varName = null;
-			}
-			else if(varName != null) {
-				varName.append(cha);
-				insertString.append(cha);
-			}
-			else {
-				insertString.append(cha);
-			}
+			i++;
 		}
-		return insertString.toString();
+		return insertionString.toString();
 	}
 
 	public static class ParsedParam {
@@ -253,20 +285,26 @@ public class ParameterizedCompletionContext implements KeyListener {
 		public final int i0;
 		public final int i1;
 
-		public ParsedParam(String name, int i0, int i1) {
+		public final Autocompletion.Parameterized autocompletion;
+
+		public ParsedParam(String name, int i0, int i1, Autocompletion.Parameterized autocompletion) {
 			this.name = name;
 			this.i0 = i0;
 			this.i1 = i1;
+			this.autocompletion = autocompletion;
 		}
 	}
 
-	private static class Param {
+	public static class Param {
 		private final String name;
+
+		public final Autocompletion autocompletion;
 		private final Highlighter.Highlight highlight;
 		private final Object highlightTag;
 
-		public Param(String name, Highlighter.Highlight highlight, Object highlightTag) {
+		public Param(String name, Autocompletion autocompletion, Highlighter.Highlight highlight, Object highlightTag) {
 			this.name = name;
+			this.autocompletion = autocompletion;
 			this.highlight = highlight;
 			this.highlightTag = highlightTag;
 		}

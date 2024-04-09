@@ -2,7 +2,6 @@ package de.nls;
 
 import de.nls.core.*;
 import de.nls.ebnf.EBNF;
-import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.EBNFParser;
 import de.nls.ebnf.Join;
@@ -34,7 +33,7 @@ public class Parser {
 
 	private final EBNF targetGrammar = new EBNF();
 
-	private final HashMap<String, String> symbol2Autocompletion = new HashMap<>();
+	private final HashMap<String, ArrayList<Autocompletion>> symbol2Autocompletion = new HashMap<>();
 
 	private boolean compiled = false;
 

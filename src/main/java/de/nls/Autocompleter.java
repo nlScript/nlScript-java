@@ -1,8 +1,8 @@
 package de.nls;
 
-import de.nls.core.Autocompletion;
 import de.nls.core.BNF;
 import de.nls.core.Lexer;
+import de.nls.core.Autocompletion;
 import de.nls.core.Production;
 import de.nls.core.RDParser;
 import de.nls.core.Symbol;
@@ -17,37 +17,18 @@ import java.util.HashMap;
 
 public interface Autocompleter {
 
-	String VETO = "VETO";
-
-	String DOES_AUTOCOMPLETE = "DOES_AUTOCOMPLETE";
-
-	String getAutocompletion(ParsedNode pn, boolean justCheck);
-
-	class IfNothingYetEnteredAutocompleter implements Autocompleter {
-
-		private final String completion;
-
-		public IfNothingYetEnteredAutocompleter(String completion) {
-			this.completion = completion;
-		}
-
-		@Override
-		public String getAutocompletion(ParsedNode pn, boolean justCheck) {
-			return pn.getParsedString().isEmpty() ? completion : "";
-		}
-	}
+	Autocompletion[] getAutocompletion(ParsedNode pn, boolean justCheck);
 
 	Autocompleter DEFAULT_INLINE_AUTOCOMPLETER = (pn, justCheck) -> {
 		String alreadyEntered = pn.getParsedString();
 		if(!alreadyEntered.isEmpty())
-			return Autocompleter.VETO;
+			return Autocompletion.veto(pn);
 		String name = pn.getName();
-		if(name != null)
-			return "${" + name + "}";
-		name = pn.getSymbol().getSymbol();
-		if(name != null)
-			return "${" + name + "}";
-		return null;
+		if(name == null)
+			name = pn.getSymbol().getSymbol();
+		if(name == null)
+			return null;
+		return Autocompletion.parameterized(pn, name);
 	};
 
 	Autocompleter PATH_AUTOCOMPLETER = new PathAutocompleter();
@@ -56,35 +37,30 @@ public interface Autocompleter {
 
 		private final EBNFCore ebnf;
 
-		private final HashMap<String, String> symbol2Autocompletion;
+		private final HashMap<String, ArrayList<Autocompletion>> symbol2Autocompletion;
 
-		public EntireSequenceCompleter(EBNFCore ebnf, HashMap<String, String> symbol2Autocompletion) {
+		public EntireSequenceCompleter(EBNFCore ebnf, HashMap<String, ArrayList<Autocompletion>> symbol2Autocompletion) {
 			this.ebnf = ebnf;
 			this.symbol2Autocompletion = symbol2Autocompletion;
 		}
 
 		@Override
-		public String getAutocompletion(ParsedNode pn, boolean justCheck) {
+		public Autocompletion[] getAutocompletion(ParsedNode pn, boolean justCheck) {
 			String alreadyEntered = pn.getParsedString();
-//			if (!alreadyEntered.isEmpty())
-//				return Autocompleter.VETO;
-
-//			if(justCheck)
-//				return Autocompleter.DOES_AUTOCOMPLETE;
-
-			StringBuilder autocompletionString = new StringBuilder();
 
 			Rule sequence = pn.getRule();
 			Symbol[] children = sequence.getChildren();
 
+			Autocompletion.EntireSequence entireSequenceCompletion = new Autocompletion.EntireSequence(pn);
 
 			for(int i = 0; i < children.length; i++) {
 				String key = children[i].getSymbol() + ":" + sequence.getNameForChild(i);
-				String autocompletionStringForChild = symbol2Autocompletion.get(key);
-				if(autocompletionStringForChild != null) {
-					autocompletionString.append(autocompletionStringForChild);
+				ArrayList<Autocompletion> autocompletionsForChild = symbol2Autocompletion.get(key);
+				if(autocompletionsForChild != null) {
+					entireSequenceCompletion.add(autocompletionsForChild);
 					continue;
 				}
+
 				BNF bnf = new BNF(ebnf.getBNF());
 
 				Sequence newSequence = new Sequence(null, children[i]);
@@ -95,34 +71,31 @@ public interface Autocompleter {
 				bnf.addProduction(new Production(BNF.ARTIFICIAL_START_SYMBOL, newSequence.getTarget()));
 				RDParser parser = new RDParser(bnf, new Lexer(""), EBNFParsedNodeFactory.INSTANCE);
 
-				ArrayList<Autocompletion> autocompletions = new ArrayList<>();
+				autocompletionsForChild = new ArrayList<>();
 				try {
-					parser.parse(autocompletions);
+					parser.parse(autocompletionsForChild);
 				} catch (ParseException e) {
 					throw new RuntimeException(e);
 				}
 
-				int n = autocompletions.size();
-				if (n > 1)
-					autocompletionStringForChild = "${" + sequence.getNameForChild(i) + "}";
-				else if (n == 1)
-					autocompletionStringForChild = autocompletions.get(0).getCompletion();
-
-				symbol2Autocompletion.put(key, autocompletionStringForChild);
-				autocompletionString.append(autocompletionStringForChild);
+				symbol2Autocompletion.put(key, autocompletionsForChild);
+				entireSequenceCompletion.add(autocompletionsForChild);
 			}
-			int idx = autocompletionString.indexOf("${");
+
+			int idx = entireSequenceCompletion.getCompletion().indexOf("${");
 			if(idx >= 0 && alreadyEntered.length() > idx)
 				return null;
-			return autocompletionString.toString();
+
+			return entireSequenceCompletion.asArray();
 		}
 	}
 
 	class PathAutocompleter implements Autocompleter {
-		public String getAutocompletion(ParsedNode p, boolean justCheck) {
+		public Autocompletion[] getAutocompletion(ParsedNode p, boolean justCheck) {
 			if(justCheck)
-				return DOES_AUTOCOMPLETE;
-			return CompletePath.getCompletion(p.getParsedString());
+				return Autocompletion.doesAutocomplete(p);
+			String[] completion =  CompletePath.getCompletion(p.getParsedString());
+			return Autocompletion.literal(p, completion);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package de.nls.examples.microscope;
 
-import de.nls.Autocompleter;
 import de.nls.Parser;
+import de.nls.core.Autocompletion;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -81,7 +81,7 @@ public class LanguageControl {
 
 		parser.defineType("channel-name", "'{<name>:[A-Za-z0-9]:+}'",
 				e -> e.getParsedString("<name>"),
-				new Autocompleter.IfNothingYetEnteredAutocompleter("'${name}'"));
+				true);
 
 		parser.defineSentence(
 				"Define channel {channel-name:channel-name}:" +
@@ -103,7 +103,7 @@ public class LanguageControl {
 		// Define "Tile Scan 1" as a (w x h x d) region centered at (x, y, z)
 		parser.defineType("region-name", "'{<region-name>:[a-zA-Z0-9]:+}'",
 				e -> e.getParsedString("<region-name>"),
-				new Autocompleter.IfNothingYetEnteredAutocompleter("'${region-name}'"));
+				true);
 
 		parser.defineType("region-dimensions", "{<width>:float} x {<height>:float} x {<depth>:float} microns",
 				e -> {
@@ -139,11 +139,13 @@ public class LanguageControl {
 
 		parser.defineType("defined-channels", "'{channel:[A-Za-z0-9]:+}'",
 				e -> e.getParsedString("channel"),
-				(e, justCheck) -> String.join(";;;", definedChannels));
+				(e, justCheck) -> Autocompletion.literal(e, definedChannels)
+		);
 
 		parser.defineType("defined-positions", "'{position:[A-Za-z0-9]:+}'",
 				e -> e.getParsedString("position"),
-				(e, justCheck) -> String.join(";;;", definedRegions));
+				(e, justCheck) -> Autocompletion.literal(e, definedRegions)
+		);
 
 		parser.defineType("time-unit", "second(s)", e -> 1);
 		parser.defineType("time-unit", "minute(s)", e -> 60);

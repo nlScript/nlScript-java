@@ -1,9 +1,9 @@
 package de.nls;
 
-import de.nls.core.Autocompletion;
 import de.nls.core.BNF;
 import de.nls.core.DefaultParsedNode;
 import de.nls.core.Lexer;
+import de.nls.core.Autocompletion;
 import de.nls.core.RDParser;
 
 import java.util.ArrayList;

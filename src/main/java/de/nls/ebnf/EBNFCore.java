@@ -4,6 +4,7 @@ import de.nls.Autocompleter;
 import de.nls.Evaluator;
 import de.nls.core.BNF;
 import de.nls.core.Named;
+import de.nls.core.Autocompletion;
 import de.nls.core.NonTerminal;
 import de.nls.core.Symbol;
 import de.nls.core.Terminal;
@@ -141,30 +142,34 @@ public class EBNFCore {
 				wsStar,
 				Terminal.literal(",").withName(),
 				wsStar);
-		delimiter.setAutocompleter(new Autocompleter.IfNothingYetEnteredAutocompleter(", "));
+		delimiter.setAutocompleter((pn, justCheck) ->
+				Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? ", " : ""));
+
 		return join(type, child, null, null, delimiter.tgt, Range.STAR);
 	}
 
 	public Rule tuple(String type, Named<?> child, String... names) {
 		NamedRule wsStar = star(null, Terminal.WHITESPACE.withName()).withName("ws*");
-		wsStar.get().setAutocompleter((pn, justCheck) -> "");
-		Symbol open      = sequence(null, Terminal.literal("(").withName("open"), wsStar).tgt;
-		Symbol close     = sequence(null, wsStar, Terminal.literal(")").withName("close")).tgt;
-		Symbol delimiter = sequence(null, wsStar, Terminal.literal(",").withName("delimiter"), wsStar).tgt;
-		Rule ret = join(type, child, open, close, delimiter, names);
+		wsStar.get().setAutocompleter((pn, justCheck) -> Autocompletion.literal(pn, ""));
+		Rule open      = sequence(null, Terminal.literal("(").withName("open"), wsStar);
+		Rule close     = sequence(null, wsStar, Terminal.literal(")").withName("close"));
+		Rule delimiter = sequence(null, wsStar, Terminal.literal(",").withName("delimiter"), wsStar);
+		Rule ret = join(type, child, open.tgt, close.tgt, delimiter.tgt, names);
 		ret.setAutocompleter((pn, justCheck) -> {
-			if(!pn.getParsedString().isEmpty())
+			if (!pn.getParsedString().isEmpty())
 				return null;
-			if(justCheck)
-				return Autocompleter.DOES_AUTOCOMPLETE;
-			StringBuilder sb = new StringBuilder("(");
-			Join rule = (Join) pn.getRule();
-			sb.append("${").append(rule.getNameForChild(0)).append("}");
-			for(int i = 1; i < rule.getCardinality().getLower(); i++) {
-				sb.append(", ${").append(rule.getNameForChild(i)).append("}");
+			if (justCheck)
+				return Autocompletion.doesAutocomplete(pn);
+
+			Autocompletion.EntireSequence seq = new Autocompletion.EntireSequence(pn);
+			seq.addLiteral(open.tgt, "open", "(");
+			seq.addParameterized(child.getSymbol(), names[0], names[0]);
+			for (int i = 1; i < names.length; i++) {
+				seq.addLiteral(delimiter.tgt, "delimiter", ", ");
+				seq.addParameterized(child.getSymbol(), names[i], names[i]);
 			}
-			sb.append(")");
-			return sb.toString();
+			seq.addLiteral(close.tgt, "close", ")");
+			return seq.asArray();
 		});
 		return ret;
 	}
@@ -173,6 +178,7 @@ public class EBNFCore {
 		Rule ret = sequence(name,
 				Terminal.characterClass(pattern).withName("character-class"));
 		ret.setEvaluator(pn -> pn.getParsedString("character-class").charAt(0));
+		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		return ret;
 	}
 

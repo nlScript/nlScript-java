@@ -7,8 +7,6 @@ import de.nls.ui.ACEditor;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.ListIterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -44,20 +42,6 @@ public class TestMonth {
 	}
 
 	public static void main(String[] args) {
-		// interactive();
-		LinkedList<Integer> list = new LinkedList<>();
-		list.add(0);
-		list.add(1);
-		list.add(2);
-		ListIterator<Integer> it = list.listIterator();
-		while(it.hasNext()) {
-			Integer n = it.next();
-			if(n == 1) {
-				it.remove();
-				it.add(10);
-				it.add(11);
-			}
-		}
-		System.out.println("list = " + list);
+		 interactive();
 	}
 }

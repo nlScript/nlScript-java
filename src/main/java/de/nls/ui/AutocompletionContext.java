@@ -1,12 +1,17 @@
 package de.nls.ui;
 
 import de.nls.ParseException;
+import de.nls.core.BNF;
 import de.nls.core.Matcher;
+import de.nls.core.Autocompletion;
+import de.nls.core.NonTerminal;
+import de.nls.core.Symbol;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
 import java.awt.Color;
 import java.awt.Point;
@@ -18,6 +23,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AutocompletionContext implements ParameterizedCompletionContext.ParameterChangeListener {
@@ -67,7 +74,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		this.popup.addMouseListenerToList(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if(e.getClickCount() == 2) {
-					final IAutocompletion completion = popup.getSelected();
+					final Autocompletion completion = popup.getSelected();
 					if(completion != null) {
 						hidePopup(); // need to hide it before changing the document
 						insertCompletion(tc.getCaretPosition(), completion);
@@ -95,7 +102,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 						e.consume();
 					}
 					if (kc == KeyEvent.VK_ENTER) {
-						final IAutocompletion completion = popup.getSelected();
+						final Autocompletion completion = popup.getSelected();
 						if(completion != null) {
 							hidePopup(); // need to hide it before changing the document
 							insertCompletion(tc.getCaretPosition(), completion);
@@ -191,9 +198,9 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 	private String lastInserted = null;
 	private int lastInsertionPosition = -1;
 
-	public void insertCompletion(int caret, IAutocompletion completion) {
+	public void insertCompletion(int caret, Autocompletion completion) {
 		final String repl = completion.getCompletion();
-		final String alreadyEntered = completion.getAlreadyEnteredText();
+		final String alreadyEntered = completion.getAlreadyEntered();
 		/* If a parameterized completion was inserted before, with the first parameter starting right at
 		 * the beginning of the insertion (e.g. "${percentage} %"), we would insert the very same completion again
 		 * when trying to auto-complete the first parameter.
@@ -213,7 +220,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			insertedParameterizedAutocompletion = true;
 			parameterizedCompletion = new ParameterizedCompletionContext(tc);
 			parameterizedCompletion.addParameterChangeListener(this);
-			parameterizedCompletion.replaceSelection(repl);
+			parameterizedCompletion.replaceSelection(completion);
 			insertedParameterizedAutocompletion = false;
 		}
 		else {
@@ -285,7 +292,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 
 		errorHighlight.clearError();
 
-		IAutocompletion[] completions;
+		List<Autocompletion> completions;
 		try {
 			completions = provider.getAutocompletions(text);
 		} catch (ParseException e) {
@@ -293,10 +300,11 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			errorHighlight.setError(f.pos, f.pos + f.parsed.length());
 			return;
 		}
+
 		popup.getModel().set(completions);
-		if (completions.length < 2) {
+		if (completions.size() < 2) {
 			if (popup.getModel().getSize() == 1) {
-				final IAutocompletion completion = popup.getModel().getElementAt(0);
+				final Autocompletion completion = popup.getModel().getElementAt(0);
 				if(autoInsertSingleOption || !completion.getCompletion().contains("${")) {
 					SwingUtilities.invokeLater(() -> {
 						boolean tmp = insertAsFarAsPossible;
@@ -311,17 +319,19 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			return;
 		}
 
-		String remainingText = entireText.substring(caret);
-		int matchingLength = 0;
-		for(IAutocompletion ac : completions) {
-			String remainingCompletion = ac.getCompletion().substring(ac.getAlreadyEnteredText().length());
-			if(remainingText.startsWith(remainingCompletion)) {
-				matchingLength = remainingCompletion.length();
-				break;
+		if(false) {
+			String remainingText = entireText.substring(caret);
+			int matchingLength = 0;
+			for (Autocompletion ac : completions) {
+				String remainingCompletion = ac.getCompletion().substring(ac.getAlreadyEntered().length());
+				if (remainingText.startsWith(remainingCompletion)) {
+					matchingLength = remainingCompletion.length();
+					break;
+				}
 			}
+			if (matchingLength > 0)
+				tc.select(caret, caret + matchingLength);
 		}
-		if(matchingLength > 0)
-			tc.select(caret, caret + matchingLength);
 
 		popup.setSelectedIndex(0);
 		showPopup(caret);

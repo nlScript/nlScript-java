@@ -1,26 +1,27 @@
 package de.nls.ui;
 
+import de.nls.core.Autocompletion;
+
 import javax.swing.ListModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-public class ACListModel implements ListModel<IAutocompletion> {
+public class ACListModel implements ListModel<Autocompletion> {
 
-	private final List<IAutocompletion> list = new ArrayList<>();
+	private final List<Autocompletion> list = new ArrayList<>();
 
 	private final ArrayList<ListDataListener> listeners = new ArrayList<>();
 
-	public void add(IAutocompletion s) {
+	public void add(Autocompletion s) {
 		list.add(s);
 		fireListChanged();
 	}
 
-	public void set(IAutocompletion... s) {
+	public void set(List<Autocompletion> s) {
 		list.clear();
-		list.addAll(Arrays.asList(s));
+		list.addAll(s);
 		fireListChanged();
 	}
 
@@ -30,7 +31,7 @@ public class ACListModel implements ListModel<IAutocompletion> {
 	}
 
 	@Override
-	public IAutocompletion getElementAt(int index) {
+	public Autocompletion getElementAt(int index) {
 		return list.get(index);
 	}
 

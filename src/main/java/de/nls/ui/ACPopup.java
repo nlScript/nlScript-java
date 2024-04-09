@@ -1,5 +1,7 @@
 package de.nls.ui;
 
+import de.nls.core.Autocompletion;
+
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -12,7 +14,6 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Window;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class ACPopup extends JWindow {
 
 	private final ACListModel model;
 
-	private final JList<IAutocompletion> jList;
+	private final JList<Autocompletion> jList;
 
 	public ACPopup(Window parent) {
 		super(parent);
@@ -31,11 +32,11 @@ public class ACPopup extends JWindow {
 		jList.setCellRenderer(new DefaultListCellRenderer() {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-				String text = ((IAutocompletion) value).getCompletion();
+				String text = ((Autocompletion) value).getCompletion();
 				List<ParameterizedCompletionContext.ParsedParam> parsedParams = new ArrayList<>();
 				if(text.contains("${")) {
-					String insertionString = escapeHTML(text);
-					insertionString = ParameterizedCompletionContext.parseParameters(insertionString, parsedParams);
+					String insertionString = ParameterizedCompletionContext.parseParameters((Autocompletion) value, parsedParams);
+					insertionString = escapeHTML(insertionString);
 					StringBuilder sb = new StringBuilder(insertionString);
 					for (int i = parsedParams.size() - 1; i >= 0; i--) {
 						ParameterizedCompletionContext.ParsedParam param = parsedParams.get(i);
@@ -76,7 +77,7 @@ public class ACPopup extends JWindow {
 		jList.removeMouseListener(l);
 	}
 
-	public IAutocompletion getSelected() {
+	public Autocompletion getSelected() {
 		return jList.getSelectedValue();
 	}
 

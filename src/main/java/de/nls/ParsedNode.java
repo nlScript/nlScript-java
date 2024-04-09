@@ -2,10 +2,10 @@ package de.nls;
 
 import de.nls.core.DefaultParsedNode;
 import de.nls.core.Matcher;
+import de.nls.core.Autocompletion;
 import de.nls.core.ParsingState;
 import de.nls.core.Production;
 import de.nls.core.Symbol;
-import de.nls.ebnf.EBNF;
 import de.nls.ebnf.EBNFProduction;
 import de.nls.ebnf.ParseListener;
 import de.nls.ebnf.Rule;
@@ -46,7 +46,7 @@ public class ParsedNode extends DefaultParsedNode {
 		return thisRule.equals(parentRule);
 	}
 
-	public String getAutocompletion(boolean justCheck) {
+	public Autocompletion[] getAutocompletion(boolean justCheck) {
 		Rule rule = getRule();
 		if(rule != null && rule.getAutocompleter() != null && !parentHasSameRule()) {
 			return rule.getAutocompleter().getAutocompletion(this, justCheck);

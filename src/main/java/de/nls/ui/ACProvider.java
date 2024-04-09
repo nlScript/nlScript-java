@@ -6,6 +6,7 @@ import de.nls.Parser;
 import de.nls.core.Autocompletion;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ACProvider {
 
@@ -15,19 +16,13 @@ public class ACProvider {
 		this.parser = parser;
 	}
 
-	public IAutocompletion[] getAutocompletions(String text) throws ParseException {
+	public List<Autocompletion> getAutocompletions(String text) throws ParseException {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		parser.parse(text, autocompletions);
-		return autocompletions.stream().map(ac -> new IAutocompletion() {
-			@Override
-			public String getAlreadyEnteredText() {
-				return ac.getAlreadyEnteredText();
-			}
+		return autocompletions;
+	}
 
-			@Override
-			public String getCompletion() {
-				return ac.getCompletion();
-			}
-		}).toArray(IAutocompletion[]::new);
+	public Parser getParser() {
+		return parser;
 	}
 }

@@ -102,11 +102,11 @@ public class CompletePath {
 				.toArray(String[]::new);
 	}
 
-	public static String getCompletion(String alreadyEntered) {
+	public static String[] getCompletion(String alreadyEntered) {
 		String[] siblings = getSiblings(alreadyEntered);
 		if(siblings.length == 0)
-			return alreadyEntered;
-		return String.join(";;;", siblings);
+			return new String[] { alreadyEntered };
+		return siblings;
 	}
 
 	private static class PathWrapper {

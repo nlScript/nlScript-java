@@ -1,9 +1,9 @@
 package de.nls.core;
 
-import de.nls.Autocompleter;
 import de.nls.ParseException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,7 +51,6 @@ public class RDParser {
 		// TODO first call buildAst (and remove it from Parser)
 		ret = buildAst(ret);
 		if(ret.getMatcher().state == ParsingState.FAILED) {
-			System.out.println(GraphViz.toVizDotLink(ret));
 			throw new ParseException(ret, last[0], this);
 		}
 
@@ -124,22 +123,27 @@ public class RDParser {
 	 * Removes all entries and puts null at index 0 if further autocompletion should be prohibited.
 	 */
 	private void addAutocompletions(DefaultParsedNode autocompletingParent, ArrayList<Autocompletion> autocompletions) {
-		if(autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
+		if(!autocompletions.isEmpty() && autocompletions.get(autocompletions.size() - 1) == null)
 			return;
 
 		int autocompletingParentStart = autocompletingParent.getMatcher().pos;
 		String alreadyEntered = lexer.substring(autocompletingParentStart);
-		String completion = autocompletingParent.getAutocompletion(false);
-		if(completion != null && !completion.isEmpty()) {
-			for(String c : completion.split(";;;")) {
-				if(c.equals(Autocompleter.VETO)) {
+		Autocompletion[] completion = autocompletingParent.getAutocompletion(false);
+		if(completion != null && completion.length > 0) {
+			for(Autocompletion c : completion) {
+				if(c == null || c.getCompletion().isEmpty())
+					continue;
+				if(c instanceof Autocompletion.Veto) {
 					// autocompletions.clear();
+					// TODO clear it here and only add the veto
 					autocompletions.add(null); // to prevent further autocompletion
 					return;
 				}
-				Autocompletion ac = new Autocompletion(c, alreadyEntered);
-				if(!autocompletions.contains(ac))
-					autocompletions.add(ac);
+
+				c.setAlreadyEntered(alreadyEntered);
+
+				if(autocompletions.stream().noneMatch(ac -> ac.getCompletion().equals(c.getCompletion())))
+					autocompletions.add(c);
 			}
 		}
 	}
