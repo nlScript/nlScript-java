@@ -43,8 +43,6 @@ public class RDParser {
 		SymbolSequence parsedSequence = parseRecursive(seq, endOfInput);
 		if(autocompletions != null)
 			collectAutocompletions(endOfInput, autocompletions);
-		if(autocompletions != null && autocompletions.size() > 0 && autocompletions.get(autocompletions.size() - 1) == null)
-			autocompletions.remove(autocompletions.size() - 1);
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
 		DefaultParsedNode ret = createParsedTree(parsedSequence, last);
 		// System.out.println(GraphViz.toVizDotLink(ret));
@@ -87,8 +85,10 @@ public class RDParser {
 				key = autocompletingParent.getSymbol().getSymbol();
 			}
 			if(!done.contains(key)) {
-				addAutocompletions(autocompletingParent, autocompletions);
+				boolean veto = addAutocompletions(autocompletingParent, autocompletions);
 				done.add(key);
+				if(veto)
+					break;
 			}
 		}
 	}
@@ -121,11 +121,9 @@ public class RDParser {
 
 	/**
 	 * Removes all entries and puts null at index 0 if further autocompletion should be prohibited.
+	 * @return true if encountered veto and autocompletion should stop
 	 */
-	private void addAutocompletions(DefaultParsedNode autocompletingParent, ArrayList<Autocompletion> autocompletions) {
-		if(!autocompletions.isEmpty() && autocompletions.get(autocompletions.size() - 1) == null)
-			return;
-
+	private boolean addAutocompletions(DefaultParsedNode autocompletingParent, ArrayList<Autocompletion> autocompletions) {
 		int autocompletingParentStart = autocompletingParent.getMatcher().pos;
 		String alreadyEntered = lexer.substring(autocompletingParentStart);
 		Autocompletion[] completion = autocompletingParent.getAutocompletion(false);
@@ -134,10 +132,8 @@ public class RDParser {
 				if(c == null || c.getCompletion().isEmpty())
 					continue;
 				if(c instanceof Autocompletion.Veto) {
-					// autocompletions.clear();
-					// TODO clear it here and only add the veto
-					autocompletions.add(null); // to prevent further autocompletion
-					return;
+					autocompletions.clear();
+					return true;
 				}
 
 				c.setAlreadyEntered(alreadyEntered);
@@ -146,6 +142,7 @@ public class RDParser {
 					autocompletions.add(c);
 			}
 		}
+		return false;
 	}
 
 	/**
