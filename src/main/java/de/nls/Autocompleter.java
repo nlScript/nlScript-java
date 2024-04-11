@@ -1,11 +1,14 @@
 package de.nls;
 
 import de.nls.core.BNF;
+import de.nls.core.DefaultParsedNode;
 import de.nls.core.Lexer;
 import de.nls.core.Autocompletion;
+import de.nls.core.Named;
 import de.nls.core.Production;
 import de.nls.core.RDParser;
 import de.nls.core.Symbol;
+import de.nls.core.Terminal;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Rule;
@@ -17,7 +20,28 @@ import java.util.HashMap;
 
 public interface Autocompleter {
 
-	Autocompletion[] getAutocompletion(ParsedNode pn, boolean justCheck);
+	Autocompletion[] getAutocompletion(DefaultParsedNode pn, boolean justCheck);
+
+	Autocompleter FALLBACK_AUTOCOMPLETER = (pn, justCheck) -> {
+		Symbol symbol = pn.getSymbol();
+		if(symbol == null)
+			return null;
+
+		if(symbol instanceof Terminal.Literal)
+			return Autocompletion.literal(pn, symbol.getSymbol());
+
+		String name = pn.getName();
+		if(name.equals(Named.UNNAMED))
+			name = symbol.getSymbol();
+
+		if(symbol.isTerminal()) {
+			return !pn.getParsedString().isEmpty()
+					? Autocompletion.veto(pn)
+					: Autocompletion.parameterized(pn, name);
+		}
+
+		return null;
+	};
 
 	Autocompleter DEFAULT_INLINE_AUTOCOMPLETER = (pn, justCheck) -> {
 		String alreadyEntered = pn.getParsedString();
@@ -45,10 +69,10 @@ public interface Autocompleter {
 		}
 
 		@Override
-		public Autocompletion[] getAutocompletion(ParsedNode pn, boolean justCheck) {
+		public Autocompletion[] getAutocompletion(DefaultParsedNode pn, boolean justCheck) {
 			String alreadyEntered = pn.getParsedString();
 
-			Rule sequence = pn.getRule();
+			Rule sequence = ((ParsedNode) pn).getRule();
 			Symbol[] children = sequence.getChildren();
 
 			Autocompletion.EntireSequence entireSequenceCompletion = new Autocompletion.EntireSequence(pn);
@@ -82,7 +106,11 @@ public interface Autocompleter {
 				entireSequenceCompletion.add(autocompletionsForChild);
 			}
 
-			int idx = entireSequenceCompletion.getCompletion().indexOf("${");
+			// avoid to call getCompletion() more often than necessary
+			if(alreadyEntered.isEmpty())
+				return entireSequenceCompletion.asArray();
+
+			int idx = entireSequenceCompletion.getCompletion(Autocompletion.Purpose.FOR_INSERTION).indexOf("${");
 			if(idx >= 0 && alreadyEntered.length() > idx)
 				return null;
 
@@ -91,7 +119,8 @@ public interface Autocompleter {
 	}
 
 	class PathAutocompleter implements Autocompleter {
-		public Autocompletion[] getAutocompletion(ParsedNode p, boolean justCheck) {
+		@Override
+		public Autocompletion[] getAutocompletion(DefaultParsedNode p, boolean justCheck) {
 			if(justCheck)
 				return Autocompletion.doesAutocomplete(p);
 			String[] completion =  CompletePath.getCompletion(p.getParsedString());

@@ -25,7 +25,7 @@ public class TestColor {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		hlp.parse("My favorite color is ", autocompletions);
 
-		String[] actual = autocompletions.stream().map(Autocompletion::getCompletion).toArray(String[]::new);
+		String[] actual = autocompletions.stream().map(ac -> ac.getCompletion(Autocompletion.Purpose.FOR_INSERTION)).toArray(String[]::new);
 		String[] expected = new String[] {
 			"(${red}, ${green}, ${blue})",
 			"black",

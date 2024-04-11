@@ -228,7 +228,7 @@ public class ParameterizedCompletionContext implements KeyListener {
 	}
 
 	public static String parseParameters(Autocompletion.Literal autocompletion, List<ParsedParam> ret) {
-		return autocompletion.getCompletion();
+		return autocompletion.getCompletion(Autocompletion.Purpose.FOR_INSERTION);
 	}
 
 	public static String parseParameters(Autocompletion.Parameterized autocompletion, List<ParsedParam> ret) {
@@ -255,7 +255,7 @@ public class ParameterizedCompletionContext implements KeyListener {
 			else if(n == 1) {
 				Autocompletion single = autocompletions.get(0);
 				if(single instanceof Autocompletion.Literal) {
-					insertionString.append(single.getCompletion());
+					insertionString.append(single.getCompletion(Autocompletion.Purpose.FOR_INSERTION));
 				}
 				else if(single instanceof Autocompletion.Parameterized) {
 					Autocompletion.Parameterized parameterized = (Autocompletion.Parameterized) single;
@@ -267,7 +267,7 @@ public class ParameterizedCompletionContext implements KeyListener {
 				}
 				else if(single instanceof Autocompletion.EntireSequence) {
 					Autocompletion.EntireSequence entire = (Autocompletion.EntireSequence) single;
-					int offs = insertionString.length();
+					int offs = offset + insertionString.length();
 					String s = parseParameters(entire, ret, offs);
 					insertionString.append(s);
 				}

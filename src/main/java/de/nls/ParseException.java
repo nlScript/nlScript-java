@@ -78,7 +78,9 @@ public class ParseException extends Exception {
 			errorMessage.append(" ");
 		errorMessage.append("^").append(nl);
 
-		List<String> exString = expectations.stream().map(Autocompletion::getCompletion).collect(Collectors.toList());
+		List<String> exString = expectations.stream()
+				.map(ac -> ac.getCompletion(Autocompletion.Purpose.FOR_INSERTION))
+				.collect(Collectors.toList());
 		errorMessage.append("Expected ").append(exString);
 
 		return errorMessage.toString();

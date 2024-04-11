@@ -9,6 +9,11 @@ import java.util.List;
 
 public abstract class Autocompletion {
 
+	public enum Purpose {
+		FOR_MENU,
+		FOR_INSERTION
+	}
+
 	public final String symbolName;
 
 	public final Symbol forSymbol;
@@ -33,6 +38,12 @@ public abstract class Autocompletion {
 				.toArray(Autocompletion[]::new);
 	}
 
+	public static Autocompletion[] literal(Symbol forSymbol, String symbolName, String... literal) {
+		return Arrays.stream(literal)
+				.map(s -> new Autocompletion.Literal(forSymbol, symbolName, s))
+				.toArray(Autocompletion[]::new);
+	}
+
 	public static Autocompletion[] literal(DefaultParsedNode pn, List<String> literals) {
 		return literals.stream()
 				.map(s -> new Autocompletion.Literal(pn, s))
@@ -53,11 +64,15 @@ public abstract class Autocompletion {
 		return new Autocompletion.Veto(pn).asArray();
 	}
 
-	public static Autocompletion[] doesAutocomplete(ParsedNode pn) {
+	public static Autocompletion[] doesAutocomplete(DefaultParsedNode pn) {
 		return new Autocompletion.DoesAutocomplete(pn).asArray();
 	}
 
-	public abstract String getCompletion();
+	public abstract String getCompletion(Purpose purpose);
+
+	public boolean isEmptyLiteral() {
+		return (this instanceof Literal) && this.getCompletion(Purpose.FOR_INSERTION).isEmpty();
+	}
 
 	public String getAlreadyEntered() {
 		return alreadyEntered;
@@ -86,7 +101,7 @@ public abstract class Autocompletion {
 		}
 
 		@Override
-		public String getCompletion() {
+		public String getCompletion(Purpose purpose) {
 			return literal;
 		}
 	}
@@ -105,7 +120,7 @@ public abstract class Autocompletion {
 		}
 
 		@Override
-		public String getCompletion() {
+		public String getCompletion(Purpose purpose) {
 			return "${" + paramName + "}";
 		}
 	}
@@ -123,13 +138,13 @@ public abstract class Autocompletion {
 		}
 
 		@Override
-		public String getCompletion() {
+		public String getCompletion(Purpose purpose) {
 			return VETO;
 		}
 	}
 
 	public static class DoesAutocomplete extends Autocompletion {
-		private DoesAutocomplete(ParsedNode pn) {
+		private DoesAutocomplete(DefaultParsedNode pn) {
 			super(pn);
 		}
 
@@ -138,7 +153,7 @@ public abstract class Autocompletion {
 		}
 
 		@Override
-		public String getCompletion() {
+		public String getCompletion(Purpose purpose) {
 			return "Something"; // the return value for DoesAutocomplete shouldn't matter
 		}
 	}
@@ -185,16 +200,34 @@ public abstract class Autocompletion {
 		}
 
 		@Override
-		public String getCompletion() {
+		public String getCompletion(Purpose purpose) {
 			StringBuilder autocompletionString = new StringBuilder();
 			int i = 0;
 			for(List<Autocompletion> autocompletions : sequenceOfCompletions) {
 				int n = autocompletions.size();
-				if(n > 1)
+				if(n > 1) {
 					autocompletionString.append("${" + sequence.getNameForChild(i) + "}");
-				else if(n == 1)
-					autocompletionString.append(autocompletions.get(0).getCompletion());
-				i++;
+				}
+				else if(n == 1) {
+					if(purpose == Purpose.FOR_MENU) {
+						String ins = null;
+						Autocompletion ac = autocompletions.get(0);
+						if(ac instanceof Literal)
+							ins = ac.getCompletion(Purpose.FOR_INSERTION);
+						else
+							ins = "${" + sequence.getNameForChild(i) + "}";
+
+						if(ins == null || ins.equals(Named.UNNAMED))
+							ins = "${" + sequence.getChildren()[i].getSymbol() + "}";
+
+
+						autocompletionString.append(ins);
+					}
+					else if(purpose == Purpose.FOR_INSERTION)
+						autocompletionString.append(autocompletions.get(0).getCompletion(purpose));
+
+					i++;
+				}
 			}
 			return autocompletionString.toString();
 		}

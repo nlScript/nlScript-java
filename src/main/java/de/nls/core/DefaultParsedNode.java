@@ -1,5 +1,7 @@
 package de.nls.core;
 
+import de.nls.Autocompleter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -44,23 +46,7 @@ public class DefaultParsedNode {
 	}
 
 	public Autocompletion[] getAutocompletion(boolean justCheck) {
-		if(symbol == null)
-			return null;
-
-		if(symbol instanceof Terminal.Literal)
-			return Autocompletion.literal(this, symbol.getSymbol());
-
-		String name = getName();
-		if(name.equals(Named.UNNAMED))
-			name = symbol.getSymbol();
-
-		if(symbol.isTerminal()) {
-			return !getParsedString().isEmpty()
-					? Autocompletion.veto(this)
-					: Autocompletion.parameterized(this, name);
-		}
-
-		return null;
+		return Autocompleter.FALLBACK_AUTOCOMPLETER.getAutocompletion(this, justCheck);
 	}
 
 	public int numChildren() {

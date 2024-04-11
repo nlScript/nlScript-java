@@ -195,21 +195,21 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 	private boolean insertedParameterizedAutocompletion = false;
 	final AtomicBoolean justInserted = new AtomicBoolean(false);
 
-	private String lastInserted = null;
+	// private String lastInserted = null;
 	private int lastInsertionPosition = -1;
 
 	public void insertCompletion(int caret, Autocompletion completion) {
-		final String repl = completion.getCompletion();
+		final String repl = completion.getCompletion(Autocompletion.Purpose.FOR_INSERTION);
 		final String alreadyEntered = completion.getAlreadyEntered();
 		/* If a parameterized completion was inserted before, with the first parameter starting right at
 		 * the beginning of the insertion (e.g. "${percentage} %"), we would insert the very same completion again
 		 * when trying to auto-complete the first parameter.
 		 */
-		if(caret == lastInsertionPosition && completion.getCompletion().equals(lastInserted))
+		if(caret == lastInsertionPosition) // TODO 2024-04-11 is this still needed: && repl.equals(lastInserted))
 			return;
 
 
-		lastInserted = repl;
+		// lastInserted = repl;
 		lastInsertionPosition = caret;
 
 		tc.moveCaretPosition(caret - alreadyEntered.length());
@@ -355,7 +355,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 		if (completions.size() < 2) {
 			if (popup.getModel().getSize() == 1) {
 				final Autocompletion completion = popup.getModel().getElementAt(0);
-				if(autoInsertSingleOption || !completion.getCompletion().contains("${")) {
+				if(autoInsertSingleOption || (completion instanceof Autocompletion.Literal)) {
 					SwingUtilities.invokeLater(() -> {
 						boolean tmp = insertAsFarAsPossible;
 						if (caret < entireText.trim().length())
@@ -369,19 +369,19 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			return;
 		}
 
-		if(false) {
-			String remainingText = entireText.substring(caret);
-			int matchingLength = 0;
-			for (Autocompletion ac : completions) {
-				String remainingCompletion = ac.getCompletion().substring(ac.getAlreadyEntered().length());
-				if (remainingText.startsWith(remainingCompletion)) {
-					matchingLength = remainingCompletion.length();
-					break;
-				}
-			}
-			if (matchingLength > 0)
-				tc.select(caret, caret + matchingLength);
-		}
+//		if(false) {
+//			String remainingText = entireText.substring(caret);
+//			int matchingLength = 0;
+//			for (Autocompletion ac : completions) {
+//				String remainingCompletion = ac.getCompletion().substring(ac.getAlreadyEntered().length());
+//				if (remainingText.startsWith(remainingCompletion)) {
+//					matchingLength = remainingCompletion.length();
+//					break;
+//				}
+//			}
+//			if (matchingLength > 0)
+//				tc.select(caret, caret + matchingLength);
+//		}
 
 		popup.setSelectedIndex(0);
 		showPopup(caret);

@@ -32,21 +32,23 @@ public class ACPopup extends JWindow {
 		jList.setCellRenderer(new DefaultListCellRenderer() {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-				String text = ((Autocompletion) value).getCompletion();
-				List<ParameterizedCompletionContext.ParsedParam> parsedParams = new ArrayList<>();
-				if(text.contains("${")) {
-					String insertionString = ParameterizedCompletionContext.parseParameters((Autocompletion) value, parsedParams);
-					insertionString = escapeHTML(insertionString);
-					StringBuilder sb = new StringBuilder(insertionString);
-					for (int i = parsedParams.size() - 1; i >= 0; i--) {
-						ParameterizedCompletionContext.ParsedParam param = parsedParams.get(i);
-						sb.insert(param.i1, "</b>");
-						sb.insert(param.i0, "<b>");
-					}
-					sb.insert(0, "<html>");
-					sb.append("</html>");
-					text = sb.toString();
-				}
+				String text = ((Autocompletion) value).getCompletion(Autocompletion.Purpose.FOR_MENU);
+				if(text.contains("${"))
+					text = "<html>" + text.replaceAll("\\Q${\\E", "<b>").replaceAll("\\Q}\\E", "</b>") + "</html>";
+//				List<ParameterizedCompletionContext.ParsedParam> parsedParams = new ArrayList<>();
+//				if(text.contains("${")) {
+//					String insertionString = ParameterizedCompletionContext.parseParameters((Autocompletion) value, parsedParams);
+//					insertionString = escapeHTML(insertionString);
+//					StringBuilder sb = new StringBuilder(insertionString);
+//					for (int i = parsedParams.size() - 1; i >= 0; i--) {
+//						ParameterizedCompletionContext.ParsedParam param = parsedParams.get(i);
+//						sb.insert(param.i1, "</b>");
+//						sb.insert(param.i0, "<b>");
+//					}
+//					sb.insert(0, "<html>");
+//					sb.append("</html>");
+//					text = sb.toString();
+//				}
 				if(text.startsWith("\n"))
 					text = "<new line>";
 				if(text.equals(""))

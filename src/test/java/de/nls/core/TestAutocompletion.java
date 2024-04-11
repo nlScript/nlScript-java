@@ -32,7 +32,7 @@ public class TestAutocompletion {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		parser.parse("The first digit of the number is ", autocompletions);
 		assertEquals(1, autocompletions.size());
-		assertEquals("${first}", autocompletions.get(0).getCompletion());
+		assertEquals("${first}", autocompletions.get(0).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
 	}
 
 	@Test
@@ -42,7 +42,7 @@ public class TestAutocompletion {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		parser.parse("", autocompletions);
 		assertEquals(2, autocompletions.size());
-		assertEquals("Define the output path", autocompletions.get(1).getCompletion());
+		assertEquals("Define the output path", autocompletions.get(1).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
 	}
 
 	@Test
@@ -109,7 +109,7 @@ public class TestAutocompletion {
 		expected.add("DAPI");
 		expected.add("A488");
 
-		assertEquals(expected, autocompletions.stream().map(Autocompletion::getCompletion).collect(Collectors.toList()));
+		assertEquals(expected, autocompletions.stream().map(ac -> ac.getCompletion(Autocompletion.Purpose.FOR_INSERTION)).collect(Collectors.toList()));
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public class TestAutocompletion {
 		System.out.println(pn.getMatcher().state);
 		assertEquals(ParsingState.END_OF_INPUT, pn.getMatcher().state);
 		assertEquals(1, autocompletions.size());
-		assertEquals("Define channel", autocompletions.get(0).getCompletion());
+		assertEquals("Define channel", autocompletions.get(0).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
 	}
 
 	@Test
@@ -164,7 +164,7 @@ public class TestAutocompletion {
 		ParsedNode root = parser.parse("Excite with 10% at 3", autocompletions);
 		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
 		assertEquals(1, autocompletions.size());
-		assertEquals("385nm", autocompletions.get(0).getCompletion());
+		assertEquals("385nm", autocompletions.get(0).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
 
 		autocompletions.clear();
 		root = parser.parse("Excite with 10% at ", autocompletions);
@@ -190,7 +190,7 @@ public class TestAutocompletion {
 		ParsedNode root = parser.parse("Excite with 10% at 3", autocompletions);
 		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
 		assertEquals(1, autocompletions.size());
-		assertEquals("385nm", autocompletions.get(0).getCompletion());
+		assertEquals("385nm", autocompletions.get(0).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
 
 		autocompletions.clear();
 		root = parser.parse("Excite with 10% at ", autocompletions);
@@ -213,9 +213,9 @@ public class TestAutocompletion {
 		ParsedNode root = parser.parse("My favorite color is ", autocompletions);
 		assertEquals(ParsingState.END_OF_INPUT, root.getMatcher().state);
 		assertEquals(3, autocompletions.size());
-		assertEquals("blue", autocompletions.get(0).getCompletion());
-		assertEquals("green", autocompletions.get(1).getCompletion());
-		assertEquals("(${r}, ${g}, ${b})", autocompletions.get(2).getCompletion());
+		assertEquals("blue", autocompletions.get(0).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
+		assertEquals("green", autocompletions.get(1).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
+		assertEquals("(${r}, ${g}, ${b})", autocompletions.get(2).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
 	}
 
 	@Test
@@ -232,7 +232,7 @@ public class TestAutocompletion {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		ParsedNode root = parser.parse("Define channel 'D", autocompletions);
 
-		System.out.println("autocompletions = " + autocompletions.stream().map(Autocompletion::getCompletion).collect(Collectors.toList()));
+		System.out.println("autocompletions = " + autocompletions.stream().map(ac -> ac.getCompletion(Autocompletion.Purpose.FOR_INSERTION)).collect(Collectors.toList()));
 
 	}
 
@@ -255,7 +255,7 @@ public class TestAutocompletion {
 	private String[] getCompletionStrings(ArrayList<Autocompletion> autocompletions) {
 		String[] ret = new String[autocompletions.size()];
 		for(int i = 0; i < ret.length; i++) {
-			ret[i] = autocompletions.get(i).getCompletion() + " (" + autocompletions.get(i).getAlreadyEntered() + ")";
+			ret[i] = autocompletions.get(i).getCompletion(Autocompletion.Purpose.FOR_INSERTION) + " (" + autocompletions.get(i).getAlreadyEntered() + ")";
 		}
 		return ret;
 	}

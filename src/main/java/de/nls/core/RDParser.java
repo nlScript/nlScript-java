@@ -127,9 +127,9 @@ public class RDParser {
 		int autocompletingParentStart = autocompletingParent.getMatcher().pos;
 		String alreadyEntered = lexer.substring(autocompletingParentStart);
 		Autocompletion[] completion = autocompletingParent.getAutocompletion(false);
-		if(completion != null && completion.length > 0) {
+		if(completion != null) {
 			for(Autocompletion c : completion) {
-				if(c == null || c.getCompletion().isEmpty())
+				if(c == null || c.isEmptyLiteral())
 					continue;
 				if(c instanceof Autocompletion.Veto) {
 					autocompletions.clear();
@@ -138,7 +138,7 @@ public class RDParser {
 
 				c.setAlreadyEntered(alreadyEntered);
 
-				if(autocompletions.stream().noneMatch(ac -> ac.getCompletion().equals(c.getCompletion())))
+				if(autocompletions.stream().noneMatch(ac -> ac.getCompletion(Autocompletion.Purpose.FOR_MENU).equals(c.getCompletion(Autocompletion.Purpose.FOR_MENU))))
 					autocompletions.add(c);
 			}
 		}
