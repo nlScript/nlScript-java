@@ -32,25 +32,25 @@ public abstract class Autocompletion {
 		this.symbolName = symbolName;
 	}
 
-	public static Autocompletion[] literal(DefaultParsedNode pn, String... literal) {
+	public static Autocompletion[] literal(DefaultParsedNode pn, CharSequence... literal) {
 		return Arrays.stream(literal)
-				.map(s -> new Autocompletion.Literal(pn, s))
+				.map(s -> new Autocompletion.Literal(pn, s.toString()))
 				.toArray(Autocompletion[]::new);
 	}
 
-	public static Autocompletion[] literal(Symbol forSymbol, String symbolName, String... literal) {
+	public static Autocompletion[] literal(Symbol forSymbol, String symbolName, CharSequence... literal) {
 		return Arrays.stream(literal)
-				.map(s -> new Autocompletion.Literal(forSymbol, symbolName, s))
+				.map(s -> new Autocompletion.Literal(forSymbol, symbolName, s.toString()))
 				.toArray(Autocompletion[]::new);
 	}
 
-	public static Autocompletion[] literal(DefaultParsedNode pn, List<String> literals) {
+	public static <T extends CharSequence> Autocompletion[] literal(DefaultParsedNode pn, List<T> literals) {
 		return literals.stream()
-				.map(s -> new Autocompletion.Literal(pn, s))
+				.map(s -> new Autocompletion.Literal(pn, s.toString()))
 				.toArray(Autocompletion[]::new);
 	}
 
-	public static Autocompletion[] literal(DefaultParsedNode pn, List<String> literals, String prefix, String suffix) {
+	public static <T extends CharSequence> Autocompletion[] literal(DefaultParsedNode pn, List<T> literals, String prefix, String suffix) {
 		return literals.stream()
 				.map(s -> new Autocompletion.Literal(pn, prefix + s + suffix))
 				.toArray(Autocompletion[]::new);
