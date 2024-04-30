@@ -326,11 +326,15 @@ public class Parser {
 					: ((NonTerminal) symbol).withName(variableName);
 
 			if(quantifierObject != null) {
+				Autocompleter autocompleter = null;
+				// set a new fallback autocompleter. This is important for e.g. {bla:[a-z]:4} or {bla:digit:4}
+				if(typeObject instanceof Terminal)
+					autocompleter = Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER;
 				Range range = (Range) quantifierObject;
-				     if(range.equals(Range.STAR))     symbol = targetGrammar.star(    null, namedSymbol).getTarget();
-				else if(range.equals(Range.PLUS))     symbol = targetGrammar.plus(    null, namedSymbol).getTarget();
-				else if(range.equals(Range.OPTIONAL)) symbol = targetGrammar.optional(null, namedSymbol).getTarget();
-				else                                  symbol = targetGrammar.repeat(  null, namedSymbol, range.getLower(), range.getUpper()).getTarget();
+				     if(range.equals(Range.STAR))     symbol = targetGrammar.star(    null, namedSymbol).setAutocompleter(autocompleter).getTarget();
+				else if(range.equals(Range.PLUS))     symbol = targetGrammar.plus(    null, namedSymbol).setAutocompleter(autocompleter).getTarget();
+				else if(range.equals(Range.OPTIONAL)) symbol = targetGrammar.optional(null, namedSymbol).setAutocompleter(autocompleter).getTarget();
+				else                                  symbol = targetGrammar.repeat(  null, namedSymbol, range.getLower(), range.getUpper()).setAutocompleter(autocompleter).getTarget();
 				namedSymbol = ((NonTerminal) symbol).withName(variableName);
 			}
 			return namedSymbol;
