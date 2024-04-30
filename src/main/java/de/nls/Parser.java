@@ -391,7 +391,7 @@ public class Parser {
 
 	private Rule program() {
 		return targetGrammar.join("program",
-				new NonTerminal("sentence").withName("sequence"),
+				new NonTerminal("sentence").withName("sentence"),
 				LINEBREAK_STAR.getTarget(),
 				LINEBREAK_STAR.getTarget(),
 				LINEBREAK_STAR.getTarget(),
