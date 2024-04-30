@@ -261,8 +261,7 @@ public class Parser {
 				Terminal.literal("]").withName()
 		).setEvaluator(pn -> {
 			String pattern = pn.getParsedString();
-			// return Terminal.characterClass(pattern);
-			return targetGrammar.makeCharacterClass(null, pattern).getTarget();
+			return Terminal.characterClass(pattern);
 		});
 	}
 

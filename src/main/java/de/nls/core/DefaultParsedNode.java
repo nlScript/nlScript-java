@@ -1,6 +1,7 @@
 package de.nls.core;
 
 import de.nls.Autocompleter;
+import de.nls.Evaluator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +86,8 @@ public class DefaultParsedNode {
 	}
 
 	public Object evaluate() {
+		if(symbol.isTerminal())
+			return ((Terminal) symbol).evaluate(getMatcher());
 		return getParsedString();
 	}
 

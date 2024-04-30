@@ -1,6 +1,5 @@
 package de.nls.ebnf;
 
-import de.nls.Autocompleter;
 import de.nls.Evaluator;
 import de.nls.core.BNF;
 import de.nls.core.Named;
@@ -15,7 +14,7 @@ import java.util.HashMap;
 
 public class EBNFCore {
 
-	private final HashMap<String, Symbol> symbols = new HashMap<>();
+	protected final HashMap<String, Symbol> symbols = new HashMap<>();
 
 	private final ArrayList<Rule> rules = new ArrayList<>();
 
@@ -171,14 +170,6 @@ public class EBNFCore {
 			seq.addLiteral(close.tgt, "close", ")");
 			return seq.asArray();
 		});
-		return ret;
-	}
-
-	public Rule makeCharacterClass(String name, String pattern) {
-		Rule ret = sequence(name,
-				Terminal.characterClass(pattern).withName("character-class"));
-		ret.setEvaluator(pn -> pn.getParsedString("character-class").charAt(0));
-		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		return ret;
 	}
 

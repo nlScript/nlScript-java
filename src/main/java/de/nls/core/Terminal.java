@@ -41,6 +41,8 @@ public abstract class Terminal extends Symbol {
 
 	public abstract Matcher matches(Lexer lexer);
 
+	public abstract Object evaluate(Matcher matcher);
+
 	public Named<Terminal> withName(String name) {
 		return new Named<>(this, name);
 	}
@@ -63,6 +65,11 @@ public abstract class Terminal extends Symbol {
 		public Matcher matches(Lexer lexer) {
 			return new Matcher(ParsingState.SUCCESSFUL, lexer.getPosition(), "");
 		}
+
+		@Override
+		public Object evaluate(Matcher matcher) {
+			return null;
+		}
 	}
 
 	public static class EndOfInput extends Terminal {
@@ -76,6 +83,11 @@ public abstract class Terminal extends Symbol {
 			if(lexer.isAtEnd())
 				return new Matcher(ParsingState.SUCCESSFUL, pos, " ");
 			return new Matcher(ParsingState.FAILED, pos, "");
+		}
+
+		@Override
+		public Object evaluate(Matcher matcher) {
+			return null;
 		}
 	}
 
@@ -93,6 +105,11 @@ public abstract class Terminal extends Symbol {
 			if(Character.isDigit(c))
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
 			return new Matcher(ParsingState.FAILED, pos, Character.toString(c));
+		}
+
+		@Override
+		public Object evaluate(Matcher matcher) {
+			return matcher.parsed.charAt(0);
 		}
 	}
 
@@ -112,6 +129,11 @@ public abstract class Terminal extends Symbol {
 					return new Matcher(ParsingState.FAILED, pos, lexer.substring(pos, pos + i + 1));
 			}
 			return new Matcher(ParsingState.SUCCESSFUL, pos, symbol);
+		}
+
+		@Override
+		public Object evaluate(Matcher matcher) {
+			return matcher.parsed;
 		}
 
 		@Override
@@ -135,6 +157,11 @@ public abstract class Terminal extends Symbol {
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
 			return new Matcher(ParsingState.FAILED, pos, Character.toString(c));
 		}
+
+		@Override
+		public Object evaluate(Matcher matcher) {
+			return matcher.parsed.charAt(0);
+		}
 	}
 
 	public static class Whitespace extends Terminal {
@@ -151,6 +178,11 @@ public abstract class Terminal extends Symbol {
 			if(c == ' ' || c == '\t')
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
 			return new Matcher(ParsingState.FAILED, pos, Character.toString(c));
+		}
+
+		@Override
+		public Object evaluate(Matcher matcher) {
+			return matcher.parsed.charAt(0);
 		}
 	}
 
@@ -211,6 +243,11 @@ public abstract class Terminal extends Symbol {
 			if(ranges.checkCharacter(c))
 				return new Matcher(ParsingState.SUCCESSFUL, pos, Character.toString(c));
 			return new Matcher(ParsingState.FAILED, pos, Character.toString(c));
+		}
+
+		@Override
+		public Object evaluate(Matcher matcher) {
+			return matcher.parsed.charAt(0);
 		}
 
 		@Override

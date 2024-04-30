@@ -136,9 +136,8 @@ public class TestHighlevelParser {
 		EBNF grammar = hlp.getGrammar();
 		grammar.compile(hlp.CHARACTER_CLASS.getTarget());
 
-		NonTerminal nt = (NonTerminal) evaluate(grammar, "[a-zA-Z]");
-		Rule rule = hlp.getTargetGrammar().getRules(nt).get(0);
-		assertEquals(Terminal.characterClass("[a-zA-Z]"), rule.getChildren()[0]);
+		Terminal.CharacterClass nt = (Terminal.CharacterClass) evaluate(grammar, "[a-zA-Z]");
+		assertEquals(Terminal.characterClass("[a-zA-Z]"), nt);
 	}
 
 	@Test
@@ -222,7 +221,7 @@ public class TestHighlevelParser {
 		test = "{blubb:digit}";
 		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals("blubb", evaluatedNonTerminal.getName());
-		assertEquals(EBNF.DIGIT_NAME, evaluatedNonTerminal.getSymbol().getSymbol());
+		assertEquals(Terminal.DIGIT.getSymbol(), evaluatedNonTerminal.getSymbol().getSymbol());
 
 		test = "{blubb:int:*}";
 		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
@@ -238,7 +237,7 @@ public class TestHighlevelParser {
 		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Plus.class, rule.getClass());
 		Plus plus = (Plus) rule;
-		Symbol chclass = hlp.getTargetGrammar().getRules((NonTerminal) plus.getEntry()).get(0).getChildren()[0];
+		Symbol chclass = plus.getEntry();
 		assertEquals("[A-Z]", chclass.getSymbol());
 
 		test = "{blubb , alkjad asd 4. <>l}";
