@@ -5,6 +5,7 @@ import de.nls.ParsedNode;
 import de.nls.Parser;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestLetter {
@@ -13,14 +14,14 @@ public class TestLetter {
 	public void test01() throws ParseException {
 		Parser hlp = new Parser();
 		hlp.defineSentence("The first character of my name is {l:letter}.", pn -> {
-			Character l = (Character) pn.evaluate("l");
+			char l = (char) pn.evaluate("l");
 			assertEquals(l, 'B');
 			return null;
 		});
 
 		hlp.defineSentence("The first two characters of my name are {l:letter:2}.", pn -> {
-			String l = (String) pn.evaluate("l");
-			assertEquals(l, "Be");
+			Object[] l = (Object[]) pn.evaluate("l");
+			assertArrayEquals(l, new Character[] { 'B', 'e' });
 			return null;
 		});
 

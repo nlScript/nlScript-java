@@ -1,11 +1,15 @@
 package de.nls.core;
 
 import de.nls.ParseException;
+import de.nls.ebnf.EBNF;
 import de.nls.ebnf.EBNFCore;
 import de.nls.ebnf.EBNFParsedNodeFactory;
 import de.nls.ebnf.Rule;
 import de.nls.util.Range;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static de.nls.core.ParsingState.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
@@ -92,25 +96,25 @@ public class TestJoin {
 			BNF grammar = makeGrammar(withOpenClose[i], withDelimiter[i], Range.PLUS);
 			testFailure(grammar, inputs[i][0]);
 			testFailure(grammar, inputs[i][1]);
-			testSuccess(grammar, inputs[i][2], "1");
-			testSuccess(grammar, inputs[i][3], "1", "2");
-			testSuccess(grammar, inputs[i][4], "1", "2", "3");
+			testSuccess(grammar, inputs[i][2], '1');
+			testSuccess(grammar, inputs[i][3], '1', '2');
+			testSuccess(grammar, inputs[i][4], '1', '2', '3');
 			testFailure(grammar, inputs[i][5]);
 			testFailure(grammar, inputs[i][6]);
 
 			grammar = makeGrammar(withOpenClose[i], withDelimiter[i], Range.STAR);
 			testFailure(grammar, inputs[i][0]);
 			testSuccess(grammar, inputs[i][1]);
-			testSuccess(grammar, inputs[i][2], "1");
-			testSuccess(grammar, inputs[i][3], "1", "2");
-			testSuccess(grammar, inputs[i][4], "1", "2", "3");
+			testSuccess(grammar, inputs[i][2], '1');
+			testSuccess(grammar, inputs[i][3], '1', '2');
+			testSuccess(grammar, inputs[i][4], '1', '2', '3');
 			testFailure(grammar, inputs[i][5]);
 			testFailure(grammar, inputs[i][6]);
 
 			grammar = makeGrammar(withOpenClose[i], withDelimiter[i], Range.OPTIONAL);
 			testFailure(grammar, inputs[i][0]);
 			testSuccess(grammar, inputs[i][1]);
-			testSuccess(grammar, inputs[i][2], "1");
+			testSuccess(grammar, inputs[i][2], '1');
 			testFailure(grammar, inputs[i][3]);
 			testFailure(grammar, inputs[i][4]);
 			testFailure(grammar, inputs[i][5]);
@@ -128,7 +132,7 @@ public class TestJoin {
 			grammar = makeGrammar(withOpenClose[i], withDelimiter[i], new Range(1, 1));
 			testFailure(grammar, inputs[i][0]);
 			testFailure(grammar, inputs[i][1]);
-			testSuccess(grammar, inputs[i][2], "1");
+			testSuccess(grammar, inputs[i][2], '1');
 			testFailure(grammar, inputs[i][3]);
 			testFailure(grammar, inputs[i][4]);
 			testFailure(grammar, inputs[i][5]);
@@ -137,8 +141,8 @@ public class TestJoin {
 			grammar = makeGrammar(withOpenClose[i], withDelimiter[i], new Range(0, 2));
 			testFailure(grammar, inputs[i][0]);
 			testSuccess(grammar, inputs[i][1]);
-			testSuccess(grammar, inputs[i][2], "1");
-			testSuccess(grammar, inputs[i][3], "1", "2");
+			testSuccess(grammar, inputs[i][2], '1');
+			testSuccess(grammar, inputs[i][3], '1', '2');
 			testFailure(grammar, inputs[i][4]);
 			testFailure(grammar, inputs[i][5]);
 			testFailure(grammar, inputs[i][6]);
@@ -146,8 +150,8 @@ public class TestJoin {
 			grammar = makeGrammar(withOpenClose[i], withDelimiter[i], new Range(1, 2));
 			testFailure(grammar, inputs[i][0]);
 			testFailure(grammar, inputs[i][1]);
-			testSuccess(grammar, inputs[i][2], "1");
-			testSuccess(grammar, inputs[i][3], "1", "2");
+			testSuccess(grammar, inputs[i][2], '1');
+			testSuccess(grammar, inputs[i][3], '1', '2');
 			testFailure(grammar, inputs[i][4]);
 			testFailure(grammar, inputs[i][5]);
 			testFailure(grammar, inputs[i][6]);
@@ -155,7 +159,7 @@ public class TestJoin {
 	}
 
 	private static BNF makeGrammar(boolean withOpenAndClose, boolean withDelimiter, Range range) {
-		EBNFCore grammar = new EBNFCore();
+		EBNF grammar = new EBNF();
 		Rule rule = grammar.join("join",
 				Terminal.DIGIT.withName("digit"),
 				withOpenAndClose ? Terminal.literal("(") : null,
@@ -166,7 +170,7 @@ public class TestJoin {
 		return grammar.getBNF();
 	}
 
-	private static void testSuccess(BNF grammar, String input, String... result) throws ParseException {
+	private static void testSuccess(BNF grammar, String input, Character... result) throws ParseException {
 		Lexer l = new Lexer(input);
 		RDParser test = new RDParser(grammar, l, EBNFParsedNodeFactory.INSTANCE);
 		DefaultParsedNode root = test.parse();
@@ -180,7 +184,7 @@ public class TestJoin {
 
 		int i = 0;
 		for(DefaultParsedNode child : parsed.getChildren()) {
-			assertEquals(result[i++], child.getParsedString());
+			assertEquals(Character.toString(result[i++]), child.getParsedString());
 			assertEquals(0, child.numChildren());
 		}
 

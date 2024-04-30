@@ -5,6 +5,7 @@ import de.nls.ParsedNode;
 import de.nls.Parser;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestDigit {
@@ -19,8 +20,8 @@ public class TestDigit {
 		});
 
 		hlp.defineSentence("The first two digits of my telephone number are {d:digit:2}.", pn -> {
-			String d = (String) pn.evaluate("d");
-			assertEquals(d, "09");
+			Object[] d = (Object[]) pn.evaluate("d");
+			assertArrayEquals(d, new Character[] { '0', '9' });
 			return null;
 		});
 

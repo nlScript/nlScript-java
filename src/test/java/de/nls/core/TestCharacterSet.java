@@ -5,6 +5,7 @@ import de.nls.ParsedNode;
 import de.nls.Parser;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TestCharacterSet {
@@ -19,8 +20,8 @@ public class TestCharacterSet {
 		});
 
 		hlp.defineSentence("Two arbitrary alphanumeric characters: {c:[a-zA-Z0-9]:2}.", pn -> {
-			String d = (String) pn.evaluate("c");
-			assertEquals(d, "f1");
+			Object[] d = (Object[]) pn.evaluate("c");
+			assertArrayEquals(d, new Character[] { 'f', '1' });
 			return null;
 		});
 
