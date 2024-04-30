@@ -116,6 +116,12 @@ public class Parser {
 		return newRule.withName(type);
 	}
 
+	public void undefineType(String type) {
+		NonTerminal unitsSymbol = (NonTerminal) targetGrammar.getSymbol(type);
+		targetGrammar.removeRules(unitsSymbol);
+		compiled = false;
+	}
+
 	public void compile() {
 		compile(targetGrammar.getSymbol("program"));
 	}
