@@ -299,6 +299,10 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			Matcher f = e.getFirstAutocompletingAncestorThatFailed().getMatcher();
 			errorHighlight.setError(f.pos, f.pos + f.parsed.length());
 			return;
+		} catch(Exception e) {
+			e.printStackTrace();
+			completions = new ArrayList<>();
+		}
 
 		// we are in a parameterized completion context.
 		// we still want to autocomplete, but not beyond the end of the current parameter
