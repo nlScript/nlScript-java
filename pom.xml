@@ -12,11 +12,11 @@
 		<relativePath />
 	</parent>
 
-	<groupId>de.nlui</groupId>
-	<artifactId>Natural_Language_Scripting</artifactId>
+	<groupId>de.nlScript</groupId>
+	<artifactId>nlScript</artifactId>
 	<version>0.1</version>
 
-	<name>Natural_Language_Scripting</name>
+	<name>Natural_Language_Script</name>
 	<description>A framework for scripting using natural language.</description>
 
 	<url>TODO</url>
