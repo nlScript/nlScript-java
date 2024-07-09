@@ -12,14 +12,14 @@
 		<relativePath />
 	</parent>
 
-	<groupId>de.nlScript</groupId>
+	<groupId>io.github.nlScript</groupId>
 	<artifactId>nlScript</artifactId>
 	<version>0.1</version>
 
-	<name>Natural_Language_Script</name>
-	<description>A framework for scripting using natural language.</description>
+	<name>nlScript</name>
+	<description>A framework for creating scripting interfaces based on natural syntax.</description>
 
-	<url>TODO</url>
+	<url>https://nlScript.github.io/nlScript-java</url>
 
 	<inceptionYear>2021</inceptionYear>
 
@@ -65,12 +65,14 @@
 	</mailingLists>
 
 	<scm>
-	<connection>TODO</connection>
+		<connection>scm:git:https://github.com/nlScript/nlScript-java</connection>
+		<developerConnection>scm:git:git@github.com:nlScript/nlScript-java</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/nlScript/nlScript-java</url>
 	</scm>
-
 	<issueManagement>
-		<system>TODO</system>
-		<url>TODO</url>
+		<system>GitHub Issues</system>
+		<url>https://github.com/nlScript/nlScript-java/issues</url>
 	</issueManagement>
 
 	<ciManagement>
@@ -93,36 +95,4 @@
 
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>buildnumber-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>none</phase>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-		<extensions>
-			<!-- Enabling the use of SSH -->
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh-external</artifactId>
-				<version>1.0-beta-6</version>
-			</extension>
-		</extensions>
-	</build>
-
-	<repositories>
-		<repository>
-			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
-		</repository>
-		<repository>
-			<id>maven.central</id>
-			<url>http://repo.maven.apache.org/maven2</url>
-		</repository>
-	</repositories>
 </project>
