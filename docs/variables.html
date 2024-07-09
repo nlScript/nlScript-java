@@ -1,0 +1,144 @@
+<article class="markdown-body">
+<p><link href='https://fonts.googleapis.com/css?family=Caveat' rel='stylesheet'><br />
+<link rel="stylesheet" href="css/github-markdown.css"><br />
+<link rel="stylesheet" href="css/projects.css"><br />
+<link rel="stylesheet" href="css//intellij-light.min.css"></p>
+<script src="js/highlight-11.6.0.min.js"></script>
+<script>
+function showDialog(id) {
+  document.getElementById(id).showModal();
+  document.documentElement.style.overflowY = 'hidden';
+  return false; // to disable href
+}
+
+function hideDialog(id)  {
+  document.getElementById(id).close();
+  document.documentElement.style.overflowY = '';
+  return false; // to disable href
+}
+</script>
+<style>
+.markdown-body h1 {
+  font-family: 'Caveat';
+  font-size: 40;
+  background-color: #183d3d;
+  color: white;
+  padding: 40px;
+}
+
+.markdown-body h2 {
+  margin-top: 3em;
+}
+
+.markdown-body img {
+  margin: 50px;
+}
+
+/*
+table {
+  width:100%;
+}
+table td {
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+*/
+
+dialog {
+  max-width: 800px;
+  max-height: calc(100vh - 150px);
+  overflow-y: auto;
+  border-width: 0px;
+  box-shadow: 0px 0px 15px;
+}
+
+dialog::backdrop {
+  background-color: #000000a0;
+}
+
+details summary {
+  display: block;
+}
+
+.content {
+  background-color: #f5f5f5;
+  margin: 1em;
+  margin-right: 0px;
+  padding: 10px;
+  padding-bottom: 1px;
+  font-size: smaller;
+  border-radius: 5px;
+}
+
+@keyframes details-show {
+  from {
+    opacity:0;
+    transform: var(--details-translate, translateY(-0.5em));
+  }
+}
+
+details[open] > *:not(summary) {
+  animation: details-show 150ms ease-in-out;
+}
+
+/*
+table th:first-of-type {
+  width:20%
+}
+table th:nth-of-type(2) {
+  width:10%
+}
+table th:nth-of-type(3) {
+  width:40%
+}
+table th:nth-of-type(4) {
+  width:30%
+}
+*/
+
+</style>
+<h1 id="specifying-variables">Specifying variables</h1>
+<h2 id="general">General</h2>
+<p>Variables in sentences (and later also in custom types) are specified via <code>{name:type}</code>. In</p>
+<pre><code class="hljs java language-java">parser.defineSentence(
+    <span class="hljs-string">&quot;Apply Gaussian blurring with a standard deviation of {stddev:float} pixel(s).&quot;</span>, ...);</code></pre>
+<p>there is one variable; a floating point number called <code>stddev</code>. </p>
+<p>Next to <code>float</code>, a number of built-in types exist (see below).</p>
+<p>Variable names can consist of any character but <code>:</code>, <code>{</code> and <code>}</code>.</p>
+<p><code>type</code> must be a valid type, i.e. either a built-in type or a custom type. Type names must start with a letter or underscore and they must end with either a letter, a digit or an underscore. They may contains hyphens (<code>-</code>). (The regular expression for type names is <code>[A-Za-z_] ([A-Za-z0-9-_]* [A-Za-z0-9_])?</code>).</p>
+<h2 id="quantifiers">Quantifiers</h2>
+<p>Variable specifications may contain a quantifier: <strong><code>{name:type:quantifier}</code></strong>. A quantifier specifies how often the <code>type</code> is matched. For example, <code>{pin:digit:4}</code> would match a 4-digit number called 'pin'. Valid quantifiers:</p>
+<ul>
+<li><code>{pin:digit:4}</code> matches a number consisting of four digits.</li>
+<li><code>{pin:digit:3-5}</code> matches a number consisting of 3 to 5 digits.</li>
+<li><code>{pin:digit:*}</code> matches a number consisting of 0 to infinity digits.</li>
+<li><code>{pin:digit:+}</code> matches a number consisting of 1 to infinity digits.</li>
+<li><code>{pin:digit:?}</code> matches a number consisting of 0 to 1 digits.</li>
+</ul>
+<p>If a quantifier is used, the variable evaluates to <code>java.lang.Object[]</code>, where the actual type of each array entry corresponds to <code>type</code> (here: <code>digit</code>). See also the paragraph "Evaluating the parsed text".</p>
+<h2 id="literals">Literals</h2>
+<p>Variables can also be specified without type and quantifier, like <strong><code>{literal}</code></strong>. In this case, it matches the constant string 'literal'.<br />
+<br></p>
+<p>In summary, these options exist:</p>
+<table>
+<thead>
+<tr>
+<th id="specification">Specification</th>
+<th id="meaning">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{name:type}</code></td>
+<td>a variable of type <code>type</code> called <code>name</code></td>
+</tr>
+<tr>
+<td><code>{name:type:quantifier}</code></td>
+<td>a variable of type <code>type</code> called <code>name</code>, repeated according to <code>quantifier</code></td>
+</tr>
+<tr>
+<td><code>{literal}</code></td>
+<td>a variable of type <code>type</code> called <code>name</code></td>
+</tr>
+</tbody>
+</table></article>

@@ -11,3 +11,7 @@ target
 jars
 plugins
 build
+docs/package-lock.json
+docs/package.json
+docs/node_modules/
+
