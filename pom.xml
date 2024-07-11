@@ -12,7 +12,7 @@
 		<relativePath />
 	</parent>
 
-	<groupId>io.github.nlScript</groupId>
+	<groupId>io.github.nlscript</groupId>
 	<artifactId>nlScript</artifactId>
 	<version>0.1</version>
 
