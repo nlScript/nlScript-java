@@ -8,32 +8,40 @@ if ! mkdir repo/; then
     exit -1
 fi
 
-version="0.1.0"
+name="nlScript"
+
+version=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
+
+if ! [[ $version =~ [0-9]+\.[0-9]+\.[0-9]+ ]]; then
+    echo "Strange version string: $version"
+    echo "Exiting..."
+    exit -1
+fi
 
 mvn clean -DskipTests install -Dmaven.repo.local=./repo
 
-cd "repo/io/github/nlscript/nlScript/$version/"
+cd "repo/io/github/nlscript/$name/$version/"
 
-rm "nlScript-$version-tests.jar"
+rm "$name-$version-tests.jar"
 rm _remote.repositories
 
-gpg -ab "nlScript-$version.pom"
-gpg -ab "nlScript-$version.jar"
-gpg -ab "nlScript-$version-sources.jar"
-gpg -ab "nlScript-$version-javadoc.jar"
+gpg -ab "$name-$version.pom"
+gpg -ab "$name-$version.jar"
+gpg -ab "$name-$version-sources.jar"
+gpg -ab "$name-$version-javadoc.jar"
 
-md5sum.exe "nlScript-$version.pom"         | cut -d' ' -f 1 > "nlScript-$version.pom.md5"
-md5sum.exe "nlScript-$version.jar"         | cut -d' ' -f 1 > "nlScript-$version.jar.md5"
-md5sum.exe "nlScript-$version-sources.jar" | cut -d' ' -f 1 > "nlScript-$version-sources.jar.md5"
-md5sum.exe "nlScript-$version-javadoc.jar" | cut -d' ' -f 1 > "nlScript-$version-javadoc.jar.md5"
+md5sum.exe "$name-$version.pom"         | cut -d' ' -f 1 > "$name-$version.pom.md5"
+md5sum.exe "$name-$version.jar"         | cut -d' ' -f 1 > "$name-$version.jar.md5"
+md5sum.exe "$name-$version-sources.jar" | cut -d' ' -f 1 > "$name-$version-sources.jar.md5"
+md5sum.exe "$name-$version-javadoc.jar" | cut -d' ' -f 1 > "$name-$version-javadoc.jar.md5"
 
-sha1sum.exe "nlScript-$version.pom"         | cut -d' ' -f 1 > "nlScript-$version.pom.sha1"
-sha1sum.exe "nlScript-$version.jar"         | cut -d' ' -f 1 > "nlScript-$version.jar.sha1"
-sha1sum.exe "nlScript-$version-sources.jar" | cut -d' ' -f 1 > "nlScript-$version-sources.jar.sha1"
-sha1sum.exe "nlScript-$version-javadoc.jar" | cut -d' ' -f 1 > "nlScript-$version-javadoc.jar.sha1"
+sha1sum.exe "$name-$version.pom"         | cut -d' ' -f 1 > "$name-$version.pom.sha1"
+sha1sum.exe "$name-$version.jar"         | cut -d' ' -f 1 > "$name-$version.jar.sha1"
+sha1sum.exe "$name-$version-sources.jar" | cut -d' ' -f 1 > "$name-$version-sources.jar.sha1"
+sha1sum.exe "$name-$version-javadoc.jar" | cut -d' ' -f 1 > "$name-$version-javadoc.jar.sha1"
 
 cd ../../../../../
 
-zip "../maven-release-$version.zip" "io/github/nlscript/nlScript/$version/*"
+zip "../release-bundle-$version.zip" "io/github/nlscript/$name/$version/*"
 
 echo "Don't forget to delete the temporary repository 'repo'"
