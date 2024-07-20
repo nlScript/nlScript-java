@@ -169,8 +169,8 @@ parser.defineSentence(
     <span class="hljs-literal">null</span>);
 
 <span class="hljs-keyword">new</span> <span class="hljs-title class_">ACEditor</span>(parser).setVisible(<span class="hljs-literal">true</span>);</code></pre>
-<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial01.java">here</a>.</p>
-<p>In this example we state that we expect a literal "Apply Gaussian blurring with a standard deviation of ", followed by a floating point number, which we name "stddev" for later reference, followed by the literal "pixel(s).". There is a second parameter to <code>defineSentence()</code>, which we'll discover next.</p>
+<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial01.java">here</a>.<br />
+In this example we state that we expect a literal "Apply Gaussian blurring with a standard deviation of ", followed by a floating point number, which we name "stddev" for later reference, followed by the literal "pixel(s).". There is a second parameter to <code>defineSentence()</code>, which we'll discover next.</p>
 <p>The code snippet is sufficient to provide the means for user input, but nothing happens yet when the user clicks the <code>Run</code> button.</p>
 <p>Find more information about <a href="variables.html" target="_blank">How to specify variables</a>.</p>
 <h2 id="evaluating-the-parsed-text">Evaluating the parsed text</h2>
@@ -191,7 +191,7 @@ parser.defineSentence(
     });
 
 <span class="hljs-keyword">new</span> <span class="hljs-title class_">ACEditor</span>(parser).setVisible(<span class="hljs-literal">true</span>);</code></pre>
-<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial02.java">here</a>.</p>
+<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial02.java">here</a>.</p>
 <p>This is the first fully working example:</p>
 <video style="margin: auto; display: block;" width="800" controls>
   <source src="images/2023-09-07-13-11-46.cropped.mp4" type="video/mp4">
@@ -428,7 +428,7 @@ parser.defineSentence(
         preprocessing.gaussianBlur((<span class="hljs-type">float</span>)stdDev);
         <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
     });</code></pre>
-<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial03.java">here</a>.</p>
+<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial03.java">here</a>.</p>
 <p>Autocompletion and evaluation will work as before, but the type <code>filter-size</code> can be re-used, e.g. for other filters like the median filter.</p>
 <p>Custom types can be defined using built-in types and other custom types. In this way, an entire hierarchy of types can be built up. Here are more <a href="type-hierarchy.html" target="_blank">Details about type hierarchy</a>.</p>
 <h2 id="fine-tuning-autocompletion-parameterized-autocompletion">Fine-tuning autocompletion: Parameterized autocompletion</h2>
@@ -438,7 +438,7 @@ parser.defineSentence(
 <p><img src="images/Screenshot-02.png" alt="" /></p>
 <p>This is accomplished by specifying a 4th parameter to <code>defineType</code>, a boolean that specifies whether to use parameterized autocompletion or not (<code>false</code> is the default):</p>
 <pre><code class="hljs java language-java">parser.defineType(<span class="hljs-string">&quot;filter-size&quot;</span>, <span class="hljs-string">&quot;{stddev:float} pixel(s)&quot;</span>, pn -&gt; pn.evaluate(<span class="hljs-string">&quot;stddev&quot;</span>), <span class="hljs-literal">true</span>);</code></pre>
-<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial04.java">here</a>.</p>
+<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial04.java">here</a>.</p>
 <h2 id="multiple-choice-autocompletion-choose-a-unit-for-filter-size">Multiple-choice autocompletion: choose a unit for <code>filter-size</code></h2>
 <p>Microscope images commonly have a calibrated pixel size, and it is beneficial to specify algorithm parameters in real-world units instead of pixels. This facilitates the re-use of processing workflows, even if images were acquired at different resolutions. To extend the script in this regard, we define another type <code>units</code>. To take different units into account, we can re-define <code>units</code>. Here we will define it as <code>pixel(s)</code> and <code>calibrated units</code> (i.e. the units in which the image is calibrated). If the user selects the first option, we let the <code>units</code> type evaluate to <code>false</code>, otherwise to <code>true</code>.</p>
 <pre><code class="hljs java language-java">parser.defineType(<span class="hljs-string">&quot;units&quot;</span>, <span class="hljs-string">&quot;pixel(s)&quot;</span>, pn -&gt; <span class="hljs-literal">false</span>);
@@ -451,7 +451,7 @@ parser.defineType(<span class="hljs-string">&quot;units&quot;</span>, <span clas
         stddev /= image.getCalibration().pixelWidth;
     <span class="hljs-keyword">return</span> stddev;
 }, <span class="hljs-literal">true</span>);</code></pre>
-<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial05.java">here</a>.</p>
+<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial05.java">here</a>.</p>
 <p>In <code>evaluate()</code> we use <code>pn</code> to retrieve the values for <code>stddev</code> and <code>units</code>. If <code>units</code> evaluates to <code>true</code> (indicating that the user chose <code>calibrated units</code>), we calculate the filter-size in pixels, dividing by the pixel size.</p>
 <p>Autocompletion will now look as follows:<br />
 <img src="images/Screenshot-03.png" alt="" /><br />
@@ -477,7 +477,7 @@ parser.addParseStartListener(() -&gt; {
     imageUnits.setLength(<span class="hljs-number">0</span>);
     imageUnits.append(image.getCalibration().getUnits());
 });</code></pre>
-<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial06.java">here</a>.</p>
+<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial06.java">here</a>.</p>
 <p>Once autocompletion hits the <code>units</code> phrase, it displays a dropdown menu with the 2 options <code>pixel(s)</code> and <code>mm</code>, as desired.</p>
 <h2 id="prohibit-further-autocompletion-autocompleterveto">Prohibit further autocompletion: <code>Autocompleter.VETO</code></h2>
 <p>However, when we start typing a value for <code>units</code>, e.g. we manually enter <code>cm</code>, it still shows <code>pixel(s)</code>, <code>mm</code> and additionally <code>.</code>. That's because our <code>Autocompleter</code> always returns the two options. We could decide to just skip autocompletion once the user starts to type. We can do this in the <code>Autocompleter</code>, by checking if the user already entered something, and in case s/he did, we return <code>Autocompletion.veto()</code>:</p>
@@ -488,7 +488,7 @@ parser.addParseStartListener(() -&gt; {
     (pn, justCheck) -&gt; pn.getParsedString().isEmpty()
                         ? Autocompletion.literal(pn, <span class="hljs-string">&quot;pixel(s)&quot;</span>, imageUnits)
                         : Autocompletion.veto(pn));</code></pre>
-<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial07.java">here</a>.</p>
+<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial07.java">here</a>.</p>
 <h2 id="dynamically-re-defining-types">Dynamically re-defining types</h2>
 <p>The above solution works, but the meaning is a little different from what we wanted to achieve originally. Although it shows <code>pixel(s)</code> and <code>mm</code> as completion options, it accepts any string (we defined the pattern to parse to be <code>a-zA-Z()</code>). In fact, we'd ideally like to restrict possible types to <code>pixel(s)</code> and <code>mm</code>. And we can implement this by dynamically changing the parser, i.e. re-defining the type <code>units</code>. We do this again with a <code>ParseStartListener</code>:</p>
 <pre><code class="hljs java language-java">parser.addParseStartListener(() -&gt; {
@@ -500,7 +500,7 @@ parser.addParseStartListener(() -&gt; {
     parser.defineType(<span class="hljs-string">&quot;units&quot;</span>, <span class="hljs-string">&quot;pixel(s)&quot;</span>, pn -&gt; <span class="hljs-literal">false</span>);
     parser.defineType(<span class="hljs-string">&quot;units&quot;</span>, unitsString, pn -&gt; <span class="hljs-literal">true</span>);
 });</code></pre>
-<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial08.java">here</a>.</p>
+<p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial08.java">here</a>.</p>
 <p>This does now exactly what we wanted, i.e. it acts like the <code>units</code> type was defined from the beginning on with the calibration unit of the image.</p>
 <p>This is indeed a very powerful feature, as it allows for dynamic re-definition of the parsed language, based on current runtime circumstances.</p>
 <p><br><br />

@@ -180,8 +180,7 @@ parser.defineSentence(
 
 new ACEditor(parser).setVisible(true);
 ```
-Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial01.java).
-
+Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial01.java).
 In this example we state that we expect a literal "Apply Gaussian blurring with a standard deviation of ", followed by a floating point number, which we name "stddev" for later reference, followed by the literal "pixel(s).". There is a second parameter to `defineSentence()`, which we'll discover next.
 
 The code snippet is sufficient to provide the means for user input, but nothing happens yet when the user clicks the `Run` button.
@@ -215,7 +214,7 @@ parser.defineSentence(
 new ACEditor(parser).setVisible(true);
 ```
 
-Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial02.java).
+Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial02.java).
 
 This is the first fully working example:
 
@@ -472,7 +471,7 @@ parser.defineSentence(
         return null;
     });
 ```
-Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial03.java).
+Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial03.java).
 
 Autocompletion and evaluation will work as before, but the type `filter-size` can be re-used, e.g. for other filters like the median filter.
 
@@ -497,7 +496,7 @@ This is accomplished by specifying a 4th parameter to `defineType`, a boolean th
 ```java
 parser.defineType("filter-size", "{stddev:float} pixel(s)", pn -> pn.evaluate("stddev"), true);
 ```
-Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial04.java).
+Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial04.java).
 
 
 
@@ -521,7 +520,7 @@ parser.defineType("filter-size", "{stddev:float} {units:units}", pn -> {
 }, true);
 ```
 
-Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial05.java).
+Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial05.java).
 
 
 In `evaluate()` we use `pn` to retrieve the values for `stddev` and `units`. If `units` evaluates to `true` (indicating that the user chose `calibrated units`), we calculate the filter-size in pixels, dividing by the pixel size.
@@ -567,7 +566,7 @@ parser.addParseStartListener(() -> {
     imageUnits.append(image.getCalibration().getUnits());
 });
 ```
-Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial06.java).
+Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial06.java).
 
 Once autocompletion hits the `units` phrase, it displays a dropdown menu with the 2 options `pixel(s)` and `mm`, as desired.
 
@@ -585,7 +584,7 @@ parser.defineType(
                         ? Autocompletion.literal(pn, "pixel(s)", imageUnits)
                         : Autocompletion.veto(pn));
 ```
-Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial07.java).
+Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial07.java).
 
 
 
@@ -603,7 +602,7 @@ parser.addParseStartListener(() -> {
     parser.defineType("units", unitsString, pn -> true);
 });
 ```
-Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial08.java).
+Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Tutorial08.java).
 
 This does now exactly what we wanted, i.e. it acts like the `units` type was defined from the beginning on with the calibration unit of the image.
 
