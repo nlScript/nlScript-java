@@ -54,7 +54,7 @@ new ACEditor(parser).setVisible(true);
 ```
 In this example we state that we expect a literal "Apply Gaussian blurring with a standard deviation of ", followed by a floating point number, which we name "stddev" for later reference, followed by the literal "pixel(s).".
 
-The evaluator uses a `Preprocessing` object which could be implemented like this, using ImageJ as an underlying image processing library: [GitHub](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Preprocessing.java)
+The evaluator uses a `Preprocessing` object which could be implemented like this, using ImageJ as an underlying image processing library: [GitHub](https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/nlScript/tutorial/preprocessing/Preprocessing.java)
 
 This is how it looks like:
 
@@ -64,10 +64,10 @@ This is how it looks like:
 
 ### More details:
 
-* [The same application, as a step-by-step tutorial](https://nlscript.github.io/Bla)
-* [Details how to define variables](https://nlscript.github.io/Bla/variables.html)
-* [Built-in types apart from `float`](https://nlscript.github.io/Bla/#built-in-types)
-* [More detail about custom types](https://nlscript.github.io/Bla/custom-types.html)
+* [The same application, as a step-by-step tutorial](https://nlscript.github.io/nlScript-java)
+* [Details how to define variables](https://nlscript.github.io/nlScript-java/variables.html)
+* [Built-in types apart from `float`](https://nlscript.github.io/nlScript-java/#built-in-types)
+* [More detail about custom types](https://nlscript.github.io/nlScript-java/custom-types.html)
 
 
 
