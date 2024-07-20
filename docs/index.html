@@ -179,7 +179,7 @@ parser.defineSentence(
    Object evaluate(ParsedNode pn); 
 }</code></pre>
 <p>The task of the evaluator is to evaluate the expression (the sentence) we defined on the parser. In the example, it is responsible for the actual blurring. The argument to <code>evaluate()</code>, <code>pn</code>, is of type <code>ParsedNode</code>, which can be used to retrieve the parsed value for the standard deviation.</p>
-<p>Variables in NLS are defined hierarchically (see the paragraph "Custom types and type hierarchy" below). The result of parsing is also a hierarchical tree-like structure consisting of nodes of type <code>ParsedNode</code>. The <code>ParsedNode</code> has child <code>ParsedNode</code>s representing the variables the current type consists of. The sentence above consists of a string literal "Apply Gaussian blurring with a standard deviation of", a variable of type <code>double</code> called "stddev", and a string literal "pixel(s).". Therefore, the <code>ParsedNode</code> given to the sentence's <code>Evaluator</code> has three child <code>ParsedNode</code>s, which can be accessed, e.g. by name, in the <code>Evaluator</code> and evaluated recursively.</p>
+<p>Variables in nlScript are defined hierarchically (see the paragraph "Custom types and type hierarchy" below). The result of parsing is also a hierarchical tree-like structure consisting of nodes of type <code>ParsedNode</code>. The <code>ParsedNode</code> has child <code>ParsedNode</code>s representing the variables the current type consists of. The sentence above consists of a string literal "Apply Gaussian blurring with a standard deviation of", a variable of type <code>double</code> called "stddev", and a string literal "pixel(s).". Therefore, the <code>ParsedNode</code> given to the sentence's <code>Evaluator</code> has three child <code>ParsedNode</code>s, which can be accessed, e.g. by name, in the <code>Evaluator</code> and evaluated recursively.</p>
 <pre><code class="hljs java language-java"><span class="hljs-type">Preprocessing</span> <span class="hljs-variable">preprocessing</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Preprocessing</span>();
 <span class="hljs-type">Parser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Parser</span>();
 parser.defineSentence(
@@ -457,45 +457,6 @@ parser.defineType(<span class="hljs-string">&quot;units&quot;</span>, <span clas
 <img src="images/Screenshot-03.png" alt="" /><br />
 Then, after typing <code>5</code>, followed by <code>tab</code>:<br />
 <img src="images/Screenshot-04.png" alt="" /></p>
-<p><details><summary><b>Here is the full code snippet:</b></summary></p>
-<pre><code class="hljs"><span class="hljs-keyword">import</span> ij.IJ;
-<span class="hljs-keyword">import</span> de.nls.<span class="hljs-keyword">Parser</span>;
-<span class="hljs-keyword">import</span> de.nls.ui.ACEditor;
-<span class="hljs-keyword">import</span> ij.ImagePlus;
-
-<span class="hljs-built_in">public</span> <span class="hljs-keyword">class</span> Tutorial05 {
-
-    <span class="hljs-built_in">public</span> static <span class="hljs-type">void</span> main(String[] args) {
-        ImagePlus image = IJ.openImage(&quot;http://imagej.net/images/clown.jpg&quot;);
-        image.<span class="hljs-keyword">show</span>();
-        Preprocessing preprocessing = <span class="hljs-built_in">new</span> Preprocessing(image);
-
-        <span class="hljs-keyword">Parser</span> parser = <span class="hljs-built_in">new</span> <span class="hljs-keyword">Parser</span>();
-
-        <span class="hljs-keyword">parser</span>.defineType(&quot;units&quot;, &quot;pixel(s)&quot;, pn -&gt; <span class="hljs-keyword">false</span>);
-        <span class="hljs-keyword">parser</span>.defineType(&quot;units&quot;, &quot;calibrated units&quot;, pn -&gt; <span class="hljs-keyword">true</span>);
-
-        <span class="hljs-keyword">parser</span>.defineType(&quot;filter-size&quot;, &quot;{stddev:float} {units:units}&quot;, pn -&gt; {
-            <span class="hljs-type">double</span> stddev = (<span class="hljs-type">Double</span>) pn.evaluate(&quot;stddev&quot;);
-            <span class="hljs-type">boolean</span> units = (<span class="hljs-type">Boolean</span>) pn.evaluate(&quot;units&quot;);
-            <span class="hljs-keyword">if</span>(units)
-                stddev /= image.getCalibration().pixelWidth;
-            <span class="hljs-keyword">return</span> stddev;
-        }, <span class="hljs-keyword">true</span>);
-
-        <span class="hljs-keyword">parser</span>.defineSentence(
-                &quot;Apply Gaussian blurring with a standard deviation of {stddev:filter-size}.&quot;,
-                pn -&gt; {
-                    <span class="hljs-type">double</span> stdDev = (<span class="hljs-type">double</span>)pn.evaluate(&quot;stddev&quot;);
-                    preprocessing.gaussianBlur((<span class="hljs-type">float</span>)stdDev);
-                    <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
-                });
-
-        <span class="hljs-built_in">new</span> ACEditor(<span class="hljs-keyword">parser</span>).setVisible(<span class="hljs-keyword">true</span>);
-    }
-}
-</code></pre>
-<p></details></p>
 <h2 id="dynamic-autocompletion-at-runtime-using-a-custom-autocompleter">Dynamic autocompletion at runtime using a custom <code>Autocompleter</code></h2>
 <p>The completion option <code>calibrated units</code> obviously does not read very nice. Preferably we would replace it with the actual units the image was calibrated with, e.g. microns. This is runtime dependent, i.e. it depends on the image on which the script is executed. In the code example above, the image is opened before creating the language, but in a more realistic setting, we would like to run our script on any user-selected image.</p>
 <p>To replace <code>calibrated units</code> with the real units, we use a custom <code>Autocompleter</code>, which needs to implement the <code>Autocompleter</code> interface:</p>
@@ -518,62 +479,6 @@ parser.addParseStartListener(() -&gt; {
 });</code></pre>
 <p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial06.java">here</a>.</p>
 <p>Once autocompletion hits the <code>units</code> phrase, it displays a dropdown menu with the 2 options <code>pixel(s)</code> and <code>mm</code>, as desired.</p>
-<p><details><summary><b>Here is the full code snippet:</b></summary></p>
-<pre><code class="hljs"><span class="hljs-keyword">import</span> de.nls.Parser;
-<span class="hljs-keyword">import</span> de.nls.core.Autocompletion;
-<span class="hljs-keyword">import</span> de.nls.ui.ACEditor;
-<span class="hljs-keyword">import</span> ij.IJ;
-<span class="hljs-keyword">import</span> ij.ImagePlus;
-<span class="hljs-keyword">import</span> ij.measure.Calibration;
-
-public <span class="hljs-keyword">class</span> <span class="hljs-title class_">Tutorial06</span> {
-
-    public <span class="hljs-keyword">static</span> <span class="hljs-literal">void</span> main(<span class="hljs-built_in">String</span>[] args) {
-        ImagePlus image = IJ.openImage(<span class="hljs-string">&quot;http://imagej.net/images/clown.jpg&quot;</span>);
-        Calibration cal = image.getCalibration();
-        cal.pixelWidth = cal.pixelHeight = <span class="hljs-number">0.25</span>;
-        cal.setUnit(<span class="hljs-string">&quot;mm&quot;</span>);
-        image.show();
-        Preprocessing preprocessing = <span class="hljs-keyword">new</span> Preprocessing(image);
-
-        StringBuilder imageUnits = <span class="hljs-keyword">new</span> StringBuilder();
-
-        Parser parser = <span class="hljs-keyword">new</span> Parser();
-        parser.addParseStartListener<span class="hljs-function"><span class="hljs-params">(() -&gt; {
-            imageUnits.setLength(<span class="hljs-number">0</span>);
-            imageUnits.append(image.getCalibration().getUnits());
-        })</span>;
-
-        <span class="hljs-title">parser</span>.<span class="hljs-title">defineType</span><span class="hljs-params">(
-            <span class="hljs-string">&quot;units&quot;</span>,
-            <span class="hljs-string">&quot;{unitstring:[a-zA-Z()]:+}&quot;</span>,
-            pn -&gt; <span class="hljs-literal">true</span>,
-            (pn, justCheck) -&gt; Autocompletion.literal(pn, <span class="hljs-string">&quot;pixel(s)&quot;</span>, imageUnits))</span>;
-
-        <span class="hljs-title">parser</span>.<span class="hljs-title">defineType</span><span class="hljs-params">(<span class="hljs-string">&quot;filter-size&quot;</span>, <span class="hljs-string">&quot;{stddev:float} {units:units}&quot;</span>, pn -&gt; {
-            double stddev = (Double) pn.evaluate(<span class="hljs-string">&quot;stddev&quot;</span>);
-            boolean units = (<span class="hljs-built_in">Boolean</span>) pn.evaluate(<span class="hljs-string">&quot;units&quot;</span>);
-            <span class="hljs-keyword">if</span>(units)
-                stddev /= image.getCalibration().pixelWidth;
-            <span class="hljs-keyword">return</span> stddev;
-        }, <span class="hljs-literal">true</span>)</span>;
-
-        <span class="hljs-title">parser</span>.<span class="hljs-title">defineSentence</span><span class="hljs-params">(
-            <span class="hljs-string">&quot;Apply Gaussian blurring with a standard deviation of {stddev:filter-size}.&quot;</span>,
-            pn -&gt; {
-                double stdDev = (double)pn.evaluate(<span class="hljs-string">&quot;stddev&quot;</span>);
-                preprocessing.gaussianBlur((float)stdDev);
-                <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
-            })</span>;
-
-        <span class="hljs-title">parser</span>.<span class="hljs-title">compile</span><span class="hljs-params">()</span>;
-
-        <span class="hljs-title">new</span> <span class="hljs-title">ACEditor</span><span class="hljs-params">(parser)</span>.<span class="hljs-title">setVisible</span><span class="hljs-params">(<span class="hljs-literal">true</span>)</span>;
-    }
-}
-
-</span></code></pre>
-<p></details></p>
 <h2 id="prohibit-further-autocompletion-autocompleterveto">Prohibit further autocompletion: <code>Autocompleter.VETO</code></h2>
 <p>However, when we start typing a value for <code>units</code>, e.g. we manually enter <code>cm</code>, it still shows <code>pixel(s)</code>, <code>mm</code> and additionally <code>.</code>. That's because our <code>Autocompleter</code> always returns the two options. We could decide to just skip autocompletion once the user starts to type. We can do this in the <code>Autocompleter</code>, by checking if the user already entered something, and in case s/he did, we return <code>Autocompletion.veto()</code>:</p>
 <pre><code class="hljs java language-java">parser.defineType(
@@ -598,61 +503,6 @@ public <span class="hljs-keyword">class</span> <span class="hljs-title class_">T
 <p>Find the full code <a href="https://github.com/nlScript/nlScript-tutorial-java/blob/main/src/main/java/de/nlScript/tutorial/preprocessing/Tutorial08.java">here</a>.</p>
 <p>This does now exactly what we wanted, i.e. it acts like the <code>units</code> type was defined from the beginning on with the calibration unit of the image.</p>
 <p>This is indeed a very powerful feature, as it allows for dynamic re-definition of the parsed language, based on current runtime circumstances.</p>
-<p><details><summary><b>Again, here is the full code snippet:</b></summary></p>
-<pre><code class="hljs language-java"><span class="hljs-keyword">import</span> de.nls.<span class="hljs-keyword">Parser</span>;
-<span class="hljs-keyword">import</span> de.nls.ui.ACEditor;
-<span class="hljs-keyword">import</span> ij.IJ;
-<span class="hljs-keyword">import</span> ij.ImagePlus;
-<span class="hljs-keyword">import</span> ij.measure.Calibration;
-
-<span class="hljs-built_in">public</span> <span class="hljs-keyword">class</span> Tutorial07 {
-
-    <span class="hljs-built_in">public</span> static <span class="hljs-type">void</span> main(String[] args) {
-        <span class="hljs-built_in">new</span> ij.ImageJ();
-        ImagePlus image = IJ.openImage(&quot;http://imagej.net/images/clown.jpg&quot;);
-        Calibration cal = image.getCalibration();
-        cal.pixelWidth = cal.pixelHeight = <span class="hljs-number">0.25</span>;
-        cal.setUnit(&quot;mm&quot;);
-        image.<span class="hljs-keyword">show</span>();
-        Preprocessing preprocessing = <span class="hljs-built_in">new</span> Preprocessing(image);
-
-
-        <span class="hljs-keyword">Parser</span> parser = <span class="hljs-built_in">new</span> <span class="hljs-keyword">Parser</span>();
-        <span class="hljs-keyword">parser</span>.addParseStartListener(() -&gt; {
-            String unitsString = image.getCalibration().getUnits();
-
-            <span class="hljs-keyword">parser</span>.undefineType(&quot;units&quot;);
-
-            // Re-define the <span class="hljs-string">&#x27;units&#x27;</span> <span class="hljs-keyword">type</span>
-            <span class="hljs-keyword">parser</span>.defineType(&quot;units&quot;, &quot;pixel(s)&quot;, pn -&gt; <span class="hljs-keyword">false</span>);
-            <span class="hljs-keyword">parser</span>.defineType(&quot;units&quot;, unitsString, pn -&gt; <span class="hljs-keyword">true</span>);
-        });
-
-        <span class="hljs-keyword">parser</span>.defineType(&quot;units&quot;, &quot;pixel(s)&quot;, pn -&gt; <span class="hljs-keyword">false</span>);
-
-        <span class="hljs-keyword">parser</span>.defineType(&quot;filter-size&quot;, &quot;{stddev:float} {units:units}&quot;, pn -&gt; {
-            <span class="hljs-type">double</span> stddev = (<span class="hljs-type">Double</span>) pn.evaluate(&quot;stddev&quot;);
-            <span class="hljs-type">boolean</span> units = (<span class="hljs-type">Boolean</span>) pn.evaluate(&quot;units&quot;);
-            <span class="hljs-keyword">if</span>(units)
-                stddev /= image.getCalibration().pixelWidth;
-            <span class="hljs-keyword">return</span> stddev;
-        }, <span class="hljs-keyword">true</span>);
-
-        <span class="hljs-keyword">parser</span>.defineSentence(
-                &quot;Apply Gaussian blurring with a standard deviation of {stddev:filter-size}.&quot;,
-                pn -&gt; {
-                    <span class="hljs-type">double</span> stdDev = (<span class="hljs-type">double</span>)pn.evaluate(&quot;stddev&quot;);
-                    preprocessing.gaussianBlur((<span class="hljs-type">float</span>)stdDev);
-                    <span class="hljs-keyword">return</span> <span class="hljs-keyword">null</span>;
-                });
-
-        <span class="hljs-keyword">parser</span>.compile();
-
-        <span class="hljs-built_in">new</span> ACEditor(<span class="hljs-keyword">parser</span>).setVisible(<span class="hljs-keyword">true</span>);
-    }
-}
-</code></pre>
-<p></details></p>
 <p><br><br />
 <br><br />
 <br></p></article>

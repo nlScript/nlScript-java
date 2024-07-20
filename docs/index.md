@@ -199,7 +199,7 @@ interface Evaluator {
 ```
 The task of the evaluator is to evaluate the expression (the sentence) we defined on the parser. In the example, it is responsible for the actual blurring. The argument to `evaluate()`, `pn`, is of type `ParsedNode`, which can be used to retrieve the parsed value for the standard deviation.
 
-Variables in NLS are defined hierarchically (see the paragraph "Custom types and type hierarchy" below). The result of parsing is also a hierarchical tree-like structure consisting of nodes of type `ParsedNode`. The `ParsedNode` has child `ParsedNode`s representing the variables the current type consists of. The sentence above consists of a string literal "Apply Gaussian blurring with a standard deviation of", a variable of type `double` called "stddev", and a string literal "pixel(s).". Therefore, the `ParsedNode` given to the sentence's `Evaluator` has three child `ParsedNode`s, which can be accessed, e.g. by name, in the `Evaluator` and evaluated recursively.
+Variables in nlScript are defined hierarchically (see the paragraph "Custom types and type hierarchy" below). The result of parsing is also a hierarchical tree-like structure consisting of nodes of type `ParsedNode`. The `ParsedNode` has child `ParsedNode`s representing the variables the current type consists of. The sentence above consists of a string literal "Apply Gaussian blurring with a standard deviation of", a variable of type `double` called "stddev", and a string literal "pixel(s).". Therefore, the `ParsedNode` given to the sentence's `Evaluator` has three child `ParsedNode`s, which can be accessed, e.g. by name, in the `Evaluator` and evaluated recursively.
 
 ```java
 Preprocessing preprocessing = new Preprocessing();
@@ -531,45 +531,7 @@ Autocompletion will now look as follows:
 Then, after typing `5`, followed by `tab`:
 ![](images/Screenshot-04.png)
 
-<details><summary><b>Here is the full code snippet:</b></summary>
-<pre><code>import ij.IJ;
-import de.nls.Parser;
-import de.nls.ui.ACEditor;
-import ij.ImagePlus;
 
-public class Tutorial05 {
-
-    public static void main(String[] args) {
-        ImagePlus image = IJ.openImage("http://imagej.net/images/clown.jpg");
-        image.show();
-        Preprocessing preprocessing = new Preprocessing(image);
-
-        Parser parser = new Parser();
-
-        parser.defineType("units", "pixel(s)", pn -> false);
-        parser.defineType("units", "calibrated units", pn -> true);
-
-        parser.defineType("filter-size", "{stddev:float} {units:units}", pn -> {
-            double stddev = (Double) pn.evaluate("stddev");
-            boolean units = (Boolean) pn.evaluate("units");
-            if(units)
-                stddev /= image.getCalibration().pixelWidth;
-            return stddev;
-        }, true);
-
-        parser.defineSentence(
-                "Apply Gaussian blurring with a standard deviation of {stddev:filter-size}.",
-                pn -> {
-                    double stdDev = (double)pn.evaluate("stddev");
-                    preprocessing.gaussianBlur((float)stdDev);
-                    return null;
-                });
-
-        new ACEditor(parser).setVisible(true);
-    }
-}
-</code></pre>
-</details>
 
 ## Dynamic autocompletion at runtime using a custom `Autocompleter`
 
@@ -609,62 +571,6 @@ Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blo
 
 Once autocompletion hits the `units` phrase, it displays a dropdown menu with the 2 options `pixel(s)` and `mm`, as desired.
 
-<details><summary><b>Here is the full code snippet:</b></summary>
-<pre><code>import de.nls.Parser;
-import de.nls.core.Autocompletion;
-import de.nls.ui.ACEditor;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.measure.Calibration;
-
-public class Tutorial06 {
-
-    public static void main(String[] args) {
-        ImagePlus image = IJ.openImage("http://imagej.net/images/clown.jpg");
-        Calibration cal = image.getCalibration();
-        cal.pixelWidth = cal.pixelHeight = 0.25;
-        cal.setUnit("mm");
-        image.show();
-        Preprocessing preprocessing = new Preprocessing(image);
-
-        StringBuilder imageUnits = new StringBuilder();
-
-        Parser parser = new Parser();
-        parser.addParseStartListener(() -> {
-            imageUnits.setLength(0);
-            imageUnits.append(image.getCalibration().getUnits());
-        });
-
-        parser.defineType(
-            "units",
-            "{unitstring:[a-zA-Z()]:+}",
-            pn -> true,
-            (pn, justCheck) -> Autocompletion.literal(pn, "pixel(s)", imageUnits));
-
-        parser.defineType("filter-size", "{stddev:float} {units:units}", pn -> {
-            double stddev = (Double) pn.evaluate("stddev");
-            boolean units = (Boolean) pn.evaluate("units");
-            if(units)
-                stddev /= image.getCalibration().pixelWidth;
-            return stddev;
-        }, true);
-
-        parser.defineSentence(
-            "Apply Gaussian blurring with a standard deviation of {stddev:filter-size}.",
-            pn -> {
-                double stdDev = (double)pn.evaluate("stddev");
-                preprocessing.gaussianBlur((float)stdDev);
-                return null;
-            });
-
-        parser.compile();
-
-        new ACEditor(parser).setVisible(true);
-    }
-}
-              
-</code></pre>
-</details>
 
 
 ## Prohibit further autocompletion: `Autocompleter.VETO`
@@ -702,63 +608,6 @@ Find the full code [here](https://github.com/nlScript/nlScript-tutorial-java/blo
 This does now exactly what we wanted, i.e. it acts like the `units` type was defined from the beginning on with the calibration unit of the image.
 
 This is indeed a very powerful feature, as it allows for dynamic re-definition of the parsed language, based on current runtime circumstances.
-
-<details><summary><b>Again, here is the full code snippet:</b></summary>
-<pre><code class="language-java">import de.nls.Parser;
-import de.nls.ui.ACEditor;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.measure.Calibration;
-
-public class Tutorial07 {
-
-    public static void main(String[] args) {
-        new ij.ImageJ();
-        ImagePlus image = IJ.openImage("http://imagej.net/images/clown.jpg");
-        Calibration cal = image.getCalibration();
-        cal.pixelWidth = cal.pixelHeight = 0.25;
-        cal.setUnit("mm");
-        image.show();
-        Preprocessing preprocessing = new Preprocessing(image);
-
-
-        Parser parser = new Parser();
-        parser.addParseStartListener(() -> {
-            String unitsString = image.getCalibration().getUnits();
-
-            parser.undefineType("units");
-
-            // Re-define the 'units' type
-            parser.defineType("units", "pixel(s)", pn -> false);
-            parser.defineType("units", unitsString, pn -> true);
-        });
-
-        parser.defineType("units", "pixel(s)", pn -> false);
-
-        parser.defineType("filter-size", "{stddev:float} {units:units}", pn -> {
-            double stddev = (Double) pn.evaluate("stddev");
-            boolean units = (Boolean) pn.evaluate("units");
-            if(units)
-                stddev /= image.getCalibration().pixelWidth;
-            return stddev;
-        }, true);
-
-        parser.defineSentence(
-                "Apply Gaussian blurring with a standard deviation of {stddev:filter-size}.",
-                pn -> {
-                    double stdDev = (double)pn.evaluate("stddev");
-                    preprocessing.gaussianBlur((float)stdDev);
-                    return null;
-                });
-
-        parser.compile();
-
-        new ACEditor(parser).setVisible(true);
-    }
-}
-</code></pre>
-</details>
-
 
 
 <br>
