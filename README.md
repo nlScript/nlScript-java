@@ -64,7 +64,8 @@ This is how it looks like:
 
 ### More details:
 
-* [The same application, as a step-by-step tutorial](https://nlscript.github.io/nlScript-java)
+* [A step-by-step tutorial](https://nlscript.github.io/nlScript-java)
+* [The tutorial source code](https://github.com/nlScript/nlScript-tutorial-java)
 * [Details how to define variables](https://nlscript.github.io/nlScript-java/variables.html)
 * [Built-in types apart from `float`](https://nlscript.github.io/nlScript-java/#built-in-types)
 * [More detail about custom types](https://nlscript.github.io/nlScript-java/custom-types.html)
@@ -81,7 +82,7 @@ Graphical user interfaces can easily become complex and confusing as the number 
 
 A traditional graphical user interface (GUI) could e.g. look like this:
 
-![](https://nlscript.github.io/Bla/images/Screenshot-00.png)
+![](https://nlscript.github.io/nlScript-java/images/Screenshot-00.png)
 
 
 where the user can activate the various algorithms and specify their parameters as necessary. This user interface however does not take into account that different algorithms could occur repeatedly, and it does not allow to change the order.
@@ -134,7 +135,7 @@ parser.defineSentence(
 ```
 This will work like above, but auto-completion is improved and looks like:
 
-![](https://nlscript.github.io/Bla/images/Screenshot-02.png)
+![](https://nlscript.github.io/nlScript-java/images/Screenshot-02.png)
 
 
 
