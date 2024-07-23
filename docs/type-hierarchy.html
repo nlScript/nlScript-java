@@ -16,6 +16,26 @@ function hideDialog(id)  {
   document.documentElement.style.overflowY = '';
   return false; // to disable href
 }
+
+function clickTab(e) {
+  console.log(e);
+  let tabSpan = e.target;
+  let tabHeader = tabSpan.parentElement;
+  let tabBody = tabHeader.nextElementSibling;
+  console.log("tabBody");
+  console.log(tabBody);
+  for(let i = 0; i < tabHeader.children.length; i++) {
+    if(tabSpan == tabHeader.children[i]) {
+      console.log("Clicked tab " + i);
+      tabHeader.children[i].classList.add('selected');
+      tabBody.children[i].classList.add('selected');
+    } else {
+      console.log("Did not click tab " + i);
+      tabHeader.children[i].classList.remove('selected');
+      tabBody.children[i].classList.remove('selected');
+    }
+  }
+}
 </script>
 <style>
 .markdown-body h1 {
@@ -32,6 +52,32 @@ function hideDialog(id)  {
 
 .markdown-body img {
   margin: 50px;
+}
+
+.tab-header span {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 2px;
+  border-left: 1px solid white;
+  border-right: 1px solid white;
+  cursor: pointer;
+  color: white;
+  background-color: rgb(70, 70, 70);
+  border-top: none;
+}
+
+.tab-header span.selected {
+  background-color: var(--color-canvas-subtle);
+  color: black;
+  border-top: 2px solid cornflowerblue;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.selected {
+  display: block;
 }
 
 /*
@@ -99,11 +145,21 @@ table th:nth-of-type(4) {
 </style>
 <h1 id="type-hierarchy">Type hierarchy</h1>
 <p>A key feature is the definition of custom types, which itself can be composed of built-in or custom types in turn, to build a type hierarchy. Custom types are defined like sentences, but using the parser's <code>defineType()</code> method:</p>
-<pre><code class="hljs java language-java"><span class="hljs-type">Parser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Parser</span>();
+<div class="tab-header"><span>Java</span><span class="selected">Python</span><span>JavaScript</span></div>
+<div class="tab-body">
+<div class="tab-content selected"><pre><code class="hljs java language-java"><span class="hljs-type">Parser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Parser</span>();
 parser.defineType(<span class="hljs-string">&quot;interval&quot;</span>, <span class="hljs-string">&quot;[{from:int}; {to:int}]&quot;</span>, pn -&gt; <span class="hljs-literal">null</span>, <span class="hljs-literal">true</span>);</code></pre>
+</div>
+<div class="tab-content"><pre><code class="hljs python language-python">parser = Parser()
+parser.defineType(<span class="hljs-string">&quot;interval&quot;</span>, <span class="hljs-string">&quot;[{from:int}; {to:int}]&quot;</span>, <span class="hljs-keyword">lambda</span> pn: <span class="hljs-literal">None</span>, <span class="hljs-literal">True</span>);</code></pre>
+</div>
+<div class="tab-content"><pre><code class="hljs javascript language-javascript"><span class="hljs-keyword">let</span> parser = <span class="hljs-keyword">new</span> nlScript.<span class="hljs-title class_">Parser</span>();
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;interval&quot;</span>, <span class="hljs-string">&quot;[{from:int}; {to:int}]&quot;</span>, <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> <span class="hljs-literal">undefined</span>, <span class="hljs-literal">true</span>);</code></pre>
+</div>
+</div>
 <p>Its first argument is the name of the type ('interval'). Analogous to <code>defineSentence()</code>,  the second argument is a parametrized string (here, two integral numbers with names 'from' and 'to', separated by a semicolon and enclosed by square brackets). The third and fourth argument are skipped here for simplicity. The expression defined above parses, e.g., '[-3; 3]'.</p>
 <p>Custom types are used to define other custom types or to define sentences, e.g.:</p>
-<pre><code class="hljs java language-java">parser.defineSentence(<span class="hljs-string">&quot;Set the stage limits to {limits:interval}.&quot;</span>, pn -&gt; <span class="hljs-literal">null</span>);</code></pre>
+<pre><code class="hljs java language-java">parser.defineSentence(<span class="hljs-string">&quot;Set the stage limits to {limits:interval}.&quot;</span>, ...);</code></pre>
 <p>Types are typically built up of other types, so that a type hierarchy arises. This hierarchy is preserved after parsing and is reflected in the tree structure of the <code>ParsedNode</code> (<code>pn</code>) object provided to the <code>Evaluator</code>. For debugging purposes, the parsed tree can be visualized:</p>
 <pre><code class="hljs java language-java"><span class="hljs-keyword">try</span> {
     <span class="hljs-type">ParsedNode</span> <span class="hljs-variable">pn</span> <span class="hljs-operator">=</span> parser.parse(<span class="hljs-string">&quot;Set the stage limits to [-3; 3].&quot;</span>, <span class="hljs-literal">null</span>);
@@ -116,4 +172,27 @@ parser.defineType(<span class="hljs-string">&quot;interval&quot;</span>, <span c
 <p>Here, the root node <code>S'</code> consists of the parsed <code>program</code> followed by <code>EOI</code> (end-of-input). A <code>program</code> consists of a number of <code>sentence</code>s (here, a single one is parsed). The parsed <code>sentence</code> consists of the string 'Set the stage limits to', followed by one or more whitespace characters, followed by a variable named 'limits', followed by a fullstop etc.</p>
 <p>Nodes are color-coded for their parsing state: If a node was parsed successfully, it is outlined green, if a parsing error occurred, it is outlined red. Nodes which encountered the end of the input during parsing are outlined orange. The right image above shows the parsed tree resulting from parsing</p>
 <pre><code class="hljs java language-java"><span class="hljs-type">ParsedNode</span> <span class="hljs-variable">pn</span> <span class="hljs-operator">=</span> parser.parse(<span class="hljs-string">&quot;Set the stage limits to [a; 3].&quot;</span>, <span class="hljs-literal">null</span>);</code></pre>
-<p><br><br></p></article>
+<p><br><br></p>
+<script>
+
+let selectedTab = 0;
+
+tabHeaders = document.getElementsByClassName("tab-header");
+for(tabHeader of tabHeaders) {
+  let tabBody = tabHeader.nextElementSibling;
+  console.log("tabBody");
+  console.log(tabBody);
+  for(let i = 0; i < tabHeader.children.length; i++) {
+    tabHeader.children[i].onclick = clickTab;
+    if(i == selectedTab) {
+      console.log("Clicked tab " + i);
+      tabHeader.children[i].classList.add('selected');
+      tabBody.children[i].classList.add('selected');
+    } else {
+      console.log("Did not click tab " + i);
+      tabHeader.children[i].classList.remove('selected');
+      tabBody.children[i].classList.remove('selected');
+    }
+  }
+}
+</script></article>

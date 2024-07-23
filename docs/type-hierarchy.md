@@ -15,6 +15,26 @@ function hideDialog(id)  {
   document.documentElement.style.overflowY = '';
   return false; // to disable href
 }
+
+function clickTab(e) {
+  console.log(e);
+  let tabSpan = e.target;
+  let tabHeader = tabSpan.parentElement;
+  let tabBody = tabHeader.nextElementSibling;
+  console.log("tabBody");
+  console.log(tabBody);
+  for(let i = 0; i < tabHeader.children.length; i++) {
+    if(tabSpan == tabHeader.children[i]) {
+      console.log("Clicked tab " + i);
+      tabHeader.children[i].classList.add('selected');
+      tabBody.children[i].classList.add('selected');
+    } else {
+      console.log("Did not click tab " + i);
+      tabHeader.children[i].classList.remove('selected');
+      tabBody.children[i].classList.remove('selected');
+    }
+  }
+}
 </script>
 <style>
 .markdown-body h1 {
@@ -31,6 +51,32 @@ function hideDialog(id)  {
 
 .markdown-body img {
   margin: 50px;
+}
+
+.tab-header span {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 2px;
+  border-left: 1px solid white;
+  border-right: 1px solid white;
+  cursor: pointer;
+  color: white;
+  background-color: rgb(70, 70, 70);
+  border-top: none;
+}
+
+.tab-header span.selected {
+  background-color: var(--color-canvas-subtle);
+  color: black;
+  border-top: 2px solid cornflowerblue;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.selected {
+  display: block;
 }
 
 /*
@@ -100,15 +146,36 @@ table th:nth-of-type(4) {
 
 
 A key feature is the definition of custom types, which itself can be composed of built-in or custom types in turn, to build a type hierarchy. Custom types are defined like sentences, but using the parser's `defineType()` method:
+<div class="tab-header"><span>Java</span><span class="selected">Python</span><span>JavaScript</span></div>
+<div class="tab-body">
+<div class="tab-content selected">
 ```java
 Parser parser = new Parser();
 parser.defineType("interval", "[{from:int}; {to:int}]", pn -> null, true);
 ```
+</div>
+<div class="tab-content">
+```python
+parser = Parser()
+parser.defineType("interval", "[{from:int}; {to:int}]", lambda pn: None, True);
+```
+</div>
+<div class="tab-content">
+```javascript
+let parser = new nlScript.Parser();
+parser.defineType("interval", "[{from:int}; {to:int}]", pn => undefined, true);
+```
+</div>
+</div>
+
+
+
+
 Its first argument is the name of the type ('interval'). Analogous to `defineSentence()`,  the second argument is a parametrized string (here, two integral numbers with names 'from' and 'to', separated by a semicolon and enclosed by square brackets). The third and fourth argument are skipped here for simplicity. The expression defined above parses, e.g., '[-3; 3]'.
 
 Custom types are used to define other custom types or to define sentences, e.g.:
 ```java
-parser.defineSentence("Set the stage limits to {limits:interval}.", pn -> null);
+parser.defineSentence("Set the stage limits to {limits:interval}.", ...);
 ```
 Types are typically built up of other types, so that a type hierarchy arises. This hierarchy is preserved after parsing and is reflected in the tree structure of the `ParsedNode` (`pn`) object provided to the `Evaluator`. For debugging purposes, the parsed tree can be visualized:
 ```java
@@ -130,3 +197,29 @@ Nodes are color-coded for their parsing state: If a node was parsed successfully
 ParsedNode pn = parser.parse("Set the stage limits to [a; 3].", null);
 ```
 <br><br>
+
+<script>
+
+let selectedTab = 0;
+
+tabHeaders = document.getElementsByClassName("tab-header");
+for(tabHeader of tabHeaders) {
+  let tabBody = tabHeader.nextElementSibling;
+  console.log("tabBody");
+  console.log(tabBody);
+  for(let i = 0; i < tabHeader.children.length; i++) {
+    tabHeader.children[i].onclick = clickTab;
+    if(i == selectedTab) {
+      console.log("Clicked tab " + i);
+      tabHeader.children[i].classList.add('selected');
+      tabBody.children[i].classList.add('selected');
+    } else {
+      console.log("Did not click tab " + i);
+      tabHeader.children[i].classList.remove('selected');
+      tabBody.children[i].classList.remove('selected');
+    }
+  }
+}
+</script>
+
+

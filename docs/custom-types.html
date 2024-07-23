@@ -16,6 +16,25 @@ function hideDialog(id)  {
   document.documentElement.style.overflowY = '';
   return false; // to disable href
 }
+function clickTab(e) {
+  console.log(e);
+  let tabSpan = e.target;
+  let tabHeader = tabSpan.parentElement;
+  let tabBody = tabHeader.nextElementSibling;
+  console.log("tabBody");
+  console.log(tabBody);
+  for(let i = 0; i < tabHeader.children.length; i++) {
+    if(tabSpan == tabHeader.children[i]) {
+      console.log("Clicked tab " + i);
+      tabHeader.children[i].classList.add('selected');
+      tabBody.children[i].classList.add('selected');
+    } else {
+      console.log("Did not click tab " + i);
+      tabHeader.children[i].classList.remove('selected');
+      tabBody.children[i].classList.remove('selected');
+    }
+  }
+}
 </script>
 <style>
 .markdown-body h1 {
@@ -32,6 +51,32 @@ function hideDialog(id)  {
 
 .markdown-body img {
   margin: 50px;
+}
+
+.tab-header span {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 2px;
+  border-left: 1px solid white;
+  border-right: 1px solid white;
+  cursor: pointer;
+  color: white;
+  background-color: rgb(70, 70, 70);
+  border-top: none;
+}
+
+.tab-header span.selected {
+  background-color: var(--color-canvas-subtle);
+  color: black;
+  border-top: 2px solid cornflowerblue;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.selected {
+  display: block;
 }
 
 /*
@@ -101,42 +146,154 @@ table th:nth-of-type(4) {
 <h3 id="defining-a-new-generic-color-type-based-on-rgb-values">Defining a new generic color type based on RGB values</h3>
 <p>Custom types can be defined using built-in types and other custom types. In this way, an entire hierarchy of types can be built up. To demonstrate how custom types are defined, I will implement a type <code>my-color</code>, because color is perfectly suited to visualize the concept of types, although a type <code>color</code> already exists. In contrast to the existing <code>color</code> type, I want <code>my-color</code> to match <code>rgb(...)</code>, i.e. the string <code>rgb</code> followed by a 3-tuple with the values for red, green and blue.</p>
 <p>Defining a custom type is similar to defining a sentence as shown earlier, indeed <code>defineSentence</code> is just a shortcut for defining (or extending) the type <code>sentence</code>:</p>
-<pre><code class="hljs java language-java"><span class="hljs-type">Parser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Parser</span>();
+<div class="tab-header"><span>Java</span><span class="selected">Python</span><span>JavaScript</span></div>
+<div class="tab-body">
+<div class="tab-content selected"><pre><code class="hljs java language-java"><span class="hljs-type">Parser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Parser</span>();
 parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;rgb({red:int}, {green:int}, {blue:int})&quot;</span>, pn -&gt; {
     <span class="hljs-type">int</span> <span class="hljs-variable">red</span> <span class="hljs-operator">=</span> (<span class="hljs-type">int</span>) pn.evaluate(<span class="hljs-string">&quot;red&quot;</span>);
     <span class="hljs-type">int</span> <span class="hljs-variable">green</span> <span class="hljs-operator">=</span> (<span class="hljs-type">int</span>) pn.evaluate(<span class="hljs-string">&quot;green&quot;</span>);
     <span class="hljs-type">int</span> <span class="hljs-variable">blue</span> <span class="hljs-operator">=</span> (<span class="hljs-type">int</span>) pn.evaluate(<span class="hljs-string">&quot;blue&quot;</span>);
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">java</span>.awt.Color(red, green, blue);
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] {red, green, blue};
 });</code></pre>
+</div>
+<div class="tab-content"><pre><code class="hljs python language-python">parser = Parser()
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">evaluateColor</span>(<span class="hljs-params">pn</span>):
+    red = pn.evaluate(<span class="hljs-string">&quot;red&quot;</span>)
+    green = pn.evaluate(<span class="hljs-string">&quot;green&quot;</span>)
+    blue = pn.evaluate(<span class="hljs-string">&quot;blue&quot;</span>)
+    <span class="hljs-keyword">return</span> (red, green, blue)
+
+parser.defineType(
+    <span class="hljs-string">&quot;my-color&quot;</span>,
+    <span class="hljs-string">&quot;rgb({red:int}, {green:int}, {blue:int})&quot;</span>,
+    evaluateColor)</code></pre>
+</div>
+<div class="tab-content"><pre><code class="hljs javascript language-javascript"><span class="hljs-keyword">let</span> parser = <span class="hljs-keyword">new</span> nlScript.<span class="hljs-title class_">Parser</span>();
+parser.<span class="hljs-title function_">defineType</span>(
+    <span class="hljs-string">&quot;my-color&quot;</span>,
+    <span class="hljs-string">&quot;rgb({red:int}, {green:int}, {blue:int})&quot;</span>,
+    <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> {
+        <span class="hljs-keyword">let</span> red = pn.evaluate(<span class="hljs-string">&quot;red&quot;</span>)
+        <span class="hljs-keyword">let</span> green = pn.evaluate(<span class="hljs-string">&quot;green&quot;</span>)
+        <span class="hljs-keyword">let</span> blue = pn.evaluate(<span class="hljs-string">&quot;blue&quot;</span>)
+        <span class="hljs-keyword">return</span> [red, green, blue];
+    });</code></pre>
+</div>
+</div>
 <p><code>defineType</code> has 3 arguments:</p>
 <ul>
 <li><p>A name for the type, which can be used in later type definitions<br>Like an integral number is of type <code>int</code>, our color will be of type <code>my-color</code>.</p></li>
 <li><p>A pattern that defines how the type should be parsed<br><code>"rgb({red:int}, {green:int}, {blue:int})"</code> means that our new type will consist of the string 'rgb', followed by a 3-tuple with integral values named 'red', 'green' and 'blue' for the red, green and blue color component. <code>my-color</code> consists of three variables <code>red</code>, <code>green</code> and <code>blue</code>, which are of type <code>int</code> and which can be accessed in the evaluator by their name.</p></li>
-<li><p>An evaluator<br>The evaluator returns a Java object corresponding to the parsed and interpreted type (here a <code>java.awt.Color</code>). Typically, an evaluator will evaluate its variables to construct a Java object from them. Here, it evaluates the 3 integrals <code>red</code>, <code>green</code> and <code>blue</code> and constructs a <code>java.awt.Color</code> from them, which it returns.</p></li>
+<li><p>An evaluator<br>The evaluator returns an object corresponding to the parsed and interpreted type, here an <code>int[]</code> (<strong>Java</strong>), a <code>tuple</code> (<strong>Python</strong>) or an <code>array</code> (<strong>JavasScript</strong>), with the red, green and blue color components as elements.</p></li>
 </ul>
 <p>The new type can now be used in <code>defineSentence</code>, or to define other types via <code>defineType</code>:</p>
-<pre><code class="hljs java language-java">parser.defineSentence(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, pn -&gt; <span class="hljs-literal">null</span>);</code></pre>
+<pre><code class="hljs java language-java">parser.defineSentence(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, ...);</code></pre>
 <h3 id="defining-a-new-generic-color-type-based-on-a-set-of-named-colors">Defining a new generic color type based on a set of named colors</h3>
 <p>We can also define a new type with a fixed set of options, i.e. a set of pre-defined named colors. This is implemented by repeatedly defining a type with different patterns:</p>
-<pre><code class="hljs">Parser parser = <span class="hljs-keyword">new</span> <span class="hljs-constructor">Parser()</span>;
-parser.define<span class="hljs-constructor">Type(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;white&quot;</span>, <span class="hljs-params">pn</span> -&gt; <span class="hljs-params">new</span> <span class="hljs-params">java</span>.<span class="hljs-params">awt</span>.Color(255, 255, 255)</span>);
-parser.define<span class="hljs-constructor">Type(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;black&quot;</span>, <span class="hljs-params">pn</span> -&gt; <span class="hljs-params">new</span> <span class="hljs-params">java</span>.<span class="hljs-params">awt</span>.Color(0, 0, 0)</span>);
-parser.define<span class="hljs-constructor">Type(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;red&quot;</span>,   <span class="hljs-params">pn</span> -&gt; <span class="hljs-params">new</span> <span class="hljs-params">java</span>.<span class="hljs-params">awt</span>.Color(255, 0, 0)</span>);
-parser.define<span class="hljs-constructor">Type(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;green&quot;</span>, <span class="hljs-params">pn</span> -&gt; <span class="hljs-params">new</span> <span class="hljs-params">java</span>.<span class="hljs-params">awt</span>.Color(0, 255, 0)</span>);<span class="hljs-operator">
+<div class="tab-header"><span>Java</span><span class="selected">Python</span><span>JavaScript</span></div>
+<div class="tab-body">
+<div class="tab-content selected"><pre><code class="hljs java language-java"><span class="hljs-type">Parser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Parser</span>();
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;white&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] { <span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span> });
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;black&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] {   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>, <span class="hljs-number">0</span>   });
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;red&quot;</span>,   pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] { <span class="hljs-number">255</span>,   <span class="hljs-number">0</span>, <span class="hljs-number">0</span>   });
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;green&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] {   <span class="hljs-number">0</span>, <span class="hljs-number">255</span>, <span class="hljs-number">0</span>   });
 ...
-</span>parser.define<span class="hljs-constructor">Sentence(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, <span class="hljs-params">pn</span> -&gt; <span class="hljs-params">null</span>)</span>;</code></pre>
+parser.defineSentence(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, ...);</code></pre>
+</div>
+<div class="tab-content"><pre><code class="hljs python language-python">parser = Parser()
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;white&quot;</span>, <span class="hljs-keyword">lambda</span> pn: (<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>))
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;black&quot;</span>, <span class="hljs-keyword">lambda</span> pn: (  <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>))
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;red&quot;</span>,   <span class="hljs-keyword">lambda</span> pn: (<span class="hljs-number">255</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>))
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;green&quot;</span>, <span class="hljs-keyword">lambda</span> pn: (  <span class="hljs-number">0</span>, <span class="hljs-number">255</span>,   <span class="hljs-number">0</span>))
+...
+parser.defineSentence(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, ...);</code></pre>
+</div>
+<div class="tab-content"><pre><code class="hljs javascript language-javascript"><span class="hljs-keyword">let</span> parser = <span class="hljs-keyword">new</span> nlScript.<span class="hljs-title class_">Parser</span>();
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;white&quot;</span>, <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> [<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>]);
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;black&quot;</span>, <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> [  <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>]);
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;red&quot;</span>,   <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> [<span class="hljs-number">255</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>]);
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;green&quot;</span>, <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> [  <span class="hljs-number">0</span>, <span class="hljs-number">255</span>,   <span class="hljs-number">0</span>]);
+...
+parser.<span class="hljs-title function_">defineSentence</span>(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, ...);</code></pre>
+</div>
+</div>
 <h3 id="combining-generic-and-preset-type-definitions">Combining generic and preset type definitions</h3>
 <p>The above two concepts can also be combined, which allows the user to select a color from a pre-defined list, but also leaves the freedom to provide a custom color which is not in the list, by specifying its RGB values:</p>
-<pre><code class="hljs java language-java"><span class="hljs-type">Parser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Parser</span>();
+<div class="tab-header"><span>Java</span><span class="selected">Python</span><span>JavaScript</span></div>
+<div class="tab-body">
+<div class="tab-content selected"><pre><code class="hljs java language-java"><span class="hljs-type">Parser</span> <span class="hljs-variable">parser</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Parser</span>();
 parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;rgb({red:int}, {green:int}, {blue:int})&quot;</span>, pn -&gt; {
     <span class="hljs-type">int</span> <span class="hljs-variable">red</span> <span class="hljs-operator">=</span> (<span class="hljs-type">int</span>) pn.evaluate(<span class="hljs-string">&quot;red&quot;</span>);
     <span class="hljs-type">int</span> <span class="hljs-variable">green</span> <span class="hljs-operator">=</span> (<span class="hljs-type">int</span>) pn.evaluate(<span class="hljs-string">&quot;green&quot;</span>);
     <span class="hljs-type">int</span> <span class="hljs-variable">blue</span> <span class="hljs-operator">=</span> (<span class="hljs-type">int</span>) pn.evaluate(<span class="hljs-string">&quot;blue&quot;</span>);
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">java</span>.awt.Color(red, green, blue);
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] {red, green, blue};
 });
-parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;white&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">java</span>.awt.Color(<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>));
-parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;black&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">java</span>.awt.Color(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>));
-parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;red&quot;</span>,   pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">java</span>.awt.Color(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>));
-parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;green&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">java</span>.awt.Color(<span class="hljs-number">0</span>, <span class="hljs-number">255</span>, <span class="hljs-number">0</span>));
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;white&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] { <span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span> });
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;black&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] {   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>, <span class="hljs-number">0</span>   });
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;red&quot;</span>,   pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] { <span class="hljs-number">255</span>,   <span class="hljs-number">0</span>, <span class="hljs-number">0</span>   });
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;green&quot;</span>, pn -&gt; <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[] {   <span class="hljs-number">0</span>, <span class="hljs-number">255</span>, <span class="hljs-number">0</span>   });
 ...
-parser.defineSentence(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, pn -&gt; <span class="hljs-literal">null</span>);</code></pre></article>
+parser.defineSentence(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, ...);</code></pre>
+</div>
+<div class="tab-content"><pre><code class="hljs python language-python">parser = Parser()
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">evaluateColor</span>(<span class="hljs-params">pn</span>):
+    red = pn.evaluate(<span class="hljs-string">&quot;red&quot;</span>)
+    green = pn.evaluate(<span class="hljs-string">&quot;green&quot;</span>)
+    blue = pn.evaluate(<span class="hljs-string">&quot;blue&quot;</span>)
+    <span class="hljs-keyword">return</span> (red, green, blue)
+
+parser.defineType(
+    <span class="hljs-string">&quot;my-color&quot;</span>,
+    <span class="hljs-string">&quot;rgb({red:int}, {green:int}, {blue:int})&quot;</span>,
+    evaluateColor)
+
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;white&quot;</span>, <span class="hljs-keyword">lambda</span> pn: (<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>))
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;black&quot;</span>, <span class="hljs-keyword">lambda</span> pn: (  <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>))
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;red&quot;</span>,   <span class="hljs-keyword">lambda</span> pn: (<span class="hljs-number">255</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>))
+parser.defineType(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;green&quot;</span>, <span class="hljs-keyword">lambda</span> pn: (  <span class="hljs-number">0</span>, <span class="hljs-number">255</span>,   <span class="hljs-number">0</span>))
+...
+parser.defineSentence(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, ...);</code></pre>
+</div>
+<div class="tab-content"><pre><code class="hljs javascript language-javascript"><span class="hljs-keyword">let</span> parser = <span class="hljs-keyword">new</span> nlScript.<span class="hljs-title class_">Parser</span>();
+parser.<span class="hljs-title function_">defineType</span>(
+    <span class="hljs-string">&quot;my-color&quot;</span>,
+    <span class="hljs-string">&quot;rgb({red:int}, {green:int}, {blue:int})&quot;</span>,
+    <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> {
+        <span class="hljs-keyword">let</span> red = pn.evaluate(<span class="hljs-string">&quot;red&quot;</span>)
+        <span class="hljs-keyword">let</span> green = pn.evaluate(<span class="hljs-string">&quot;green&quot;</span>)
+        <span class="hljs-keyword">let</span> blue = pn.evaluate(<span class="hljs-string">&quot;blue&quot;</span>)
+        <span class="hljs-keyword">return</span> [red, green, blue];
+    });
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;white&quot;</span>, <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> [<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>]);
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;black&quot;</span>, <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> [  <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>]);
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;red&quot;</span>,   <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> [<span class="hljs-number">255</span>,   <span class="hljs-number">0</span>,   <span class="hljs-number">0</span>]);
+parser.<span class="hljs-title function_">defineType</span>(<span class="hljs-string">&quot;my-color&quot;</span>, <span class="hljs-string">&quot;green&quot;</span>, <span class="hljs-function"><span class="hljs-params">pn</span> =&gt;</span> [  <span class="hljs-number">0</span>, <span class="hljs-number">255</span>,   <span class="hljs-number">0</span>]);
+...
+parser.<span class="hljs-title function_">defineSentence</span>(<span class="hljs-string">&quot;Set the drawing color to {color:my-color}.&quot;</span>, ...);</code></pre>
+</div>
+</div>
+<script>
+
+let selectedTab = 0;
+
+tabHeaders = document.getElementsByClassName("tab-header");
+for(tabHeader of tabHeaders) {
+  let tabBody = tabHeader.nextElementSibling;
+  console.log("tabBody");
+  console.log(tabBody);
+  for(let i = 0; i < tabHeader.children.length; i++) {
+    tabHeader.children[i].onclick = clickTab;
+    if(i == selectedTab) {
+      console.log("Clicked tab " + i);
+      tabHeader.children[i].classList.add('selected');
+      tabBody.children[i].classList.add('selected');
+    } else {
+      console.log("Did not click tab " + i);
+      tabHeader.children[i].classList.remove('selected');
+      tabBody.children[i].classList.remove('selected');
+    }
+  }
+}
+</script></article>
