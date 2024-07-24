@@ -247,9 +247,6 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			doAutocompletion(tc.getCaretPosition(), true);
 			return;
 		}
-//		System.out.println(parameterizedCompletion.getParametersSize());
-		// if (parameterizedCompletion.getParametersSize() > 2) // 1 parameter + the end cursor parameter
-//			doAutocompletion(tc.getCaretPosition(), false);
 		doAutocompletion(tc.getCaretPosition(), false);
 	}
 
@@ -347,11 +344,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 					// parameterizedCompletion.next();
 					return;
 				}
-			} else {
-				System.out.println("no completions");
 			}
-		} else {
-			System.out.println("parameterized completion == null");
 		}
 
 		popup.getModel().set(completions);

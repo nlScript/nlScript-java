@@ -29,7 +29,6 @@ public class LineNumberingTextArea extends JTextArea
 
 	public void updateLineNumbers() {
 		String lineNumbersText = getLineNumbersText();
-		System.out.println("updateLineNumbers: " + lineNumbersText);
 		setText(lineNumbersText);
 	}
 

@@ -103,8 +103,6 @@ public class Parser {
 		}
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException("Parsing failed");
-		// pn = parser.buildAst(pn);
-//		System.out.println(GraphViz.toVizDotLink(pn));
 		Named<?>[] rhs = (Named<?>[]) pn.evaluate();
 
 		Rule newRule = targetGrammar.sequence(type, rhs);

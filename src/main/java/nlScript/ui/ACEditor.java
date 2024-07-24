@@ -142,11 +142,11 @@ public class ACEditor {
 					beforeRun.run();
 					String textToEvaluate = selectedLines ? getSelectedLines() : getText();
 					ParsedNode pn = parser.parse(textToEvaluate, null);
-					System.out.println(GraphViz.toVizDotLink(pn));
+					outputArea.setText(GraphViz.toVizDotLink(pn));
 					pn.evaluate();
 					afterRun.run();
 				} catch(ParseException e) {
-					outputArea.setText(e.getMessage());
+					outputArea.setText(e.getMessage() + "\n\n" + GraphViz.toVizDot(e.getRoot()));
 				} catch(Throwable e) {
 					StringWriter sw = new StringWriter();
 					PrintWriter pw = new PrintWriter(sw);

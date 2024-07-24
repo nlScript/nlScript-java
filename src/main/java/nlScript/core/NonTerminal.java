@@ -51,7 +51,6 @@ public class NonTerminal extends Symbol {
 			if(progressing.contains(p))
 				continue;
 			progressing.add(p);
-			System.out.println("p = " + p);
 			Symbol[] rhs = p.getRight();
 			for(Symbol rSym : rhs) {
 				if(rSym.equals(symbol))

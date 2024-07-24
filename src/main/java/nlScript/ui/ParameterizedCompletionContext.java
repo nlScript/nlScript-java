@@ -272,7 +272,7 @@ public class ParameterizedCompletionContext implements KeyListener {
 					insertionString.append(s);
 				}
 				else {
-					System.out.println("Unknown/unexpected autocompletion");
+					System.err.println("Unknown/unexpected autocompletion");
 				}
 			}
 			i++;
