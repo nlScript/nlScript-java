@@ -171,6 +171,10 @@ public class ACEditor {
 		return textArea;
 	}
 
+	public JTextComponent getOutputArea() {
+		return outputArea;
+	}
+
 	public JButton getRunButton() {
 		return runButton;
 	}
