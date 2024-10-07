@@ -162,6 +162,12 @@ public class EBNF extends EBNFCore {
 		Rule gray        = sequence(null, Terminal.literal("gray"        ).withName()).setEvaluator(pn -> rgb2int(128, 128, 128));
 
 		Rule custom = tuple(null, INTEGER.withName(), "red", "green", "blue");
+		custom.setEvaluator(pn -> {
+			int r = (Integer) pn.evaluate("red");
+			int g = (Integer) pn.evaluate("green");
+			int b = (Integer) pn.evaluate("blue");
+			return rgb2int(r, g, b);
+		});
 
 		return or(COLOR_NAME,
 				custom.withName(),
