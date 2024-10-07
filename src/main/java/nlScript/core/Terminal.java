@@ -114,14 +114,22 @@ public abstract class Terminal extends Symbol {
 	}
 
 	public static class Literal extends Terminal {
-		private Literal(String symbol) {
-			super(symbol);
+
+		private String literal;
+
+		private Literal(String literal) {
+			super("literal:" + literal);
+			this.literal = literal;
+		}
+
+		public String getLiteral() {
+			return literal;
 		}
 
 		@Override
 		public Matcher matches(Lexer lexer) {
 			int pos = lexer.getPosition();
-			String symbol = getSymbol();
+			String symbol = literal;
 			for(int i = 0; i < symbol.length(); i++) {
 				if(lexer.isAtEnd(i))
 					return new Matcher(ParsingState.END_OF_INPUT, pos, lexer.substring(pos, pos + i + 1));

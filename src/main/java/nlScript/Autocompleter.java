@@ -28,7 +28,7 @@ public interface Autocompleter {
 			return null;
 
 		if(symbol instanceof Terminal.Literal)
-			return Autocompletion.literal(pn, symbol.getSymbol());
+			return Autocompletion.literal(pn, ((Terminal.Literal)symbol).getLiteral());
 
 		String name = pn.getName();
 		if(name.equals(Named.UNNAMED))

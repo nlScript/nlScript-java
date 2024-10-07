@@ -243,12 +243,14 @@ public class TestHighlevelParser {
 
 		test = "{blubb , alkjad asd 4. <>l}";
 		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
-		assertEquals("blubb , alkjad asd 4. <>l", evaluatedTerminal.getSymbol().getSymbol());
+		Terminal.Literal literal = (Terminal.Literal) evaluatedTerminal.get();
+		assertEquals("blubb , alkjad asd 4. <>l", literal.getLiteral());
 		assertEquals("blubb , alkjad asd 4. <>l", evaluatedTerminal.getName());
 
 		test = "{heinz}";
 		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
-		assertEquals("heinz", evaluatedTerminal.getSymbol().getSymbol());
+		literal = (Terminal.Literal) evaluatedTerminal.get();
+		assertEquals("heinz", literal.getLiteral());
 		assertEquals("heinz", evaluatedTerminal.getName());
 
 		test = "{heinz:+}";
@@ -257,7 +259,8 @@ public class TestHighlevelParser {
 		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Plus.class, rule.getClass());
 		plus = (Plus) rule;
-		assertEquals("heinz", plus.getEntry().getSymbol());
+		literal = (Terminal.Literal) plus.getEntry();
+		assertEquals("heinz", literal.getLiteral());
 
 		test = "{heinz:3-5}";
 		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
@@ -267,16 +270,19 @@ public class TestHighlevelParser {
 		repeat = (Repeat) rule;
 		assertEquals(3, repeat.getFrom());
 		assertEquals(5, repeat.getTo());
-		assertEquals("heinz", repeat.getEntry().getSymbol());
+		literal = (Terminal.Literal) repeat.getEntry();
+		assertEquals("heinz", literal.getLiteral());
 
 		test = "{, }";
 		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
-		assertEquals(", ", evaluatedTerminal.getSymbol().getSymbol());
+		literal = (Terminal.Literal) evaluatedTerminal.get();
+		assertEquals(", ", literal.getLiteral());
 		assertEquals(", ", evaluatedTerminal.getName());
 
 		test = "{,\n }";
 		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
-		assertEquals(",\n ", evaluatedTerminal.getSymbol().getSymbol());
+		literal = (Terminal.Literal) evaluatedTerminal.get();
+		assertEquals(",\n ", literal.getLiteral());
 		assertEquals(",\n ", evaluatedTerminal.getName());
 	}
 
@@ -290,19 +296,22 @@ public class TestHighlevelParser {
 		String test = "lk345}.-";
 		Named<Terminal> evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals(Terminal.Literal.class, evaluatedTerminal.get().getClass());
-		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
+		Terminal.Literal literal = (Terminal.Literal) evaluatedTerminal.get();
+		assertEquals(test, literal.getLiteral());
 		assertEquals(Named.UNNAMED, evaluatedTerminal.getName());
 
 		test = "--1'x}";
 		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals(Terminal.Literal.class, evaluatedTerminal.get().getClass());
-		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
+		literal = (Terminal.Literal) evaluatedTerminal.get();
+		assertEquals(test, literal.getLiteral());
 		assertEquals(Named.UNNAMED, evaluatedTerminal.getName());
 
 		test = ".";
 		evaluatedTerminal = (Named<Terminal>) evaluateHighlevelParser(hlp, test);
 		assertEquals(Terminal.Literal.class, evaluatedTerminal.get().getClass());
-		assertEquals(test, evaluatedTerminal.getSymbol().getSymbol());
+		literal = (Terminal.Literal) evaluatedTerminal.get();
+		assertEquals(test, literal.getLiteral());
 		assertEquals(Named.UNNAMED, evaluatedTerminal.getName());
 
 		String testToFail = "lj{l";
