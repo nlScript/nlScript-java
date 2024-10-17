@@ -226,8 +226,8 @@ public abstract class Autocompletion {
 					else if(purpose == Purpose.FOR_INSERTION)
 						autocompletionString.append(autocompletions.get(0).getCompletion(purpose));
 
-					i++;
 				}
+				i++;
 			}
 			return autocompletionString.toString();
 		}
