@@ -9,6 +9,8 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ParameterizedCompletionContext implements KeyListener {
@@ -44,16 +46,16 @@ public class ParameterizedCompletionContext implements KeyListener {
 
 	private final ArrayList<Param> parameters = new ArrayList<>();
 
-	private Param addHighlight(String name, Autocompletion autocompletion, int i0, int i1) {
-		return addHighlight(name, autocompletion, i0, i1, highlightPainter);
+	private Param addHighlight(String name, Autocompletion.Parameterized autocompletion, List<Autocompletion> allOptions, int i0, int i1) {
+		return addHighlight(name, autocompletion, allOptions, i0, i1, highlightPainter);
 	}
 
-	private Param addHighlight(String name, Autocompletion autocompletion, int i0, int i1, Highlighter.HighlightPainter highlightPainter) {
+	private Param addHighlight(String name, Autocompletion.Parameterized autocompletion, List<Autocompletion> allOptions, int i0, int i1, Highlighter.HighlightPainter highlightPainter) {
 		try {
 			int start = i0 == 0 ? 0 : i0 - 1;
 			Object tag = tc.getHighlighter().addHighlight(start, i1, highlightPainter);
 			Highlighter.Highlight hl = findHighlight(start, i1);
-			return new Param(name, autocompletion, hl, tag);
+			return new Param(name, autocompletion, allOptions, hl, tag);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -80,8 +82,16 @@ public class ParameterizedCompletionContext implements KeyListener {
 		return -1;
 	}
 
+	public int getCurrentParamIndex() {
+		return getParamIndexForCursorPosition(tc.getCaretPosition());
+	}
+
+	public Param getParameter(int idx) {
+		return parameters.get(idx);
+	}
+
 	public Param getCurrentParameter() {
-		return parameters.get(getParamIndexForCursorPosition(tc.getCaretPosition()));
+		return parameters.get(getCurrentParamIndex());
 	}
 
 	private int getNextParamIndexForCursorPosition(int pos) {
@@ -118,9 +128,9 @@ public class ParameterizedCompletionContext implements KeyListener {
 		tc.replaceSelection(insertionString);
 		parameters.clear();
 		for(ParsedParam pp : parsedParams)
-			parameters.add(addHighlight(pp.name, pp.autocompletion, offset + pp.i0, offset + pp.i1));
+			parameters.add(addHighlight(pp.name, pp.parameterizedCompletion, pp.allOptions, offset + pp.i0, offset + pp.i1));
 		int cursor = offset + insertionString.length();
-		parameters.add(addHighlight("", null, cursor, cursor, cursorHighlightPainter));
+		parameters.add(addHighlight("", null, null, cursor, cursor, cursorHighlightPainter));
 		cycle(0);
 		tc.addKeyListener(this);
 	}
@@ -233,7 +243,8 @@ public class ParameterizedCompletionContext implements KeyListener {
 
 	public static String parseParameters(Autocompletion.Parameterized autocompletion, List<ParsedParam> ret) {
 		String s = autocompletion.paramName;
-		ret.add(new ParsedParam(s, 0, s.length(), autocompletion));
+		List<Autocompletion> allOptions = Collections.singletonList(autocompletion);
+		ret.add(new ParsedParam(s, 0, s.length(), autocompletion, allOptions));
 		return s;
 	}
 
@@ -249,7 +260,7 @@ public class ParameterizedCompletionContext implements KeyListener {
 				Autocompletion.Parameterized p = new Autocompletion.Parameterized(sequence.getChildren()[i], name, name);
 				int i0 = offset + insertionString.length();
 				int i1 = i0 + name.length();
-				ret.add(new ParsedParam(name, i0, i1, p));
+				ret.add(new ParsedParam(name, i0, i1, p, autocompletions));
 				insertionString.append(name);
 			}
 			else if(n == 1) {
@@ -262,7 +273,7 @@ public class ParameterizedCompletionContext implements KeyListener {
 					String s = parameterized.paramName;
 					int i0 = offset + insertionString.length();
 					int i1 = i0 + s.length();
-					ret.add(new ParsedParam(s, i0, i1, parameterized));
+					ret.add(new ParsedParam(s, i0, i1, parameterized, Collections.singletonList(parameterized)));
 					insertionString.append(s);
 				}
 				else if(single instanceof Autocompletion.EntireSequence) {
@@ -285,26 +296,32 @@ public class ParameterizedCompletionContext implements KeyListener {
 		public final int i0;
 		public final int i1;
 
-		public final Autocompletion.Parameterized autocompletion;
+		public final Autocompletion.Parameterized parameterizedCompletion;
 
-		public ParsedParam(String name, int i0, int i1, Autocompletion.Parameterized autocompletion) {
+		public final List<Autocompletion> allOptions;
+
+		public ParsedParam(String name, int i0, int i1, Autocompletion.Parameterized parameterizedCompletion, List<Autocompletion> allOptions) {
 			this.name = name;
 			this.i0 = i0;
 			this.i1 = i1;
-			this.autocompletion = autocompletion;
+			this.parameterizedCompletion = parameterizedCompletion;
+			this.allOptions = allOptions;
 		}
 	}
 
 	public static class Param {
 		private final String name;
 
-		public final Autocompletion autocompletion;
+		public final Autocompletion.Parameterized parameterizedCompletion;
+
+		public final List<Autocompletion> allOptions;
 		private final Highlighter.Highlight highlight;
 		private final Object highlightTag;
 
-		public Param(String name, Autocompletion autocompletion, Highlighter.Highlight highlight, Object highlightTag) {
+		public Param(String name, Autocompletion.Parameterized parameterizedCompletion, List<Autocompletion> allOptions, Highlighter.Highlight highlight, Object highlightTag) {
 			this.name = name;
-			this.autocompletion = autocompletion;
+			this.parameterizedCompletion = parameterizedCompletion;
+			this.allOptions = allOptions;
 			this.highlight = highlight;
 			this.highlightTag = highlightTag;
 		}

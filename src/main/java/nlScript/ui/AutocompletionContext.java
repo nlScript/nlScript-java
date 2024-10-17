@@ -104,7 +104,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 						final Autocompletion completion = popup.getSelected();
 						if(completion != null) {
 							hidePopup(); // need to hide it before changing the document
-							insertCompletion(tc.getCaretPosition(), completion);
+							insertCompletion(tc.getCaretPosition(), completion, true);
 						}
 						e.consume();
 					}
@@ -198,13 +198,17 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 	private int lastInsertionPosition = -1;
 
 	public void insertCompletion(int caret, Autocompletion completion) {
+		insertCompletion(caret, completion, false);
+	}
+
+	public void insertCompletion(int caret, Autocompletion completion, boolean force) {
 		final String repl = completion.getCompletion(Autocompletion.Purpose.FOR_INSERTION);
 		final String alreadyEntered = completion.getAlreadyEntered();
 		/* If a parameterized completion was inserted before, with the first parameter starting right at
 		 * the beginning of the insertion (e.g. "${percentage} %"), we would insert the very same completion again
 		 * when trying to auto-complete the first parameter.
 		 */
-		if(caret == lastInsertionPosition) // TODO 2024-04-11 is this still needed: && repl.equals(lastInserted))
+		if(!force && caret == lastInsertionPosition) // TODO 2024-04-11 is this still needed: && repl.equals(lastInserted))
 			return;
 
 
@@ -247,7 +251,16 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			doAutocompletion(tc.getCaretPosition(), true);
 			return;
 		}
-		doAutocompletion(tc.getCaretPosition(), false);
+		Autocompletion autocompletion = parameterizedCompletion.getCurrentParameter().parameterizedCompletion;
+
+		List<Autocompletion> completions = parameterizedCompletion.getParameter(pIdx).allOptions;
+		popup.getModel().set(completions);
+		if (completions.size() < 2)
+			hidePopup();
+		else {
+			popup.setSelectedIndex(0);
+			showPopup(tc.getCaretPosition());
+		}
 	}
 
 	public void hidePopup() {
@@ -314,7 +327,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 					if(comp instanceof Autocompletion.EntireSequence) {
 						ArrayList<ParameterizedCompletionContext.ParsedParam> tmp = new ArrayList<>();
 						ParameterizedCompletionContext.parseParameters((Autocompletion.EntireSequence) comp, tmp, 0);
-						comp = tmp.get(0).autocompletion;
+						comp = tmp.get(0).parameterizedCompletion;
 						symbol = comp.forSymbol;
 					}
 
@@ -324,7 +337,7 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 					}
 
 					// check if symbol is a descendent of the parameters autocompletion symbol
-					Symbol parameterSymbol = parameterizedCompletion.getCurrentParameter().autocompletion.forSymbol;
+					Symbol parameterSymbol = parameterizedCompletion.getCurrentParameter().parameterizedCompletion.forSymbol;
 					// symbol == parameterSymbol? -> fine
 					if(symbol.equals(parameterSymbol)) {
 						atLeastOnCompletionForCurrentParameter = true;
