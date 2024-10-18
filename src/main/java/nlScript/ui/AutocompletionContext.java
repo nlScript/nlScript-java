@@ -251,7 +251,6 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 			doAutocompletion(tc.getCaretPosition(), true);
 			return;
 		}
-		Autocompletion autocompletion = parameterizedCompletion.getCurrentParameter().parameterizedCompletion;
 
 		List<Autocompletion> completions = parameterizedCompletion.getParameter(pIdx).allOptions;
 		popup.getModel().set(completions);
