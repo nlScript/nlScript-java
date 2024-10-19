@@ -2,6 +2,7 @@ package nlScript.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,6 +40,10 @@ public class BNF {
 				break;
 			}
 		}
+	}
+
+	public void removeProductions(Set<Production> productions) {
+		this.productions.removeIf(productions::contains);
 	}
 
 	public Production addProduction(Production p) {

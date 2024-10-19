@@ -7,6 +7,8 @@ import nlScript.core.NonTerminal;
 import nlScript.core.RepresentsSymbol;
 import nlScript.core.Symbol;
 
+import java.util.ArrayList;
+
 public abstract class Rule implements RepresentsSymbol {
 	protected final String type;
 	protected final NonTerminal tgt;
@@ -16,6 +18,8 @@ public abstract class Rule implements RepresentsSymbol {
 	private Evaluator evaluator;
 	private Autocompleter autocompleter;
 	private ParseListener onSuccessfulParsed;
+
+	protected final ArrayList<EBNFProduction> productions = new ArrayList<>();
 
 	public Rule(String type, NonTerminal tgt, Symbol... children) {
 		this.type = type;
@@ -74,6 +78,7 @@ public abstract class Rule implements RepresentsSymbol {
 
 	public static EBNFProduction addProduction(BNF grammar, Rule rule, NonTerminal left, Symbol... right) {
 		EBNFProduction production = new EBNFProduction(rule, left, right);
+		rule.productions.add(production);
 		grammar.addProduction(production);
 		return production;
 	}

@@ -5,12 +5,15 @@ import nlScript.core.Autocompletion;
 import nlScript.core.BNF;
 import nlScript.core.Named;
 import nlScript.core.NonTerminal;
+import nlScript.core.Production;
 import nlScript.core.Symbol;
 import nlScript.core.Terminal;
 import nlScript.util.Range;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class EBNFCore {
 
@@ -20,14 +23,11 @@ public class EBNFCore {
 
 	private final BNF bnf = new BNF();
 
-	private boolean compiled = false;
-
 	public EBNFCore() {}
 
 	public EBNFCore(EBNFCore other) {
 		symbols.putAll(other.symbols);
 		rules.addAll(other.rules);
-		compiled = other.compiled;
 	}
 
 	public Symbol getSymbol(String type) {
@@ -35,18 +35,11 @@ public class EBNFCore {
 	}
 
 	public void compile(Symbol topLevelSymbol) {
-		compiled = false; // otherwise removeRules() and addRule() will complain
 		// update the start symbol
 		removeRules(BNF.ARTIFICIAL_START_SYMBOL);
 		Sequence sequence = new Sequence(BNF.ARTIFICIAL_START_SYMBOL, topLevelSymbol, BNF.ARTIFICIAL_STOP_SYMBOL);
 		addRule(sequence);
 		sequence.setEvaluator(Evaluator.FIRST_CHILD_EVALUATOR);
-
-		bnf.reset();
-
-		for(Rule r : rules)
-			r.createBNF(bnf);
-		compiled = true;
 	}
 
 	public BNF getBNF() {
@@ -204,14 +197,19 @@ public class EBNFCore {
 				symbols.put(s.getSymbol(), s);
 		}
 		rules.add(rule);
-		compiled = false;
+		rule.createBNF(bnf);
 	}
 
 	public void removeRules(NonTerminal symbol) {
-		for(int i = rules.size() - 1; i >= 0; i--)
-			if(rules.get(i).tgt.equals(symbol))
-				rules.remove(i);
-		compiled = false;
+		Set<Production> toRemove = new HashSet<>();
+		for(int i = rules.size() - 1; i >= 0; i--) {
+			if (rules.get(i).tgt.equals(symbol)) {
+				Rule rule = rules.remove(i);
+				for(Production production : rule.productions)
+					toRemove.add(production);
+			}
+		}
+		bnf.removeProductions(toRemove);
 	}
 
 	private NonTerminal newOrExistingNonTerminal(String type) {

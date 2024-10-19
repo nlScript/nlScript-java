@@ -96,6 +96,7 @@ public class Join extends Rule {
 			Star star = new Star(null, next);
 			star.setParsedChildNames("next");
 			star.createBNF(g);
+			productions.addAll(star.productions);
 			Production p = addProduction(g, this, repetition, first, star.tgt);
 			p.onExtension((parent, children) -> {
 				children[0].setName(getNameForChild(0));
@@ -113,6 +114,7 @@ public class Join extends Rule {
 			Star star = new Star(null, next);
 			star.setParsedChildNames("next");
 			star.createBNF(g);
+			productions.addAll(star.productions);
 
 			Production p1 = addProduction(g, this, repetition, first, star.tgt);
 			Production p2 = addProduction(g, this, repetition, Terminal.EPSILON);
@@ -150,6 +152,7 @@ public class Join extends Rule {
 					Repeat repeat = new Repeat(null, next, 0, upper - 1);
 					repeat.setParsedChildNames("next");
 					repeat.createBNF(g);
+					productions.addAll(repeat.productions);
 					Production p = addProduction(g, this, repetition, first, repeat.tgt);
 					p.setAstBuilder(astBuilder);
 					p.onExtension((parent, children) -> {
@@ -162,6 +165,7 @@ public class Join extends Rule {
 					Repeat repeat = new Repeat(null, next, lower - 1, upper - 1);
 					repeat.setParsedChildNames("next");
 					repeat.createBNF(g);
+					productions.addAll(repeat.productions);
 					Production p = addProduction(g, this, repetition, first, repeat.tgt);
 					p.setAstBuilder(astBuilder);
 					p.onExtension((parent, children) -> {
