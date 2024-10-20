@@ -245,6 +245,43 @@ public class TestAutocompletion {
 
 	}
 
+	@Test
+	public void test10() {
+		Parser parser = new Parser();
+		for(int i = 0; i < 12; i++)
+			parser.defineType("well-column", String.format("%02d", i + 1), null);
+		for(int i = 0; i < 8; i++)
+			parser.defineType("well-row", Character.toString((char)('A' + i)), null);
+
+		parser.defineType("well", "{row:well-row}/{column:well-column}", null, true);
+
+		parser.defineType("well-range", "{start:well}-{stop:well}", null, true);
+		parser.defineType("well-or-range", "{well:well}", null, true);
+		parser.defineType("well-or-range", "{range:well-range}", null, true);
+		parser.defineType("wells", "{wells:list<well-or-range>:+}", null);
+
+		parser.defineSentence("Pipette from well {well:well}.", e -> null);
+		parser.defineSentence("Rinse {wells:wells} carefully.", e -> null);
+
+		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
+		try {
+			ParsedNode pn = parser.parse("Pipette from well ", autocompletions);
+			assertEquals(ParsingState.END_OF_INPUT, pn.getMatcher().state);
+			assertArrayEquals(new String[] { "${row}/${column} ()" }, getCompletionStrings(autocompletions));
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+
+		autocompletions.clear();
+		try {
+			parser.parse("Rinse ", autocompletions);
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+		assertEquals("${well}, ${range},  ", autocompletions.stream().map(a -> a.getCompletion(Autocompletion.Purpose.FOR_MENU)).collect(Collectors.joining(", ")));
+		assertEquals("${row}/${column}, ${row}/${column}-${row}/${column},  ", autocompletions.stream().map(a -> a.getCompletion(Autocompletion.Purpose.FOR_INSERTION)).collect(Collectors.joining(", ")));
+	}
+
 	private void test(String input, String... expectedCompletion) throws ParseException {
 		System.out.println("Testing " + input);
 		BNF grammar = makeGrammar();
