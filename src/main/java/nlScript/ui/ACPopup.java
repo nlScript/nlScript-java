@@ -31,8 +31,10 @@ public class ACPopup extends JWindow {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 				String text = ((Autocompletion) value).getCompletion(Autocompletion.Purpose.FOR_MENU);
-				if(text.contains("${"))
+				if(text.contains("${")) {
+					text = escapeHTML(text);
 					text = "<html>" + text.replaceAll("\\Q${\\E", "<b>").replaceAll("\\Q}\\E", "</b>") + "</html>";
+				}
 //				List<ParameterizedCompletionContext.ParsedParam> parsedParams = new ArrayList<>();
 //				if(text.contains("${")) {
 //					String insertionString = ParameterizedCompletionContext.parseParameters((Autocompletion) value, parsedParams);
