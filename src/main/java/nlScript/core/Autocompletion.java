@@ -109,9 +109,19 @@ public abstract class Autocompletion {
 	public static class Parameterized extends Autocompletion {
 		public final String paramName;
 
+		private boolean autocompleteOnActivation = false;
+
 		private Parameterized(DefaultParsedNode pn, String paramName) {
 			super(pn);
 			this.paramName = paramName;
+		}
+
+		public void setAutocompleteOnActivation(boolean b) {
+			this.autocompleteOnActivation = b;
+		}
+
+		public boolean autocompleteOnActivation() {
+			return this.autocompleteOnActivation;
 		}
 
 		public Parameterized(Symbol forSymbol, String symbolName, String paramName) {
