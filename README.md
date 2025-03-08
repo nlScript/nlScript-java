@@ -17,7 +17,7 @@ With Maven:
 ```
 <groupId>io.github.nlscript</groupId>
 <artifactId>nlScript</artifactId>
-<version>0.3.0</version>
+<version>0.4.0</version>
 ```
 
 
