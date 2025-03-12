@@ -5,13 +5,7 @@ import nlScript.ParsedNode;
 import nlScript.Parser;
 import nlScript.core.GraphViz;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.awt.BorderLayout;
@@ -209,5 +203,15 @@ public class ACEditor {
 		} catch(BadLocationException e) {
 			return textArea.getSelectedText();
 		}
+	}
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(() -> {
+			Parser parser = new Parser();
+			parser.defineSentence("This is my favourite sentence.", e -> null);
+
+			ACEditor editor = new ACEditor(parser);
+			editor.setVisible(true);
+		});
 	}
 }
