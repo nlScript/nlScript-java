@@ -385,6 +385,7 @@ public class TextLineNumber extends JPanel
 		{
 //			repaint();
 			getParent().repaint();
+			component.getParent().repaint();
 			lastLine = currentLine;
 		}
 	}
@@ -434,6 +435,7 @@ public class TextLineNumber extends JPanel
 						setPreferredWidth();
 //						repaint();
 						getParent().repaint();
+						component.getParent().repaint();
 						lastHeight = rect.y;
 					}
 				}
@@ -461,6 +463,7 @@ public class TextLineNumber extends JPanel
 			{
 //				repaint();
 				getParent().repaint();
+				component.getParent().repaint();
 			}
 		}
 	}
