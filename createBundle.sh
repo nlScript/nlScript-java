@@ -46,4 +46,4 @@ zip "../release-bundle-$version.zip" "io/github/nlscript/$name/$version/*"
 
 echo "Don't forget to delete the temporary repository 'repo'"
 
-# Go to https://central.sonatype.com and upload it
+echo "Go to https://central.sonatype.com and upload it"
