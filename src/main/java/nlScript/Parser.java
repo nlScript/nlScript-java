@@ -130,11 +130,19 @@ public class Parser {
 	}
 
 	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions) throws ParseException {
+		return this.parse(text, autocompletions, false);
+	}
+
+	public ParsedNode parse(String text, ArrayList<Autocompletion> autocompletions, boolean debug) throws ParseException {
 		if(!compiled)
 			compile();
 		symbol2Autocompletion.clear();
 		BNF grammar = targetGrammar.getBNF();
 		EBNFParser rdParser = new EBNFParser(grammar, new Lexer(text));
+		if(debug) {
+			ParseDebugger debugger = new ParseDebugger();
+			rdParser.setParseDebugger(debugger);
+		}
 		rdParser.addParseStartListener(this::fireParsingStarted);
 		return (ParsedNode) rdParser.parse(autocompletions);
 	}

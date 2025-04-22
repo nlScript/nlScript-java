@@ -39,6 +39,8 @@ public class RDParser {
 	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) throws ParseException {
 		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
 		ArrayList<SymbolSequence> endOfInput = new ArrayList<>();
+		if(parseDebugger != null)
+			parseDebugger.reset(seq, lexer.substring(0));
 		SymbolSequence parsedSequence = parseRecursive(seq, endOfInput);
 		if(autocompletions != null)
 			collectAutocompletions(endOfInput, autocompletions);
@@ -144,6 +146,12 @@ public class RDParser {
 		return false;
 	}
 
+	private ParseDebugger parseDebugger = null;
+
+	public void setParseDebugger(ParseDebugger parseDebugger) {
+		this.parseDebugger = parseDebugger;
+	}
+
 	/**
 	 * algorithm:
 	 *
@@ -168,6 +176,8 @@ public class RDParser {
 			Matcher matcher = ((Terminal) next).matches(lexer);
 //			System.out.println("matcher = " + matcher);
 			symbolSequence.addMatcher(matcher);
+			if(parseDebugger != null)
+				parseDebugger.nextTerminal(symbolSequence, matcher, null);
 
 			if(matcher.state == ParsingState.END_OF_INPUT && endOfInput != null)
 				endOfInput.add(symbolSequence);
@@ -188,6 +198,8 @@ public class RDParser {
 		for(Production alternate : alternates) {
 			int lexerPos = lexer.getPosition();
 			SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate);
+			if(parseDebugger != null)
+				parseDebugger.nextNonTerminal(symbolSequence, nextSequence, null);
 			SymbolSequence parsedSequence = parseRecursive(nextSequence, endOfInput);
 			Matcher m = parsedSequence.getLastMatcher();
 			if(m != null) {
@@ -286,7 +298,7 @@ public class RDParser {
 		return new Matcher(state, pos, parsed.toString());
 	}
 
-	protected static class SymbolSequence {
+	public static class SymbolSequence {
 		private final LinkedList<Symbol> sequence = new LinkedList<>();
 		private int pos = 0;
 		private final SymbolSequence parent;
@@ -306,7 +318,40 @@ public class RDParser {
 			production = null;
 		}
 
+		public Production getProduction() {
+			return production;
+		}
+
+		public SymbolSequence getParent() {
+			return parent;
+		}
+
+		public List<Matcher> getParsedMatchers() {
+			return parsedMatchers;
+		}
+
+		public int getParsedUntil() {
+			int i = 0;
+			for(Matcher m : parsedMatchers)
+				i += m.parsed.length();
+			return i;
+		}
+
+		public int getPos() {
+			return pos;
+		}
+
+		public Symbol getSymbol(int i) {
+			return sequence.get(i);
+		}
+
+		public int size() {
+			return sequence.size();
+		}
+
 		public Matcher getLastMatcher() {
+			if(parsedMatchers.isEmpty())
+				return null;
 			return parsedMatchers.get(parsedMatchers.size() - 1);
 		}
 
