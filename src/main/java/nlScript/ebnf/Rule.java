@@ -23,9 +23,16 @@ public abstract class Rule implements RepresentsSymbol {
 
 	public Rule(String type, NonTerminal tgt, Symbol... children) {
 		this.type = type;
-		this.tgt = tgt != null
-				? tgt
-				: new NonTerminal(type + ":" + NonTerminal.makeRandomSymbol());
+
+		if(tgt != null)
+			this.tgt = tgt;
+		else {
+			String t = type;
+			if(children.length == 1)
+				t += "(" + children[0].getSymbol() + ")";
+			t += ":" + NonTerminal.makeRandomSymbol();
+			this.tgt = new NonTerminal(t);
+		}
 		this.children = children;
 	}
 
