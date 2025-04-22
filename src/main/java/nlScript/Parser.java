@@ -355,9 +355,9 @@ public class Parser {
 	private Rule noVariable() {
 		return grammar.sequence("no-variable",
 				Terminal.characterClass("[^ \t\n{]").withName(),
-				grammar.optional(null,
-						grammar.sequence(null,
-								grammar.star(null,
+				grammar.optional("no-var-tail-opt",
+						grammar.sequence("no-var-tail-opt-seq",
+								grammar.star("no-var-tail-opt-seq-star",
 										Terminal.characterClass("[^{\n]").withName()
 								).withName("middle"),
 								Terminal.characterClass("[^ \t\n{]").withName()
@@ -368,7 +368,7 @@ public class Parser {
 
 	private Rule expression() {
 		return grammar.join("expression",
-				grammar.or(null,
+				grammar.or("var-or-novar",
 						NO_VARIABLE.withName("no-variable"),
 						VARIABLE.withName("variable")
 				).withName("or"),
