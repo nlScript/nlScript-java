@@ -3,9 +3,12 @@ package nlScript.core;
 import nlScript.ParseException;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EmptyStackException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 public class RDParser {
 
@@ -41,7 +44,7 @@ public class RDParser {
 		ArrayList<SymbolSequence> endOfInput = new ArrayList<>();
 		if(parseDebugger != null)
 			parseDebugger.reset(seq, lexer.substring(0));
-		SymbolSequence parsedSequence = parseRecursive(seq, endOfInput);
+		SymbolSequence parsedSequence = parseNotRecursive(seq, endOfInput);
 		if(autocompletions != null)
 			collectAutocompletions(endOfInput, autocompletions);
 		DefaultParsedNode[] last = new DefaultParsedNode[1];
@@ -197,7 +200,7 @@ public class RDParser {
 		int lexerPosOfBest = lexer.getPosition();
 		for(Production alternate : alternates) {
 			int lexerPos = lexer.getPosition();
-			SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate);
+			SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate, -1);
 			if(parseDebugger != null)
 				parseDebugger.nextNonTerminal(symbolSequence, nextSequence, null);
 			SymbolSequence parsedSequence = parseRecursive(nextSequence, endOfInput);
@@ -213,6 +216,78 @@ public class RDParser {
 //			System.out.println("reset lexer pos to " + lexerPos);
 			lexer.setPosition(lexerPos);
 		}
+		if(best != null) {
+			lexer.setPosition(lexerPosOfBest);
+		}
+		return best;
+	}
+
+	private SymbolSequence parseNotRecursive(SymbolSequence start, ArrayList<SymbolSequence> endOfInput) {
+		Stack<SymbolSequence> stack = new Stack<>();
+		stack.push(start);
+
+		SymbolSequence best = null;
+		int lexerPosOfBest = lexer.getPosition();
+
+		a: while(!stack.isEmpty()) {
+
+
+			SymbolSequence symbolSequence = stack.pop();
+			lexer.setPosition(symbolSequence.lexerPosAtStart);
+
+			Symbol next = symbolSequence.getCurrentSymbol();
+
+			while (next.isTerminal()) {
+				Matcher matcher = ((Terminal) next).matches(lexer);
+				symbolSequence.addMatcher(matcher);
+				if(parseDebugger != null) {
+					SymbolSequence tip = symbolSequence;
+					try {
+						if (matcher.state != ParsingState.SUCCESSFUL) {
+							tip = stack.peek();
+							System.out.println("FAILED");
+						}
+					} catch(EmptyStackException e) {
+						tip = null;
+					}
+					parseDebugger.nextTerminal(symbolSequence, matcher, tip);
+				}
+
+				if (matcher.state == ParsingState.END_OF_INPUT && endOfInput != null)
+					endOfInput.add(symbolSequence);
+
+				if (matcher.state != ParsingState.SUCCESSFUL) {
+					if (best == null || matcher.isBetterThan(best.getLastMatcher())) {
+						best = symbolSequence;
+						lexerPosOfBest = lexer.getPosition();
+					}
+					continue a;
+				}
+				symbolSequence.incrementPosition();
+				lexer.fwd(matcher.parsed.length());
+				if (lexer.isDone())
+					return symbolSequence;
+				next = symbolSequence.getCurrentSymbol();
+			}
+
+			NonTerminal u = (NonTerminal) next;
+			ArrayList<Production> alternates = grammar.getProductions(u);
+			Collections.reverse(alternates);
+
+			for (Production alternate : alternates) {
+				SymbolSequence nextSequence = symbolSequence.replaceCurrentSymbol(alternate, lexer.getPosition());
+				stack.push(nextSequence);
+				if(parseDebugger != null) {
+					System.out.println("--- stack ---");
+					for(SymbolSequence tmp : stack)
+						System.out.println(tmp);
+					System.out.println("--------------");
+					parseDebugger.nextNonTerminal(symbolSequence, nextSequence, nextSequence);
+				}
+			}
+		}
+
+
 		if(best != null) {
 			lexer.setPosition(lexerPosOfBest);
 		}
@@ -304,18 +379,21 @@ public class RDParser {
 		private final SymbolSequence parent;
 		private final ArrayList<Matcher> parsedMatchers = new ArrayList<>();
 		private final Production production;
+		private final int lexerPosAtStart;
 
-		private SymbolSequence(SymbolSequence o, Production production) {
+		private SymbolSequence(SymbolSequence o, Production production, int lexerPosAtStart) {
 			this.sequence.addAll(o.sequence);
 			this.pos = o.pos;
 			this.parent = o;
 			this.production = production;
+			this.lexerPosAtStart = lexerPosAtStart;
 		}
 
 		public SymbolSequence(Symbol start) {
 			sequence.add(start);
 			parent = null;
 			production = null;
+			lexerPosAtStart = 0;
 		}
 
 		public Production getProduction() {
@@ -363,8 +441,8 @@ public class RDParser {
 			return sequence.get(pos);
 		}
 
-		public SymbolSequence replaceCurrentSymbol(Production production) {
-			SymbolSequence copy = new SymbolSequence(this, production);
+		public SymbolSequence replaceCurrentSymbol(Production production, int lexerPosAtStart) {
+			SymbolSequence copy = new SymbolSequence(this, production, lexerPosAtStart);
 			copy.parsedMatchers.addAll(this.parsedMatchers);
 			copy.sequence.remove(pos);
 			Symbol[] replacement = production.getRight();
