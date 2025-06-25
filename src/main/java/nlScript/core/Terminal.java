@@ -291,7 +291,7 @@ public abstract class Terminal extends Symbol {
 		int number;
 
 		public SingleCharacterRange(int number) {
-			super(0, 0);
+			super(number, number);
 			this.number = number;
 		}
 
