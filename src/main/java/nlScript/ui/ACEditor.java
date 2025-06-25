@@ -110,6 +110,14 @@ public class ACEditor {
 		return buttonsPanel;
 	}
 
+	public void setAutocompletionEnabled(boolean enabled) {
+		autocompletionContext.setEnabled(enabled);
+	}
+
+	public boolean isAutocompletionEnabled() {
+		return autocompletionContext.isEnabled();
+	}
+
 	public void setOnRun(ActionListener l) {
 		runButton.removeActionListener(onRun);
 		onRun = l;

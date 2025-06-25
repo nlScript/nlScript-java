@@ -36,6 +36,8 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 
 	private boolean insertAsFarAsPossible = true;
 
+	private boolean enabled = true;
+
 	private static class ErrorHighlight {
 		private final HighlightPainter errorHighlight = new HighlightPainter.Squiggle(new Color(255, 100, 100));
 
@@ -197,6 +199,14 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 	// private String lastInserted = null;
 	private int lastInsertionPosition = -1;
 
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
 	public void insertCompletion(int caret, Autocompletion completion) {
 		insertCompletion(caret, completion, false);
 	}
@@ -299,6 +309,9 @@ public class AutocompletionContext implements ParameterizedCompletionContext.Par
 	}
 
 	public void doAutocompletion(int caret, boolean autoInsertSingleOption) {
+		if(!enabled)
+			return;
+
 		String entireText = tc.getText();
 //		if(caret < entireText.trim().length())
 //			autoInsertSingleOption = false;
