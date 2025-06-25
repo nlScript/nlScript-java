@@ -216,16 +216,16 @@ public abstract class Autocompletion {
 			for(List<Autocompletion> autocompletions : sequenceOfCompletions) {
 				int n = autocompletions.size();
 				if(n > 1) {
-					autocompletionString.append("${" + sequence.getNameForChild(i) + "}");
+					autocompletionString.append("${" + sequence.getParsedNameForChild(i) + "}");
 				}
 				else if(n == 1) {
 					if(purpose == Purpose.FOR_MENU) {
-						String ins = null;
+						String ins;
 						Autocompletion ac = autocompletions.get(0);
 						if(ac instanceof Literal)
 							ins = ac.getCompletion(Purpose.FOR_INSERTION);
 						else
-							ins = "${" + sequence.getNameForChild(i) + "}";
+							ins = "${" + sequence.getParsedNameForChild(i) + "}";
 
 						if(ins == null || ins.equals(Named.UNNAMED))
 							ins = "${" + sequence.getChildren()[i].getSymbol() + "}";

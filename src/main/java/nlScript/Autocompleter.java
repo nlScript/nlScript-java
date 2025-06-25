@@ -73,22 +73,21 @@ public interface Autocompleter {
 			String alreadyEntered = pn.getParsedString();
 
 			Rule sequence = ((ParsedNode) pn).getRule();
-			Symbol[] children = sequence.getChildren();
+			Named<?>[] children = sequence.getChildren();
 
 			Autocompletion.EntireSequence entireSequenceCompletion = new Autocompletion.EntireSequence(pn);
 
-			for(int i = 0; i < children.length; i++) {
-				String key = children[i].getSymbol() + ":" + sequence.getNameForChild(i);
+			for (Named<?> child : children) {
+				String key = child.getSymbol() + ":" + child.getName();
 				ArrayList<Autocompletion> autocompletionsForChild = symbol2Autocompletion.get(key);
-				if(autocompletionsForChild != null) {
+				if (autocompletionsForChild != null) {
 					entireSequenceCompletion.add(autocompletionsForChild);
 					continue;
 				}
 
 				BNF bnf = new BNF(ebnf.getBNF());
 
-				Sequence newSequence = new Sequence(null, children[i]);
-				newSequence.setParsedChildNames(sequence.getNameForChild(i));
+				Sequence newSequence = new Sequence(null, child);
 				newSequence.createBNF(bnf);
 
 				bnf.removeStartProduction();

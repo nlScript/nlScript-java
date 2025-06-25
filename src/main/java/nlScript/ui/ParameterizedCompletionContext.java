@@ -256,8 +256,8 @@ public class ParameterizedCompletionContext implements KeyListener {
 		for(List<Autocompletion> autocompletions : sequenceOfCompletions) {
 			int n = autocompletions.size();
 			if(n > 1) {
-				String name = sequence.getNameForChild(i);
-				Autocompletion.Parameterized p = new Autocompletion.Parameterized(sequence.getChildren()[i], name, name);
+				String name = sequence.getChildren()[i].getName();
+				Autocompletion.Parameterized p = new Autocompletion.Parameterized(sequence.getChildren()[i].getSymbol(), name, name);
 				int i0 = offset + insertionString.length();
 				int i1 = i0 + name.length();
 				ret.add(new ParsedParam(name, i0, i1, p, autocompletions));

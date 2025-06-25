@@ -2,17 +2,16 @@ package nlScript.ebnf;
 
 import nlScript.Autocompleter;
 import nlScript.Evaluator;
-import nlScript.core.BNF;
-import nlScript.core.NonTerminal;
-import nlScript.core.RepresentsSymbol;
-import nlScript.core.Symbol;
+import nlScript.core.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
 
 public abstract class Rule implements RepresentsSymbol {
 	protected final String type;
 	protected final NonTerminal tgt;
-	protected final Symbol[] children;
+	protected final Named<?>[] children;
 	protected String[] parsedChildNames;
 
 	private Evaluator evaluator;
@@ -21,7 +20,7 @@ public abstract class Rule implements RepresentsSymbol {
 
 	protected final ArrayList<EBNFProduction> productions = new ArrayList<>();
 
-	public Rule(String type, NonTerminal tgt, Symbol... children) {
+	public Rule(String type, NonTerminal tgt, Named<?>... children) {
 		this.type = type;
 
 		if(tgt != null)
@@ -52,7 +51,7 @@ public abstract class Rule implements RepresentsSymbol {
 		return tgt;
 	}
 
-	public Symbol[] getChildren() {
+	public Named<?>[] getChildren() {
 		return children;
 	}
 
@@ -74,6 +73,14 @@ public abstract class Rule implements RepresentsSymbol {
 		return this;
 	}
 
+	public int getChildIndexForName(String name) {
+		for(int i = 0; i < children.length; i++) {
+			if(children[i].getName().equals(name))
+				return i;
+		}
+		return -1;
+	}
+
 	public Rule onSuccessfulParsed(ParseListener listener) {
 		this.onSuccessfulParsed = listener;
 		return this;
@@ -90,15 +97,27 @@ public abstract class Rule implements RepresentsSymbol {
 		return production;
 	}
 
-	public String getNameForChild(int idx) {
-		if(parsedChildNames == null) {
-			return null;
+	public String getParsedNameForChild(int idx) {
+		if(parsedChildNames != null) {
+			if (parsedChildNames.length == 1)
+				return parsedChildNames[0];
+			if (idx >= parsedChildNames.length)
+				return "no name";
+			return parsedChildNames[idx];
 		}
-		if(parsedChildNames.length == 1)
-			return parsedChildNames[0];
-		if(idx >= parsedChildNames.length)
-			return "no name";
-		return parsedChildNames[idx];
+		// only one child, but idx > 0
+		if(children.length == 1)
+			return children[0].getName();
+		if(idx < children.length)
+			return children[idx].getName();
+		return "no name";
+	}
+
+	protected static Symbol[] getSymbols(Named<?>... named) {
+		Symbol[] ret = new Symbol[named.length];
+		for(int i = 0; i < named.length; i++)
+			ret[i] = named[i].getSymbol();
+		return ret;
 	}
 
 	public void setParsedChildNames(String... parsedChildNames) {
@@ -106,4 +125,18 @@ public abstract class Rule implements RepresentsSymbol {
 	}
 
 	public abstract void createBNF(BNF grammar);
+
+	public boolean hasParsedName(String name) {
+		if(parsedChildNames == null) {
+			for(Named<?> n : children)
+				if(n.getName().equals(name))
+					return true;
+			return false;
+		}
+		for(String parsedName : parsedChildNames)
+			if(parsedName.equals(name))
+				return true;
+		return false;
+	}
+
 }

@@ -216,7 +216,7 @@ public class TestHighlevelParser {
 		Repeat repeat = (Repeat) rule;
 		assertEquals(3, repeat.getFrom());
 		assertEquals(5, repeat.getTo());
-		assertEquals(EBNF.INTEGER_NAME, repeat.getEntry().getSymbol());
+		assertEquals(EBNF.INTEGER_NAME, repeat.getEntry().getSymbol().getSymbol());
 
 		Named<Terminal> evaluatedTerminal;
 		test = "{blubb:digit}";
@@ -230,7 +230,7 @@ public class TestHighlevelParser {
 		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Star.class, rule.getClass());
 		Star star = (Star) rule;
-		assertEquals(EBNF.INTEGER_NAME, star.getEntry().getSymbol());
+		assertEquals(EBNF.INTEGER_NAME, star.getEntry().getSymbol().getSymbol());
 
 		test = "{blubb:[A-Z]:+}";
 		evaluatedNonTerminal = (Named<NonTerminal>) evaluateHighlevelParser(hlp, test);
@@ -238,7 +238,7 @@ public class TestHighlevelParser {
 		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Plus.class, rule.getClass());
 		Plus plus = (Plus) rule;
-		Symbol chclass = plus.getEntry();
+		Symbol chclass = plus.getEntry().getSymbol();
 		assertEquals("[A-Z]", chclass.getSymbol());
 
 		test = "{blubb , alkjad asd 4. <>l}";
@@ -259,7 +259,7 @@ public class TestHighlevelParser {
 		rule = hlp.getTargetGrammar().getRules(evaluatedNonTerminal.get()).get(0);
 		assertEquals(Plus.class, rule.getClass());
 		plus = (Plus) rule;
-		literal = (Terminal.Literal) plus.getEntry();
+		literal = (Terminal.Literal) plus.getEntry().getSymbol();
 		assertEquals("heinz", literal.getLiteral());
 
 		test = "{heinz:3-5}";
@@ -270,7 +270,7 @@ public class TestHighlevelParser {
 		repeat = (Repeat) rule;
 		assertEquals(3, repeat.getFrom());
 		assertEquals(5, repeat.getTo());
-		literal = (Terminal.Literal) repeat.getEntry();
+		literal = (Terminal.Literal) repeat.getEntry().getSymbol();
 		assertEquals("heinz", literal.getLiteral());
 
 		test = "{, }";

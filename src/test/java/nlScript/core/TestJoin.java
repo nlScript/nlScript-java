@@ -25,9 +25,9 @@ public class TestJoin {
 		EBNFCore grammar = new EBNFCore();
 		Rule rule = grammar.join("join",
 				Terminal.DIGIT.withName(),
-				Terminal.literal("("),
-				Terminal.literal(")"),
-				Terminal.literal(","),
+				Terminal.literal("(").withName("open"),
+				Terminal.literal(")").withName("close"),
+				Terminal.literal(",").withName("delimiter"),
 				false, // onlyKeepEntries
 				"ha", "ho", "hu");
 		grammar.compile(rule.getTarget());
@@ -166,9 +166,9 @@ public class TestJoin {
 		EBNF grammar = new EBNF();
 		Rule rule = grammar.join("join",
 				Terminal.DIGIT.withName("digit"),
-				withOpenAndClose ? Terminal.literal("(") : null,
-				withOpenAndClose ? Terminal.literal(")") : null,
-				withDelimiter    ? Terminal.literal(",") : null,
+				withOpenAndClose ? Terminal.literal("(").withName("open") : null,
+				withOpenAndClose ? Terminal.literal(")").withName("close") : null,
+				withDelimiter    ? Terminal.literal(",").withName("delimiter") : null,
 				range);
 		grammar.compile(rule.getTarget());
 		return grammar.getBNF();

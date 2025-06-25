@@ -2,15 +2,19 @@ package nlScript;
 
 import nlScript.core.*;
 import nlScript.ebnf.EBNF;
+import nlScript.ebnf.EBNFCore;
 import nlScript.ebnf.EBNFParser;
 import nlScript.ebnf.Join;
 import nlScript.ebnf.Rule;
+import nlScript.util.RandomInt;
 import nlScript.util.Range;
 import nlScript.ebnf.EBNFParsedNodeFactory;
 import nlScript.ebnf.NamedRule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class Parser {
 	private final EBNF grammar = new EBNF();
@@ -28,6 +32,7 @@ public class Parser {
 	public final Rule VARIABLE;
 	public final Rule NO_VARIABLE;
 	public final Rule EXPRESSION;
+	public final Rule PROGRAM;
 
 	private final Rule LINEBREAK_STAR;
 
@@ -51,7 +56,7 @@ public class Parser {
 		EXPRESSION      = expression();
 
 		LINEBREAK_STAR = targetGrammar.star("linebreak-star", LINEBREAK.withName());
-		program();
+		PROGRAM        = program();
 
 	}
 
@@ -325,7 +330,7 @@ public class Parser {
 				Join join = (Join) typeObject;
 				if(quantifierObject != null)
 					join.setCardinality((Range) quantifierObject);
-				return join.getTarget().withName(variableName);
+				return join.withName(variableName);
 			}
 
 			Symbol symbol = typeObject == null
@@ -374,7 +379,7 @@ public class Parser {
 				).withName("or"),
 				null,
 				null,
-				grammar.WHITESPACE_STAR.getTarget(),
+				grammar.WHITESPACE_STAR.withName("delimiter"),
 				false,
 				Range.PLUS
 		).setEvaluator(parsedNode -> {
@@ -403,9 +408,9 @@ public class Parser {
 	private Rule program() {
 		return targetGrammar.join("program",
 				new NonTerminal("sentence").withName("sentence"),
-				LINEBREAK_STAR.getTarget(),
-				LINEBREAK_STAR.getTarget(),
-				LINEBREAK_STAR.getTarget(),
+				LINEBREAK_STAR.withName("open"),
+				LINEBREAK_STAR.withName("close"),
+				LINEBREAK_STAR.withName("delimiter"),
 				Range.STAR);
 	}
 

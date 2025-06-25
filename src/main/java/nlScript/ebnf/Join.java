@@ -2,23 +2,38 @@ package nlScript.ebnf;
 
 import nlScript.Evaluator;
 import nlScript.ParsedNode;
-import nlScript.core.BNF;
-import nlScript.core.DefaultParsedNode;
-import nlScript.core.NonTerminal;
-import nlScript.core.Production;
-import nlScript.core.Symbol;
-import nlScript.core.Terminal;
+import nlScript.core.*;
+import nlScript.util.RandomInt;
 import nlScript.util.Range;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Join extends Rule {
-	private final Symbol open;
-	private final Symbol close;
-	private final Symbol delimiter;
+	private final Named<?> open;
+	private final Named<?> close;
+	private final Named<?> delimiter;
 	private Range cardinality;
 	private boolean onlyKeepEntries = true;
 
-	public Join(NonTerminal tgt, Symbol entry, Symbol open, Symbol close, Symbol delimiter, Range cardinality) {
-		super("join", tgt, entry);
+	private static Named<?>[] makeChildren(Named<?> entry, Named<?> open, Named<?> close, Named<?> delimiter) {
+		int n = 1;
+		if(open      != null) n++;
+		if(close     != null) n++;
+		if(delimiter != null) n++;
+
+		Named<?>[] ret = new Named<?>[n];
+		int i = 0;
+		ret[i++] = entry;
+		if(open      != null) ret[i++] = open;
+		if(close     != null) ret[i++] = close;
+		if(delimiter != null) ret[i]   = delimiter;
+
+		return ret;
+	}
+
+	public Join(NonTerminal tgt, Named<?> entry, Named<?> open, Named<?> close, Named<?> delimiter, Range cardinality) {
+		super("join", tgt, makeChildren(entry, open, close, delimiter));
 		this.open = open;
 		this.close = close;
 		this.delimiter = delimiter;
@@ -26,7 +41,19 @@ public class Join extends Rule {
 		setEvaluator(Evaluator.ALL_CHILDREN_EVALUATOR);
 	}
 
-	public Symbol getEntry() {
+	public Named<?> getOpen() {
+		return open;
+	}
+
+	public Named<?> getClose() {
+		return close;
+	}
+
+	public Named<?> getDelimiter() {
+		return delimiter;
+	}
+
+	public Named<?> getEntry() {
 		return children[0];
 	}
 
@@ -43,13 +70,13 @@ public class Join extends Rule {
 	}
 
 	public void createBNF(BNF g) {
-		final Symbol first = children[0];
-		final NonTerminal next = new NonTerminal("next-" + NonTerminal.makeRandomSymbol());
-		final boolean hasOpen = open != null && !open.isEpsilon();
-		final boolean hasClose = close != null && !close.isEpsilon();
-		final boolean hasDelimiter = delimiter != null && !delimiter.isEpsilon();
+		final Symbol first = children[0].getSymbol();
+		final Named<NonTerminal> next = new NonTerminal("next-" + NonTerminal.makeRandomSymbol()).withName("next");
+		final boolean hasOpen = open != null && !open.getSymbol().isEpsilon();
+		final boolean hasClose = close != null && !close.getSymbol().isEpsilon();
+		final boolean hasDelimiter = delimiter != null && !delimiter.getSymbol().isEpsilon();
 		if(hasDelimiter) {
-			final Production p = addProduction(g, this, next, delimiter, first);
+			final Production p = addProduction(g, this, next.get(), delimiter.getSymbol(), first);
 
 			/*
 			 * seq +-- open
@@ -65,7 +92,7 @@ public class Join extends Rule {
 			p.onExtension((parent, children) -> {
 				int nthEntry = ((ParsedNode)parent).getNthEntryInParent() + 1; // increment because next starts with index 1, index 0 is first
 				children[0].setName("delimiter");
-				children[1].setName(getNameForChild(nthEntry));
+				children[1].setName(getParsedNameForChild(nthEntry));
 			});
 
 			if(onlyKeepEntries)
@@ -74,10 +101,10 @@ public class Join extends Rule {
 				p.setAstBuilder(Production.AstBuilder.DEFAULT);
 		}
 		else {
-			Production p = addProduction(g, this, next, first);
+			Production p = addProduction(g, this, next.get(), first);
 			p.onExtension((parent, children) -> {
 				int nthEntry = ((ParsedNode)parent).getNthEntryInParent() + 1; // increment because next starts with index 1, index 0 is first
-				children[0].setName(getNameForChild(nthEntry));
+				children[0].setName(getParsedNameForChild(nthEntry));
 			});
 			p.setAstBuilder((parent, children) -> parent.addChildren(children[0]));
 		}
@@ -94,12 +121,11 @@ public class Join extends Rule {
 		// + : L -> first next*
 		if(cardinality.equals(Range.PLUS)) {
 			Star star = new Star(null, next);
-			star.setParsedChildNames("next");
 			star.createBNF(g);
 			productions.addAll(star.productions);
 			Production p = addProduction(g, this, repetition, first, star.tgt);
 			p.onExtension((parent, children) -> {
-				children[0].setName(getNameForChild(0));
+				children[0].setName(getParsedNameForChild(0));
 				children[1].setName("star");
 			});
 			p.setAstBuilder(astBuilder);
@@ -112,7 +138,6 @@ public class Join extends Rule {
 		//     L -> epsilon
 		else if(cardinality.equals(Range.STAR)) {
 			Star star = new Star(null, next);
-			star.setParsedChildNames("next");
 			star.createBNF(g);
 			productions.addAll(star.productions);
 
@@ -122,7 +147,7 @@ public class Join extends Rule {
 			p2.setAstBuilder((parent, children) -> {});
 
 			p1.onExtension((parent, children) -> {
-				children[0].setName(getNameForChild(0));
+				children[0].setName(getParsedNameForChild(0));
 				children[1].setName("star");
 			});
 		}
@@ -131,7 +156,7 @@ public class Join extends Rule {
 		//     L -> epsilon
 		else if(cardinality.equals(Range.OPTIONAL)) {
 			Production p1 = addProduction(g, this, repetition, first); // using default ASTBuilder
-			p1.onExtension((parent, children) -> children[0].setName(getNameForChild(0)));
+			p1.onExtension((parent, children) -> children[0].setName(getParsedNameForChild(0)));
 			Production p2 = addProduction(g, this, repetition, Terminal.EPSILON);
 			p2.setAstBuilder((parent, children) -> {});
 		}
@@ -145,31 +170,29 @@ public class Join extends Rule {
 			}
 			else if(lower == 1 && upper == 1) {
 				Production p = addProduction(g, this, repetition, first); // using default ASTBuilder
-				p.onExtension(((parent, children) -> children[0].setName(getNameForChild(0))));
+				p.onExtension(((parent, children) -> children[0].setName(getParsedNameForChild(0))));
 			}
 			else {
 				if(lower <= 0) {
 					Repeat repeat = new Repeat(null, next, 0, upper - 1);
-					repeat.setParsedChildNames("next");
 					repeat.createBNF(g);
 					productions.addAll(repeat.productions);
 					Production p = addProduction(g, this, repetition, first, repeat.tgt);
 					p.setAstBuilder(astBuilder);
 					p.onExtension((parent, children) -> {
-						children[0].setName(getNameForChild(0));
+						children[0].setName(getParsedNameForChild(0));
 						children[1].setName("repeat");
 					});
 					addProduction(g, this, repetition, Terminal.EPSILON).setAstBuilder(((parent, children) -> {}));
 				}
 				else {
 					Repeat repeat = new Repeat(null, next, lower - 1, upper - 1);
-					repeat.setParsedChildNames("next");
 					repeat.createBNF(g);
 					productions.addAll(repeat.productions);
 					Production p = addProduction(g, this, repetition, first, repeat.tgt);
 					p.setAstBuilder(astBuilder);
 					p.onExtension((parent, children) -> {
-						children[0].setName(getNameForChild(0));
+						children[0].setName(getParsedNameForChild(0));
 						children[1].setName("repeat");
 					});
 				}
@@ -182,7 +205,7 @@ public class Join extends Rule {
 			p.setAstBuilder(((parent, children) -> parent.addChildren(children[0].getChildren())));
 		}
 		else {
-			Production p = addProduction(g, this, tgt, open, repetition, close);
+			Production p = addProduction(g, this, tgt, open.getSymbol(), repetition, close.getSymbol());
 			p.onExtension((parent, children) -> {
 				if(!onlyKeepEntries)
 					children[0].setName("open");

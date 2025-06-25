@@ -37,7 +37,10 @@ public class EBNFCore {
 	public void compile(Symbol topLevelSymbol) {
 		// update the start symbol
 		removeRules(BNF.ARTIFICIAL_START_SYMBOL);
-		Sequence sequence = new Sequence(BNF.ARTIFICIAL_START_SYMBOL, topLevelSymbol, BNF.ARTIFICIAL_STOP_SYMBOL);
+		Sequence sequence = new Sequence(
+				BNF.ARTIFICIAL_START_SYMBOL,
+				new Named<Symbol>(topLevelSymbol, "top-level"),
+				BNF.ARTIFICIAL_STOP_SYMBOL.withName("Stop"));
 		addRule(sequence);
 		sequence.setEvaluator(Evaluator.FIRST_CHILD_EVALUATOR);
 	}
@@ -54,40 +57,35 @@ public class EBNFCore {
 
 	public Rule plus(String type, Named<?> child) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
-		Plus plus = new Plus(tgt, child.getSymbol());
-		plus.setParsedChildNames(child.getName());
+		Plus plus = new Plus(tgt, child);
 		addRule(plus);
 		return plus;
 	}
 
 	public Rule star(String type, Named<?> child) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
-		Star star = new Star(tgt, child.getSymbol());
-		star.setParsedChildNames(child.getName());
+		Star star = new Star(tgt, child);
 		addRule(star);
 		return star;
 	}
 
 	public Rule or(String type, Named<?>... options) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
-		Or or = new Or(tgt, getSymbols(options));
-		or.setParsedChildNames(getNames(options));
+		Or or = new Or(tgt, options);
 		addRule(or);
 		return or;
 	}
 
 	public Rule optional(String type, Named<?> child) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
-		Optional optional = new Optional(tgt, child.getSymbol());
-		optional.setParsedChildNames(child.getName());
+		Optional optional = new Optional(tgt, child);
 		addRule(optional);
 		return optional;
 	}
 
 	public Rule repeat(String type, Named<?> child, int from, int to) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
-		Repeat repeat = new Repeat(tgt, child.getSymbol(), from, to);
-		repeat.setParsedChildNames(child.getName());
+		Repeat repeat = new Repeat(tgt, child, from, to);
 		addRule(repeat);
 		return repeat;
 	}
@@ -95,33 +93,33 @@ public class EBNFCore {
 	public Rule repeat(String type, Named<?> child, String... names) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		int n = names.length;
-		Repeat repeat = new Repeat(tgt, child.getSymbol(), n, n);
+		Repeat repeat = new Repeat(tgt, child, n, n);
 		repeat.setParsedChildNames(names);
 		addRule(repeat);
 		return repeat;
 	}
 
-	public Rule join(String type, Named<?> child, Symbol open, Symbol close, Symbol delimiter, Range cardinality) {
+	public Rule join(String type, Named<?> child, Named<?> open, Named<?> close, Named<?> delimiter, Range cardinality) {
 		return join(type, child, open, close, delimiter, true, cardinality);
 	}
 
-	public Rule join(String type, Named<?> child, Symbol open, Symbol close, Symbol delimiter, boolean onlyKeepEntries, Range cardinality) {
+	public Rule join(String type, Named<?> child, Named<?> open, Named<?> close, Named<?> delimiter, boolean onlyKeepEntries, Range cardinality) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
-		Join join = new Join(tgt, child.getSymbol(), open, close, delimiter, cardinality);
-		join.setOnlyKeepEntries(onlyKeepEntries);
+		Join join = new Join(tgt, child, open, close, delimiter, cardinality);
 		join.setParsedChildNames(child.getName());
+		join.setOnlyKeepEntries(onlyKeepEntries);
 		addRule(join);
 		return join;
 	}
 
-	public Rule join(String type, Named<?> child, Symbol open, Symbol close, Symbol delimiter, String... names) {
+	public Rule join(String type, Named<?> child, Named<?> open, Named<?> close, Named<?> delimiter, String... names) {
 		return join(type, child, open, close, delimiter, true, names);
 	}
 
-	public Rule join(String type, Named<?> child, Symbol open, Symbol close, Symbol delimiter, boolean onlyKeepEntries, String... names) {
+	public Rule join(String type, Named<?> child, Named<?> open, Named<?> close, Named<?> delimiter, boolean onlyKeepEntries, String... names) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
 		int n = names.length;
-		Join join = new Join(tgt, child.getSymbol(), open, close, delimiter, new Range(n, n));
+		Join join = new Join(tgt, child, open, close, delimiter, new Range(n, n));
 		join.setOnlyKeepEntries(onlyKeepEntries);
 		join.setParsedChildNames(names);
 		addRule(join);
@@ -137,7 +135,7 @@ public class EBNFCore {
 		delimiter.setAutocompleter((pn, justCheck) ->
 				Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? ", " : ""));
 
-		return join(type, child, null, null, delimiter.tgt, Range.STAR);
+		return join(type, child, null, null, delimiter.withName("delimiter"), Range.STAR);
 	}
 
 	public Rule tuple(String type, Named<?> child, String... names) {
@@ -146,7 +144,7 @@ public class EBNFCore {
 		Rule open      = sequence(null, Terminal.literal("(").withName("open"), wsStar);
 		Rule close     = sequence(null, wsStar, Terminal.literal(")").withName("close"));
 		Rule delimiter = sequence(null, wsStar, Terminal.literal(",").withName("delimiter"), wsStar);
-		Rule ret = join(type, child, open.tgt, close.tgt, delimiter.tgt, names);
+		Rule ret = join(type, child, open.withName("open"), close.withName("close"), delimiter.withName("delimiter"), names);
 		ret.setAutocompleter((pn, justCheck) -> {
 			if (!pn.getParsedString().isEmpty())
 				return null;
@@ -168,31 +166,17 @@ public class EBNFCore {
 
 	public Rule sequence(String type, Named<?>... children) {
 		NonTerminal tgt = newOrExistingNonTerminal(type);
-		Sequence sequence = new Sequence(tgt, getSymbols(children));
-		sequence.setParsedChildNames(getNames(children));
+		Sequence sequence = new Sequence(tgt, children);
 		addRule(sequence);
 		return sequence;
-	}
-
-	protected static Symbol[] getSymbols(Named<?>... named) {
-		Symbol[] ret = new Symbol[named.length];
-		for(int i = 0; i < named.length; i++)
-			ret[i] = named[i].getSymbol();
-		return ret;
-	}
-
-	protected static String[] getNames(Named<?>... named) {
-		String[] ret = new String[named.length];
-		for(int i = 0; i < named.length; i++)
-			ret[i] = named[i].getName();
-		return ret;
 	}
 
 	private void addRule(Rule rule) {
 		if(!symbols.containsKey(rule.tgt.getSymbol()))
 			symbols.put(rule.tgt.getSymbol(), rule.tgt);
 
-		for(Symbol s : rule.children) {
+		for(Named<?> n : rule.children) {
+			Symbol s = n.getSymbol();
 			if(!s.isEpsilon() && !symbols.containsKey(s.getSymbol()))
 				symbols.put(s.getSymbol(), s);
 		}

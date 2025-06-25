@@ -4,14 +4,18 @@ import nlScript.core.Terminal;
 import nlScript.Evaluator;
 import nlScript.core.Autocompletion;
 import nlScript.util.CompletePath;
+import nlScript.util.RandomInt;
 import nlScript.util.Range;
 import nlScript.Autocompleter;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Random;
 
 public class EBNF extends EBNFCore {
 
@@ -135,7 +139,7 @@ public class EBNF extends EBNFCore {
 				INTEGER.withName(),
 				null,
 				null,
-				delimiter.getTarget(),
+				delimiter.getTarget().withName("delimiter"),
 				"from", "to");
 		ret.setEvaluator(pn -> new Range(
 				(Integer) pn.evaluate(0),
