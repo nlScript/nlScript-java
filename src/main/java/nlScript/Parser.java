@@ -10,6 +10,7 @@ import nlScript.util.RandomInt;
 import nlScript.util.Range;
 import nlScript.ebnf.EBNFParsedNodeFactory;
 import nlScript.ebnf.NamedRule;
+import nlScript.core.GeneratorHints.Key;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,6 +151,67 @@ public class Parser {
 		}
 		rdParser.addParseStartListener(this::fireParsingStarted);
 		return (ParsedNode) rdParser.parse(autocompletions);
+	}
+
+	public Generation generate(Rule rule) {
+		return rule.generate(targetGrammar);
+	}
+
+	public Generation generate() {
+		return PROGRAM.generate(targetGrammar);
+	}
+
+	public void setGeneratorHints(NamedRule rule, GeneratorHints hints) {
+		rule.get().setGeneratorHints(hints);
+	}
+
+	/**
+	 * Separate generations with <code>"::"</code>
+	 * @param rule
+	 * @param children
+	 * @param hints
+	 */
+	public void setGeneratorHints(NamedRule rule, String children, GeneratorHints hints) {
+		String[] child = children.split("::");
+		String[] allButLast = new String[child.length - 1];
+		String lastChildName = child[child.length - 1];
+		System.arraycopy(child, 0, allButLast, 0, allButLast.length);
+		List<Rule> parents = getChildRules(rule.get(), allButLast);
+		boolean atLeastOne = false;
+		for(Rule parent : parents) {
+			if(parent.hasParsedName(lastChildName)) {
+				atLeastOne = true;
+				parent.setChildGeneratorHints(lastChildName, hints);
+			}
+		}
+		if(!atLeastOne)
+			throw new RuntimeException("Cannot set generator hints for child " + Arrays.toString(child) + " (no child with that name)");
+	}
+
+	private List<Rule> getChildRules(Rule rule, String... children) {
+		List<Rule> currentLevel = new ArrayList<>();
+		currentLevel.add(rule);
+		// walk through levels, each entry in children is one level
+		for(String childName : children) {
+			List<Rule> nextLevel = new ArrayList<>();
+			// get the rules of the current level
+			for(Rule r : currentLevel) {
+				// check all of its right hand side,
+				// for heach non-terminal, get the rules that produce them
+				// add those rules that contain 'childName' in their parsed names
+				if(!r.hasParsedName(childName))
+					continue;
+				for(Named<?> child : r.getChildren()) {
+					Symbol childSymbol = child.getSymbol();
+					if(childSymbol instanceof NonTerminal) {
+						List<Rule> rulesForChild = targetGrammar.getRules((NonTerminal) childSymbol);
+						nextLevel.addAll(rulesForChild);
+					}
+				}
+			}
+			currentLevel = nextLevel;
+		}
+		return currentLevel;
 	}
 
 	private Rule quantifier() {

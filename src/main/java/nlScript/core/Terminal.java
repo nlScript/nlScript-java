@@ -1,7 +1,11 @@
 package nlScript.core;
 
+import nlScript.ebnf.EBNFCore;
+import nlScript.util.RandomInt;
+
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Random;
 
 public abstract class Terminal extends Symbol {
 
@@ -43,6 +47,8 @@ public abstract class Terminal extends Symbol {
 
 	public abstract Object evaluate(Matcher matcher);
 
+	public abstract Generation generate();
+
 	public Named<Terminal> withName(String name) {
 		return new Named<>(this, name);
 	}
@@ -70,6 +76,10 @@ public abstract class Terminal extends Symbol {
 		public Object evaluate(Matcher matcher) {
 			return null;
 		}
+
+		public Generation generate() {
+			return new Generation("");
+		}
 	}
 
 	public static class EndOfInput extends Terminal {
@@ -88,6 +98,11 @@ public abstract class Terminal extends Symbol {
 		@Override
 		public Object evaluate(Matcher matcher) {
 			return null;
+		}
+
+		@Override
+		public Generation generate() {
+			return new Generation("");
 		}
 	}
 
@@ -110,6 +125,12 @@ public abstract class Terminal extends Symbol {
 		@Override
 		public Object evaluate(Matcher matcher) {
 			return matcher.parsed.charAt(0);
+		}
+
+		@Override
+		public Generation generate() {
+			int r = RandomInt.next(0, 9);
+			return new Generation(Integer.toString(r));
 		}
 	}
 
@@ -148,6 +169,11 @@ public abstract class Terminal extends Symbol {
 		public String toString() {
 			return "'" + getSymbol() + "'";
 		}
+
+		@Override
+		public Generation generate() {
+			return new Generation(literal);
+		}
 	}
 
 	public static class Letter extends Terminal {
@@ -170,6 +196,19 @@ public abstract class Terminal extends Symbol {
 		public Object evaluate(Matcher matcher) {
 			return matcher.parsed.charAt(0);
 		}
+
+		@Override
+		public Generation generate() {
+			int r = RandomInt.next(0, 51);
+			//  0-25 -> A-Z -> 65- 90
+			// 26-51 -> a-z -> 97-122
+			if(r <= 25)
+				r += 65;
+			else
+				r = r - 26 + 97;
+
+			return new Generation(Character.toString((char) r));
+		}
 	}
 
 	public static class Whitespace extends Terminal {
@@ -191,6 +230,11 @@ public abstract class Terminal extends Symbol {
 		@Override
 		public Object evaluate(Matcher matcher) {
 			return matcher.parsed.charAt(0);
+		}
+
+		@Override
+		public Generation generate() {
+			return new Generation(" ");
 		}
 	}
 
@@ -264,6 +308,11 @@ public abstract class Terminal extends Symbol {
 			ret = ret.replaceAll("\n", "\\n");
 			return ret;
 		}
+
+		@Override
+		public Generation generate() {
+			return ranges.generate();
+		}
 	}
 
 	private static class CharacterRange {
@@ -333,5 +382,47 @@ public abstract class Terminal extends Symbol {
 			HashSet<CharacterRange> os = new HashSet<>(((Ranges)o).ranges);
 			return ts.equals(os);
 		}
+
+		public Generation generate() {
+			if(negated) {
+				// sample uniformly from the ASCII range of printable characters (32-126, see https://www.ascii-code.com)
+				// check if the character is valid, otherwise sample again
+				while(true) {
+					int r = RandomInt.next(32, 126);
+					if(checkCharacter(r))
+						return new Generation(Character.toString((char) r));
+				}
+			}
+
+			int N = 0;
+			for(CharacterRange range : ranges) {
+				int n = range.upper - range.lower + 1;
+				N += n;
+			}
+
+			int r = RandomInt.next(0, N - 1);
+			for(CharacterRange range : ranges) {
+				int n = range.upper - range.lower + 1;
+				if(r < n) {
+					char ret = (char) (range.lower + r);
+					if(ret == '{' || ret == '[') {
+						System.out.println("Wrong character");
+					}
+					return new Generation(Character.toString(ret));
+				}
+				r -= n;
+			}
+
+			throw new RuntimeException("Error generating sample, something went wrong");
+		}
+	}
+
+	public static void main(String[] args) {
+		for(int i = 0; i < 120; i++) {
+			Terminal cc = Terminal.characterClass("[A-Za-z0-9]");
+			Generation g = cc.generate();
+			System.out.println(g.toString());
+		}
+
 	}
 }

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-public abstract class Rule implements RepresentsSymbol {
+public abstract class Rule implements RepresentsSymbol, Generatable {
 	protected final String type;
 	protected final NonTerminal tgt;
 	protected final Named<?>[] children;
@@ -126,6 +126,44 @@ public abstract class Rule implements RepresentsSymbol {
 
 	public abstract void createBNF(BNF grammar);
 
+
+
+	private Generator generator;
+	private HashMap<String, Generator> childGenerators;
+	private GeneratorHints generatorHints;
+	private HashMap<String, GeneratorHints> childGeneratorHints;
+
+	@Override
+	public Generation generate(EBNFCore grammar) {
+		return getGenerator().generate(grammar, getGeneratorHints());
+	}
+
+	public void setGenerator(Generator generator) {
+		this.generator = generator;
+	}
+
+	public void setGeneratorHints(GeneratorHints hints) {
+		this.generatorHints = hints;
+	}
+
+	public Generator getGenerator() {
+		return this.generator != null ? this.generator : getDefaultGenerator();
+	}
+
+	public GeneratorHints getGeneratorHints() {
+		if(this.generatorHints == null)
+			this.generatorHints = new GeneratorHints();
+		return this.generatorHints;
+	}
+
+	public abstract Generator getDefaultGenerator();
+
+	public void setChildGeneratorHints(String childName, GeneratorHints hints) {
+		if(childGeneratorHints == null)
+			childGeneratorHints = new HashMap<>();
+		childGeneratorHints.put(childName, hints);
+	}
+
 	public boolean hasParsedName(String name) {
 		if(parsedChildNames == null) {
 			for(Named<?> n : children)
@@ -139,4 +177,25 @@ public abstract class Rule implements RepresentsSymbol {
 		return false;
 	}
 
+	public Generator getChildGenerator(String childName, EBNFCore ebnf, Symbol otherwise) {
+		if(childGenerators == null || childGenerators.get(childName) == null) {
+			if(otherwise instanceof Terminal)
+				return (grammar, hints) -> ((Terminal) otherwise).generate();
+			else if(otherwise instanceof NonTerminal) {
+				ArrayList<Rule> rules = ebnf.getRules((NonTerminal) otherwise);
+				Rule randomRule = rules.get(new Random().nextInt(rules.size()));
+				return randomRule.getGenerator();
+			} else {
+				throw new RuntimeException("Don't know how to create a Generator for " + otherwise);
+			}
+		}
+		return childGenerators.get(childName);
+	}
+
+	public GeneratorHints getChildGeneratorHints(String childName) {
+		GeneratorHints ret = childGeneratorHints != null ? childGeneratorHints.get(childName) : null;
+		if(ret == null)
+			ret = new GeneratorHints();
+		return ret;
+	}
 }

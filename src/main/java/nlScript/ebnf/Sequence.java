@@ -2,6 +2,9 @@ package nlScript.ebnf;
 
 import nlScript.ParsedNode;
 import nlScript.core.BNF;
+import nlScript.core.Generation;
+import nlScript.core.Generator;
+import nlScript.core.GeneratorHints;
 import nlScript.core.Named;
 import nlScript.core.NonTerminal;
 import nlScript.core.Production;
@@ -22,5 +25,26 @@ public class Sequence extends Rule {
 			}
 		});
 		p.setAstBuilder(Production.AstBuilder.DEFAULT);
+	}
+
+	private final Generator DEFAULT_GENERATOR = (grammar, hints) -> {
+		int n = children.length;
+		StringBuilder generatedString = new StringBuilder();
+		Generation[] generations = new Generation[n];
+		for(int i = 0; i < n; i++) {
+			String name = getParsedNameForChild(i);
+			Generator generator = getChildGenerator(name, grammar, children[i].getSymbol());
+			GeneratorHints cHints = getChildGeneratorHints(name);
+			Generation gen = generator.generate(grammar, cHints);
+			gen.setName(name);
+			generatedString.append(gen);
+			generations[i] = gen;
+		}
+		return new Generation(generatedString.toString(), generations);
+	};
+
+	@Override
+	public Generator getDefaultGenerator() {
+		return DEFAULT_GENERATOR;
 	}
 }

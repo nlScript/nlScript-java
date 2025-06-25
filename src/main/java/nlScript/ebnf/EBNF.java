@@ -1,5 +1,7 @@
 package nlScript.ebnf;
 
+import nlScript.core.Generation;
+import nlScript.core.GeneratorHints;
 import nlScript.core.Terminal;
 import nlScript.Evaluator;
 import nlScript.core.Autocompletion;
@@ -83,6 +85,11 @@ public class EBNF extends EBNFCore {
 		);
 		ret.setEvaluator(pn -> Integer.parseInt(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
+		ret.setGenerator((grammar, hints) -> {
+			int min = (int) hints.get(GeneratorHints.Key.MIN_VALUE, Integer.MIN_VALUE);
+			int max = (int) hints.get(GeneratorHints.Key.MAX_VALUE, Integer.MAX_VALUE);
+			return new Generation(Integer.toString(RandomInt.next(min, max)));
+		});
 		return ret;
 	}
 
@@ -115,18 +122,43 @@ public class EBNF extends EBNFCore {
 		 */
 		ret.setEvaluator(pn -> Double.parseDouble(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
+		ret.setGenerator((grammar, hints) -> {
+			float min = (float) hints.get(GeneratorHints.Key.MIN_VALUE, Float.MIN_VALUE);
+			float max = (float) hints.get(GeneratorHints.Key.MAX_VALUE, Float.MAX_VALUE);
+			float f = min + (max - min) * (float) Math.random();
+			int decimalPlaces = (int) hints.get(GeneratorHints.Key.DECIMAL_PLACES, -1);
+			String fStr = decimalPlaces == -1 ? Float.toString(f) : format(f, decimalPlaces);
+			return new Generation(fStr);
+		});
 		return ret;
+	}
+
+	private String format(float f, int decimalDigits) {
+		StringBuilder sb = new StringBuilder("#");
+		if(decimalDigits > 0)
+			sb.append('.');
+		for(int i = 0; i < decimalDigits; i++)
+			sb.append('#');
+
+		DecimalFormat df = new DecimalFormat(sb.toString());
+		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+		dfs.setDecimalSeparator('.');
+		df.setDecimalFormatSymbols(dfs);
+		df.setGroupingUsed(false);
+		return df.format(f);
 	}
 
 	private Rule makeWhitespaceStar() {
 		Rule ret = star(WHITESPACE_STAR_NAME, Terminal.WHITESPACE.withName());
 		ret.setAutocompleter((pn, justCheck) -> Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? " " : ""));
+		ret.setGenerator((grammar, hints) -> new Generation(" "));
 		return ret;
 	}
 
 	private Rule makeWhitespacePlus() {
 		Rule ret = plus(WHITESPACE_PLUS_NAME, Terminal.WHITESPACE.withName());
 		ret.setAutocompleter((pn, justCheck) -> Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? " " : ""));
+		ret.setGenerator((grammar, hints) -> new Generation(" "));
 		return ret;
 	}
 
@@ -172,6 +204,12 @@ public class EBNF extends EBNFCore {
 			int b = (Integer) pn.evaluate("blue");
 			return rgb2int(r, g, b);
 		});
+		custom.setGenerator((grammar, hints) -> {
+			int r = RandomInt.next(0, 255);
+			int g = RandomInt.next(0, 255);
+			int b = RandomInt.next(0, 255);
+			return new Generation("(" + r + ", " + g + ", " + b + ")");
+		});
 
 		return or(COLOR_NAME,
 				custom.withName(),
@@ -211,6 +249,15 @@ public class EBNF extends EBNFCore {
 				hour.withName("HH"),
 				Terminal.literal(":").withName(),
 				minute.withName("MM"));
+
+		ret.setGenerator((grammar, hints) -> {
+			Random random = new Random();
+			int h = random.nextInt(24);
+			int m = random.nextInt(60);
+			String mm = Integer.toString(m);
+			if(m < 10) mm = "0" + mm;
+			return new Generation(h + ":" + mm);
+		});
 
 		ret.setEvaluator(pn -> LocalTime.parse(pn.getParsedString(), DateTimeFormatter.ofPattern("H:mm")));
 		ret.setAutocompleter(new Autocompleter.EntireSequenceCompleter(this, new HashMap<>()));

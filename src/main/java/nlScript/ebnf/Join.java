@@ -222,4 +222,58 @@ public class Join extends Rule {
 			});
 		}
 	}
+
+	private final Generator DEFAULT_GENERATOR = (grammar, hints) -> {
+		final boolean hasOpen = getOpen() != null && !getOpen().getSymbol().isEpsilon();
+		final boolean hasClose = getClose() != null && !getClose().getSymbol().isEpsilon();
+		final boolean hasDelimiter = getDelimiter() != null && !getDelimiter().getSymbol().isEpsilon();
+
+		int lower = getCardinality().getLower();
+		int upper = getCardinality().getUpper();
+		if(upper == Integer.MAX_VALUE)
+			upper = (int) hints.get(GeneratorHints.Key.MAX_NUMBER, upper);
+		int n = RandomInt.next(lower, upper);
+		StringBuilder generatedString = new StringBuilder();
+		List<Generation> generations = new ArrayList<>();
+		if(hasOpen) {
+			Generator generator = getChildGenerator(getOpen().getName(), grammar, getOpen().getSymbol());
+			GeneratorHints cHints = getChildGeneratorHints(getOpen().getName());
+			Generation gen = generator.generate(grammar, cHints); // generate(grammar, getOpen());
+			gen.setName(getOpen().getName());
+			generatedString.append(gen);
+			generations.add(gen);
+		}
+		for(int i = 0; i < n; i++) {
+			String name = getParsedNameForChild(i);
+			Generator generator = getChildGenerator(name, grammar, getEntry().getSymbol());
+			GeneratorHints cHints = getChildGeneratorHints(name);
+			Generation gen = generator.generate(grammar, cHints); // generate(grammar, children[0]);
+			gen.setName(name);
+			generatedString.append(gen);
+			generations.add(gen);
+
+			if(hasDelimiter && i < n - 1) {
+				generator = getChildGenerator(getDelimiter().getName(), grammar, getDelimiter().getSymbol());
+				cHints = getChildGeneratorHints(getDelimiter().getName());
+				gen = generator.generate(grammar, cHints);
+				gen.setName(getDelimiter().getName());
+				generatedString.append(gen);
+				generations.add(gen);
+			}
+		}
+		if(hasClose) {
+			Generator generator = getChildGenerator(getClose().getName(), grammar, getClose().getSymbol());
+			GeneratorHints cHints = getChildGeneratorHints(getClose().getName());
+			Generation gen = generator.generate(grammar, cHints);
+			gen.setName(getClose().getName());
+			generatedString.append(gen);
+			generations.add(gen);
+		}
+		return new Generation(generatedString.toString(), generations.toArray(generations.toArray(new Generation[0])));
+	};
+
+	@Override
+	public Generator getDefaultGenerator() {
+		return DEFAULT_GENERATOR;
+	}
 }
