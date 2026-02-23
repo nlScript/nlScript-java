@@ -421,13 +421,13 @@ public class Parser {
 
 	private Rule noVariable() {
 		return grammar.sequence("no-variable",
-				Terminal.characterClass("[^ \t\n{]").withName(),
+				Terminal.characterClass("[^ \t{]").withName(),
 				grammar.optional("no-var-tail-opt",
 						grammar.sequence("no-var-tail-opt-seq",
 								grammar.star("no-var-tail-opt-seq-star",
-										Terminal.characterClass("[^{\n]").withName()
+										Terminal.characterClass("[^{]").withName()
 								).withName("middle"),
-								Terminal.characterClass("[^ \t\n{]").withName()
+								Terminal.characterClass("[^ \t{]").withName()
 						).withName("seq")
 				).withName("tail")
 		).setEvaluator(pn -> Terminal.literal(pn.getParsedString()).withName());
