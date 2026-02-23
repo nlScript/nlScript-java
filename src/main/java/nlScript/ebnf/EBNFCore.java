@@ -135,6 +135,7 @@ public class EBNFCore {
 				wsStar);
 		delimiter.setAutocompleter((pn, justCheck) ->
 				Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? ", " : ""));
+		delimiter.setGenerator((grammar, hints) -> new Generation(", "));
 
 		return join(type, child, null, null, delimiter.withName("delimiter"), Range.STAR);
 	}
