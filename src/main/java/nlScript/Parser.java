@@ -254,6 +254,8 @@ public class Parser {
 	 * [^:{}\n]+
 	 *
 	 * Everything but ':', '{', '}'
+	 *
+	 * Evaluates to String
 	 */
 	private Rule variableName() {
 		return grammar.plus("var-name",
@@ -267,7 +269,9 @@ public class Parser {
 		return identifier("entry-name");
 	}
 
-	// evaluates to the target grammar's list rule (i.e. Join).
+	/**
+	 * Evaluates to a Join rule, by calling the target grammar's list() function.
+ 	 */
 	private Rule list() {
 		return grammar.sequence("list",
 				Terminal.literal("list").withName(),
@@ -288,6 +292,9 @@ public class Parser {
 		});
 	}
 
+	/**
+	 * Evaluates to a Join rule, calling the target grammar's tuple() function
+	 */
 	private Rule tuple() {
 		return grammar.sequence("tuple",
 				Terminal.literal("tuple").withName(),
@@ -322,6 +329,9 @@ public class Parser {
 		});
 	}
 
+	/**
+	 * Evaluates to CharacterClass
+	 */
 	private Rule characterClass() {
 		return grammar.sequence("character-class",
 				Terminal.literal("[").withName(),
@@ -338,6 +348,11 @@ public class Parser {
 		});
 	}
 
+	/**
+	 * Evaluates to
+	 * - a symbol in the target grammar
+	 * -
+	 */
 	private Rule type() {
 		return grammar.or("type",
 				grammar.sequence(null,
@@ -359,6 +374,13 @@ public class Parser {
 	 * {name:[:type][:quantifier]}
 	 * - either just the name: {From frame}
 	 * - or name and type: {frame:int}
+	 *
+	 * Evaluates to
+	 * - a NamedSymbol in the target grammar,
+	 * - a named join rule (if type is tuple<> or list<> or the quantifier is given in discrete numbers
+	 * - a named star rule
+	 * - a named optional rule
+	 * - a named plus rule
 	 */
 	private Rule variable() {
 		return grammar.sequence("variable",
@@ -419,6 +441,9 @@ public class Parser {
 		});
 	}
 
+	/**
+	 * Evaluates to a literal
+	 */
 	private Rule noVariable() {
 		return grammar.sequence("no-variable",
 				Terminal.characterClass("[^ \t{]").withName(),
