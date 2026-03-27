@@ -56,14 +56,19 @@ public class Generation {
 		return generatedText;
 	}
 
-	public String getGeneratedText(String... names) {
+	public Generation getChild(String... names) {
 		Generation pn = this;
 		for(String name : names) {
 			pn = pn.getChild(name);
 			if(pn == null)
-				return "";
+				return null;
 		}
-		return pn.generatedText;
+		return pn;
+	}
+
+	public String getGeneratedText(String... names) {
+		Generation pn = getChild(names);
+		return pn == null ? "" : pn.generatedText;
 	}
 
 	/**
