@@ -294,6 +294,16 @@ public class RDParser {
 		return best;
 	}
 
+	/*
+	 * Build the tree bottom up:
+	 * Take the leaf sequence, which is all terminals, and collect the matchers in a list ParsedNodes
+	 * Then, in turn:
+	 *   - take the production that produces the child sequence
+	 *   - get (and remove) the production's rhs from the ParsedNode list
+	 *   - add a new ParsedNode to the list, representing the production's lhs
+	 *   - add the rhs nodes as children to the new ParsedNode
+	 *   - set the new ParsedNode as parent of the rhs nodes
+	 */
 	protected DefaultParsedNode createParsedTree(SymbolSequence leafSequence, DefaultParsedNode[] retLast) {
 		LinkedList<DefaultParsedNode> parsedNodeSequence = new LinkedList<>();
 		int nParsedMatchers = leafSequence.parsedMatchers.size();
