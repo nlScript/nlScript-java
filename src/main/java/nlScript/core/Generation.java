@@ -131,10 +131,17 @@ public class Generation {
 		return new Generation(textReplacement, this.children.toArray(new Generation[0]));
 	}
 
-	private String processText(String text) {
+	public String processText(String text) {
 		return VariableProcessor.replace(text, s -> {
+			boolean desc = s.endsWith(".description");
+			if(desc)
+				s = s.substring(0, s.length() - ".description".length());
+
 			String[] childNames = s.split("::");
-			return getGeneratedText(childNames);
+			Generation gen = getChild(childNames);
+			if(gen == null)
+				return "";
+			return desc ? gen.description : gen.generatedText;
 		});
 	}
 
