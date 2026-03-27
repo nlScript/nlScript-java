@@ -20,4 +20,22 @@ public class NamedRule extends Named<Rule> {
 		get().setGenerator(g);
 		return this;
 	}
+
+	public Generator getGenerator() {
+		return get().getGenerator();
+	}
+
+	public NamedRule setGeneratorWithDescription(String description) {
+		return setGeneratorWithDescription(description, false);
+	}
+
+	public NamedRule setGeneratorWithDescription(String description, boolean skipVariableSubstitution) {
+		setGenerator(getGenerator().withDescription(description, skipVariableSubstitution));
+		return this;
+	}
+
+	public NamedRule setGeneratorFromChild(String child) {
+		setGenerator(getGenerator().fromChild(child));
+		return this;
+	}
 }
