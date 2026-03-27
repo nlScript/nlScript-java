@@ -1,15 +1,9 @@
 package nlScript;
 
 import nlScript.core.*;
-import nlScript.ebnf.EBNF;
-import nlScript.ebnf.EBNFCore;
-import nlScript.ebnf.EBNFParser;
-import nlScript.ebnf.Join;
-import nlScript.ebnf.Rule;
+import nlScript.ebnf.*;
 import nlScript.util.RandomInt;
 import nlScript.util.Range;
-import nlScript.ebnf.EBNFParsedNodeFactory;
-import nlScript.ebnf.NamedRule;
 import nlScript.core.GeneratorHints.Key;
 
 import java.util.ArrayList;
@@ -153,8 +147,20 @@ public class Parser {
 		return (ParsedNode) rdParser.parse(autocompletions);
 	}
 
+	public Generation getDefaultGeneration(Rule rule) {
+		return rule.getDefaultGenerator().generate(targetGrammar, rule.getGeneratorHints());
+	}
+
+	public Generation getDefaultGeneration(NamedRule rule) {
+		return rule.get().getDefaultGenerator().generate(targetGrammar, rule.get().getGeneratorHints());
+	}
+
 	public Generation generate(Rule rule) {
 		return rule.generate(targetGrammar);
+	}
+
+	public Generation generate(NamedRule rule) {
+		return rule.get().generate(targetGrammar);
 	}
 
 	public Generation generate() {
