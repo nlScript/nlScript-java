@@ -12,6 +12,7 @@ public class Generation {
 	private final String generatedText;
 
 	private String name;
+	private String description;
 
 	public Generation(String text, Generation... children) {
 		this.generatedText = text;
@@ -24,6 +25,16 @@ public class Generation {
 
 	public String getName() {
 		return name;
+	}
+
+
+	public String getDescription() {
+		return description;
+	}
+
+	public Generation setDescription(String description) {
+		this.description = description;
+		return this;
 	}
 
 	public List<Generation> getChildren() {
