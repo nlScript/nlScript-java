@@ -83,7 +83,7 @@ public class Generation {
 	public Generation withAppendedText(String textToAppend, boolean skipVariableSubstitution) {
 		if(!skipVariableSubstitution)
 			textToAppend = processText(textToAppend);
-		return new Generation(generatedText + textToAppend, (Generation[]) this.children.clone());
+		return new Generation(generatedText + textToAppend, this.children.toArray(new Generation[0]));
 	}
 
 	/**
@@ -103,7 +103,7 @@ public class Generation {
 	public Generation withPrependedText(String textToPrepend, boolean skipVariableSubstitution) {
 		if(!skipVariableSubstitution)
 			textToPrepend = processText(textToPrepend);
-		return new Generation(textToPrepend + generatedText, (Generation[]) this.children.clone());
+		return new Generation(textToPrepend + generatedText, this.children.toArray(new Generation[0]));
 	}
 
 	/**
@@ -123,7 +123,7 @@ public class Generation {
 	public Generation withText(String textReplacement, boolean skipVariableSubstitution) {
 		if(!skipVariableSubstitution)
 			textReplacement = processText(textReplacement);
-		return new Generation(textReplacement, (Generation[]) this.children.clone());
+		return new Generation(textReplacement, this.children.toArray(new Generation[0]));
 	}
 
 	private String processText(String text) {
