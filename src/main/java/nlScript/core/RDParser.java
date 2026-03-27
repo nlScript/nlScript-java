@@ -315,7 +315,9 @@ public class RDParser {
 		while(childSequence.parent != null) {
 			SymbolSequence parentSequence = childSequence.parent;
 			Production productionToCreateChildSequence = childSequence.production;
-			assert productionToCreateChildSequence != null;
+			if(productionToCreateChildSequence == null)
+				throw new RuntimeException("production is unexpectedly null");
+
 			int pos = parentSequence.pos;
 			Symbol[] rhs = productionToCreateChildSequence.getRight();
 			Symbol   lhs = productionToCreateChildSequence.getLeft();
