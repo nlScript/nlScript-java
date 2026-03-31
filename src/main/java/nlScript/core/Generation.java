@@ -29,7 +29,20 @@ public class Generation {
 
 
 	public String getDescription() {
-		return description;
+//		if(description != null)
+			return description;
+//		// if this is from e.g. a plus node ("{colors:color:+}"),
+//		// colors is not a type itself, but the children of the plus node, which
+//		// in this case have the same name as the parent. Let's just concatenate them
+//		StringBuilder ret = new StringBuilder();
+//		for(Generation c : children) {
+//			if(c.getName().equals(this.getName()))
+//				ret.append(c.getDescription()).append(" ");
+//		}
+//		String s = ret.toString();
+//		if(s.endsWith(" "))
+//			s = s.substring(0, s.length() - 1);
+//		return s;
 	}
 
 	public Generation setDescription(String description) {
