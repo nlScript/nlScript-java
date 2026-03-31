@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Generation {
 
@@ -29,20 +30,7 @@ public class Generation {
 
 
 	public String getDescription() {
-//		if(description != null)
-			return description;
-//		// if this is from e.g. a plus node ("{colors:color:+}"),
-//		// colors is not a type itself, but the children of the plus node, which
-//		// in this case have the same name as the parent. Let's just concatenate them
-//		StringBuilder ret = new StringBuilder();
-//		for(Generation c : children) {
-//			if(c.getName().equals(this.getName()))
-//				ret.append(c.getDescription()).append(" ");
-//		}
-//		String s = ret.toString();
-//		if(s.endsWith(" "))
-//			s = s.substring(0, s.length() - 1);
-//		return s;
+		return description;
 	}
 
 	public Generation setDescription(String description) {
@@ -146,6 +134,19 @@ public class Generation {
 
 	public String processText(String text) {
 		return VariableProcessor.replace(text, s -> {
+			boolean join = s.startsWith("join [");
+			String delimiter = "";
+			if(join) {
+				int bracketOpen = s.indexOf('[');
+				int bracketClose = s.indexOf(']');
+				delimiter = s.substring(bracketOpen + 1, bracketClose);
+				int substrStart = bracketClose + 1;
+				while(s.charAt(substrStart) == ' ')
+					substrStart++;
+				s = s.substring(substrStart);
+			}
+
+
 			boolean desc = s.endsWith(".description");
 			if(desc)
 				s = s.substring(0, s.length() - ".description".length());
@@ -153,8 +154,24 @@ public class Generation {
 			String[] childNames = s.split("::");
 			Generation gen = getChild(childNames);
 			if(gen == null)
-				return "";
-			return desc ? gen.description : gen.generatedText;
+				throw new RuntimeException("Can't find child " + Arrays.toString(childNames));
+
+			if(!join) {
+				if(!desc)
+					return gen.generatedText;
+				String description = gen.getDescription();
+				if(description == null)
+					throw new RuntimeException("No description given for '" + Arrays.toString(childNames) + "'");
+				return description;
+			}
+
+			return gen.children.stream()
+					.map(c -> {
+						if(desc && c.getDescription() == null)
+							throw new RuntimeException("No description given for '" + Arrays.toString(childNames) + ", " + c.getName() + "'");
+						return desc ? c.getDescription() : c.generatedText;
+					})
+					.collect(Collectors.joining(delimiter));
 		});
 	}
 
@@ -169,6 +186,8 @@ public class Generation {
 			while (matcher.find()) {
 				String matchedString = matcher.group(1);
 				String replacement = getReplacement.apply(matchedString);
+				if(replacement == null)
+					throw new RuntimeException("Can't find replacement for " + matchedString + " in " + input);
 				matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(replacement));
 			}
 
