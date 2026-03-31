@@ -1,6 +1,7 @@
 package nlScript.ebnf;
 
 import nlScript.core.Generator;
+import nlScript.core.GeneratorHints;
 import nlScript.core.Named;
 
 public class NamedRule extends Named<Rule> {
@@ -25,12 +26,8 @@ public class NamedRule extends Named<Rule> {
 		return get().getGenerator();
 	}
 
-	public NamedRule setGeneratorWithDescription(String description) {
-		return setGeneratorWithDescription(description, false);
-	}
-
-	public NamedRule setGeneratorWithDescription(String description, boolean skipVariableSubstitution) {
-		setGenerator(getGenerator().withDescription(description, skipVariableSubstitution));
+	public NamedRule setGeneratorDescription(String desc) {
+		get().setGeneratorHints(GeneratorHints.from(GeneratorHints.Key.DESCRIPTION, desc));
 		return this;
 	}
 

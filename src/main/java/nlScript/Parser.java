@@ -2,7 +2,6 @@ package nlScript;
 
 import nlScript.core.*;
 import nlScript.ebnf.*;
-import nlScript.util.RandomInt;
 import nlScript.util.Range;
 import nlScript.core.GeneratorHints.Key;
 
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Parser {
 	private final EBNF grammar = new EBNF();
@@ -36,6 +36,10 @@ public class Parser {
 	private final HashMap<String, ArrayList<Autocompletion>> symbol2Autocompletion = new HashMap<>();
 
 	private boolean compiled = false;
+
+	private boolean generateComments = true;
+
+	private String commentLinePrefix = "// ";
 
 	public Parser() {
 		QUANTIFIER      = quantifier();
@@ -103,13 +107,16 @@ public class Parser {
 		}
 		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException("Parsing failed");
-		Named<?>[] rhs = (Named<?>[]) pn.evaluate();
+		final Named<?>[] rhs = (Named<?>[]) pn.evaluate();
 
-		Rule newRule = targetGrammar.sequence(type, rhs);
+		final Rule newRule = targetGrammar.sequence(type, rhs);
 		if(evaluator != null)
 			newRule.setEvaluator(evaluator);
 		if(autocompleter != null)
 			newRule.setAutocompleter(autocompleter);
+
+		if(type.equals("sentence"))
+			newRule.setGenerator(new SentenceGenerator(newRule));
 
 		return newRule.withName(type);
 	}
@@ -145,6 +152,84 @@ public class Parser {
 		}
 		rdParser.addParseStartListener(this::fireParsingStarted);
 		return (ParsedNode) rdParser.parse(autocompletions);
+	}
+
+	private class SentenceGenerator extends Sequence.SequenceGenerator {
+
+		public SentenceGenerator(Rule sentence) {
+			super(sentence);
+		}
+
+		@Override
+		public Generation generate(EBNFCore grammar, GeneratorHints hints) {
+			Generation gen = super.generate(grammar, hints);
+			String generationDescription = hints.getAs(Key.DESCRIPTION);
+			if(generateComments && generationDescription != null) {
+				generationDescription = gen.processText(generationDescription);
+				String comment = formatComment(generationDescription, commentLinePrefix, 85);
+				if(!comment.endsWith(System.lineSeparator()))
+					comment += "\n";
+				gen = gen.withPrependedText(comment, true);
+			}
+			return gen;
+		}
+
+		/**
+		 * Formats a (potentially multi-line) comment string by wrapping long lines at word
+		 * boundaries and prepending each line with a given prefix, ensuring that no output
+		 * line exceeds the specified maximum length.
+		 * <p>
+		 * Existing newlines in the input are respected and preserved as line breaks in the
+		 * output. Words that individually exceed the maximum content length will not be
+		 * broken and will cause that line to exceed the limit.
+		 *
+		 * @param comment       the comment text to format; may contain newlines
+		 * @param prefix        the string to prepend to each line (e.g. {@code "// "})
+		 * @param maxLineLength the maximum total line length, including the prefix
+		 * @return the formatted comment string with lines separated by {@code \n}
+		 */
+		public String formatComment(String comment, String prefix, int maxLineLength) {
+			int maxContentLength = maxLineLength - prefix.length();
+
+			return Arrays.stream(comment.split("\\R"))
+					.flatMap(line -> wrapLine(line, maxContentLength).stream())
+					.map(line -> prefix + line)
+					.collect(Collectors.joining("\n"));
+		}
+
+		/**
+		 * Wraps a single line of text at word boundaries so that no line exceeds the given
+		 * maximum length. Words are split on single spaces, and the original spacing is not
+		 * preserved. If a single word exceeds {@code maxLength}, it is placed on its own
+		 * line without being broken.
+		 *
+		 * @param line      the line of text to wrap; should not contain newlines
+		 * @param maxLength the maximum allowed length of each returned line
+		 * @return a list of lines, each at most {@code maxLength} characters long (except
+		 *         for lines consisting of a single word that exceeds the limit)
+		 */
+		private List<String> wrapLine(String line, int maxLength) {
+			List<String> lines = new ArrayList<>();
+			String[] words = line.split(" ");
+			StringBuilder current = new StringBuilder();
+
+			for (String word : words) {
+				if (current.length() == 0) {
+					current.append(word);
+				} else if (current.length() + 1 + word.length() <= maxLength) {
+					current.append(' ').append(word);
+				} else {
+					lines.add(current.toString());
+					current = new StringBuilder(word);
+				}
+			}
+
+			if (current.length() > 0) {
+				lines.add(current.toString());
+			}
+
+			return lines;
+		}
 	}
 
 	public Generation getDefaultGeneration(Rule rule) {
