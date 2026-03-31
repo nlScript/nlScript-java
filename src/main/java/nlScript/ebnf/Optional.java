@@ -5,7 +5,6 @@ import nlScript.ParsedNode;
 import nlScript.core.BNF;
 import nlScript.core.Generation;
 import nlScript.core.Generator;
-import nlScript.core.GeneratorHints;
 import nlScript.core.Named;
 import nlScript.core.NonTerminal;
 import nlScript.core.Production;
@@ -41,9 +40,7 @@ public class Optional extends Rule {
 		Generation[] generations = new Generation[n];
 		for(int i = 0; i < n; i++) {
 			String name = getParsedNameForChild(i);
-			Generator generator = getChildGenerator(name, grammar, getEntry().getSymbol());
-			GeneratorHints cHints = getChildGeneratorHints(name);
-			Generation gen = generator.generate(grammar, cHints); // Rule.generate(grammar, children[0]);
+			Generation gen = generateChild(name, grammar, getEntry().getSymbol());
 			gen.setName(name);
 			generatedString.append(gen);
 			generations[i] = gen;

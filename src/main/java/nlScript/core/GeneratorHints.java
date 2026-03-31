@@ -7,6 +7,7 @@ public class GeneratorHints {
 	public static final String SEP = "::";
 
 	public enum Key {
+		DESCRIPTION,
 		MIN_VALUE,
 		MAX_VALUE,
 		DECIMAL_PLACES,
@@ -37,6 +38,31 @@ public class GeneratorHints {
 		map.put(key, object);
 		return this;
 	}
+
+	public static GeneratorHints combine(GeneratorHints original, GeneratorHints additional, boolean overwrite) {
+		GeneratorHints generatorHints = new GeneratorHints();
+		if(original.map != null) {
+			for (Key key : original.map.keySet()) {
+				generatorHints.with(key, original.get(key));
+			}
+		}
+		if(additional.map != null) {
+			for (Key key : additional.map.keySet()) {
+				Object existing = original.get(key);
+				if (existing == null || overwrite)
+					generatorHints.with(key, additional.get(key));
+			}
+		}
+		return generatorHints;
+	}
+
+	public <T> T getAs(Key key) {
+		Object v = get(key);
+		if(v == null)
+			return null;
+		return (T) v;
+	}
+
 
 	public Object get(Key key) {
 		if(map == null)

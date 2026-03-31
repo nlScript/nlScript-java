@@ -11,8 +11,6 @@ import nlScript.core.NonTerminal;
 import nlScript.core.Production;
 import nlScript.util.RandomInt;
 
-import java.util.Random;
-
 public class Plus extends Rule {
 
 	public Plus(NonTerminal tgt, Named<?> child) {
@@ -65,9 +63,7 @@ public class Plus extends Rule {
 		Generation[] generations = new Generation[n];
 		for(int i = 0; i < n; i++) {
 			String name = getParsedNameForChild(i);
-			Generator generator = getChildGenerator(name, grammar, getEntry().getSymbol());
-			GeneratorHints cHints = getChildGeneratorHints(name);
-			Generation gen = generator.generate(grammar, cHints);
+			Generation gen = generateChild(name, grammar, getEntry().getSymbol());
 			gen.setName(name);
 			generatedString.append(gen);
 			generations[i] = gen;

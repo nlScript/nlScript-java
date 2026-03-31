@@ -236,35 +236,27 @@ public class Join extends Rule {
 		StringBuilder generatedString = new StringBuilder();
 		List<Generation> generations = new ArrayList<>();
 		if(hasOpen) {
-			Generator generator = getChildGenerator(getOpen().getName(), grammar, getOpen().getSymbol());
-			GeneratorHints cHints = getChildGeneratorHints(getOpen().getName());
-			Generation gen = generator.generate(grammar, cHints); // generate(grammar, getOpen());
+			Generation gen = generateChild(getOpen().getName(), grammar, getOpen().getSymbol());
 			gen.setName(getOpen().getName());
 			generatedString.append(gen);
 			generations.add(gen);
 		}
 		for(int i = 0; i < n; i++) {
 			String name = getParsedNameForChild(i);
-			Generator generator = getChildGenerator(name, grammar, getEntry().getSymbol());
-			GeneratorHints cHints = getChildGeneratorHints(name);
-			Generation gen = generator.generate(grammar, cHints); // generate(grammar, children[0]);
+			Generation gen = generateChild(name, grammar, getEntry().getSymbol());
 			gen.setName(name);
 			generatedString.append(gen);
 			generations.add(gen);
 
 			if(hasDelimiter && i < n - 1) {
-				generator = getChildGenerator(getDelimiter().getName(), grammar, getDelimiter().getSymbol());
-				cHints = getChildGeneratorHints(getDelimiter().getName());
-				gen = generator.generate(grammar, cHints);
+				gen = generateChild(getDelimiter().getName(), grammar, getDelimiter().getSymbol());
 				gen.setName(getDelimiter().getName());
 				generatedString.append(gen);
 				generations.add(gen);
 			}
 		}
 		if(hasClose) {
-			Generator generator = getChildGenerator(getClose().getName(), grammar, getClose().getSymbol());
-			GeneratorHints cHints = getChildGeneratorHints(getClose().getName());
-			Generation gen = generator.generate(grammar, cHints);
+			Generation gen = generateChild(getClose().getName(), grammar, getClose().getSymbol());
 			gen.setName(getClose().getName());
 			generatedString.append(gen);
 			generations.add(gen);

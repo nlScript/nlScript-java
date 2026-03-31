@@ -3,8 +3,8 @@ package nlScript.ebnf;
 import nlScript.Evaluator;
 import nlScript.ParsedNode;
 import nlScript.core.BNF;
+import nlScript.core.Generation;
 import nlScript.core.Generator;
-import nlScript.core.GeneratorHints;
 import nlScript.core.Named;
 import nlScript.core.NonTerminal;
 import nlScript.core.Production;
@@ -36,9 +36,9 @@ public class Or extends Rule {
 		int n = children.length;
 		int r = new Random().nextInt(n);
 		String name = getParsedNameForChild(r);
-		Generator generator = getChildGenerator(name, grammar, children[r].getSymbol());
-		GeneratorHints cHints = getChildGeneratorHints(name);
-		return generator.generate(grammar, cHints); // Rule.generate(grammar, children[r]);
+		Generation gen = generateChild(name, grammar, children[r].getSymbol());
+		gen.setName(name);
+		return gen;
 	};
 
 	@Override

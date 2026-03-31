@@ -10,8 +10,12 @@ import nlScript.core.NonTerminal;
 import nlScript.core.Production;
 
 public class Sequence extends Rule {
+
+	private final SequenceGenerator defaultGenerator;
+
 	public Sequence(NonTerminal tgt, Named<?>... children) {
 		super("sequence", tgt, children);
+		this.defaultGenerator = new SequenceGenerator(this);
 		// don't set an evaluator for sequences... setEvaluator(allChildEvaluator);
 	}
 
@@ -27,24 +31,31 @@ public class Sequence extends Rule {
 		p.setAstBuilder(Production.AstBuilder.DEFAULT);
 	}
 
-	private final Generator DEFAULT_GENERATOR = (grammar, hints) -> {
-		int n = children.length;
-		StringBuilder generatedString = new StringBuilder();
-		Generation[] generations = new Generation[n];
-		for(int i = 0; i < n; i++) {
-			String name = getParsedNameForChild(i);
-			Generator generator = getChildGenerator(name, grammar, children[i].getSymbol());
-			GeneratorHints cHints = getChildGeneratorHints(name);
-			Generation gen = generator.generate(grammar, cHints);
-			gen.setName(name);
-			generatedString.append(gen);
-			generations[i] = gen;
+	public static class SequenceGenerator implements Generator {
+		protected final Rule sequence;
+
+		public SequenceGenerator(Rule sequence) {
+			this.sequence = sequence;
 		}
-		return new Generation(generatedString.toString(), generations);
-	};
+
+		@Override
+		public Generation generate(EBNFCore grammar, GeneratorHints hints) {
+			int n = sequence.getChildren().length;
+			StringBuilder generatedString = new StringBuilder();
+			Generation[] generations = new Generation[n];
+			for(int i = 0; i < n; i++) {
+				String name = sequence.getParsedNameForChild(i);
+				Generation gen = sequence.generateChild(name, grammar, sequence.getChildren()[i].getSymbol());
+				gen.setName(name);
+				generatedString.append(gen);
+				generations[i] = gen;
+			}
+			return new Generation(generatedString.toString(), generations);
+		}
+	}
 
 	@Override
 	public Generator getDefaultGenerator() {
-		return DEFAULT_GENERATOR;
+		return defaultGenerator;
 	}
 }

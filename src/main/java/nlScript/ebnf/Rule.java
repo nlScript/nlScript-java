@@ -135,7 +135,39 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 
 	@Override
 	public Generation generate(EBNFCore grammar) {
-		return getGenerator().generate(grammar, getGeneratorHints());
+		GeneratorHints hints = getGeneratorHints();
+		Generation generation =  getGenerator().generate(grammar, getGeneratorHints());
+		String generationDescription = hints.getAs(GeneratorHints.Key.DESCRIPTION);
+		if(generationDescription != null)
+			generation.setDescription(generation.processText(generationDescription));
+		return generation;
+	}
+
+	public Generation generateChild(String childName, EBNFCore ebnf, Symbol otherwise) {
+
+		if(childGenerators != null && childGenerators.get(childName) != null) {
+			Generator childGenerator = childGenerators.get(childName);
+			GeneratorHints cHints = getChildGeneratorHints(childName);
+			return childGenerator.generate(ebnf, cHints);
+		}
+
+		// no dedicated child generator:
+		if(otherwise instanceof Terminal)
+			return ((Terminal) otherwise).generate();
+		else if(otherwise instanceof NonTerminal) {
+			ArrayList<Rule> rules = ebnf.getRules((NonTerminal) otherwise);
+			Rule randomRule = rules.get(new Random().nextInt(rules.size()));
+			Generator childGenerator = randomRule.getGenerator();
+			GeneratorHints cHints = getChildGeneratorHints(childName);
+			cHints = GeneratorHints.combine(randomRule.getGeneratorHints(), cHints, true);
+			Generation childGeneration = childGenerator.generate(ebnf, cHints);
+			String generationDescription = (String) cHints.get(GeneratorHints.Key.DESCRIPTION);
+			if(generationDescription != null)
+				childGeneration.setDescription(childGeneration.processText(generationDescription));
+			return childGeneration;
+		} else {
+			throw new RuntimeException("Don't know how to create a Generator for " + otherwise);
+		}
 	}
 
 	public void setGenerator(Generator generator) {
@@ -175,21 +207,6 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 			if(parsedName.equals(name))
 				return true;
 		return false;
-	}
-
-	public Generator getChildGenerator(String childName, EBNFCore ebnf, Symbol otherwise) {
-		if(childGenerators == null || childGenerators.get(childName) == null) {
-			if(otherwise instanceof Terminal)
-				return (grammar, hints) -> ((Terminal) otherwise).generate();
-			else if(otherwise instanceof NonTerminal) {
-				ArrayList<Rule> rules = ebnf.getRules((NonTerminal) otherwise);
-				Rule randomRule = rules.get(new Random().nextInt(rules.size()));
-				return randomRule.getGenerator();
-			} else {
-				throw new RuntimeException("Don't know how to create a Generator for " + otherwise);
-			}
-		}
-		return childGenerators.get(childName);
 	}
 
 	public GeneratorHints getChildGeneratorHints(String childName) {
