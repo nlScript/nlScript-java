@@ -258,9 +258,6 @@ public class Parser {
 
 	/**
 	 * Separate generations with <code>"::"</code>
-	 * @param rule
-	 * @param children
-	 * @param hints
 	 */
 	public void setGeneratorHints(NamedRule rule, String children, GeneratorHints hints) {
 		String[] child = children.split("::");
@@ -317,11 +314,10 @@ public class Parser {
 
 	/**
 	 * [A-Za-z_] ([A-Za-z0-9-_]* [A-Za-z0-9_])?
-	 *
+	 * Explanation:
 	 * Start:  letter or underscore
 	 * Middle: letter or underscore or dash or digit
 	 * End:    letter or underscore or digit
-	 *
 	 */
 	private Rule identifier(String name) {
 		if(name == null)
@@ -340,12 +336,9 @@ public class Parser {
 	}
 
 	/**
-	 * (was: ExtendedName)
-	 *
-	 * [^:{}\n]+
-	 *
+	 * Regular Expression: [^:{}\n]+
+	 * Meaning:
 	 * Everything but ':', '{', '}'
-	 *
 	 * Evaluates to String
 	 */
 	private Rule variableName() {
