@@ -57,6 +57,18 @@ public class Join extends Rule {
 		return children[0];
 	}
 
+	public boolean hasOpen() {
+		return open != null && !open.getSymbol().isEpsilon();
+	}
+
+	public boolean hasClose() {
+		return close != null && !close.getSymbol().isEpsilon();
+	}
+
+	public boolean hasDelimiter() {
+		return delimiter != null && !delimiter.getSymbol().isEpsilon();
+	}
+
 	public Range getCardinality() {
 		return cardinality;
 	}

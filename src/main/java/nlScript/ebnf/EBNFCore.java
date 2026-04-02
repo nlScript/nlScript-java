@@ -190,16 +190,19 @@ public class EBNFCore {
 		rule.createBNF(bnf);
 	}
 
-	public void removeRules(NonTerminal symbol) {
+	public Set<Rule> removeRules(NonTerminal symbol) {
 		Set<Production> toRemove = new HashSet<>();
+		Set<Rule> collectedRules = new HashSet<>();
 		for(int i = rules.size() - 1; i >= 0; i--) {
 			if (rules.get(i).tgt.equals(symbol)) {
 				Rule rule = rules.remove(i);
+				collectedRules.add(rule);
 				for(Production production : rule.productions)
 					toRemove.add(production);
 			}
 		}
 		bnf.removeProductions(toRemove);
+		return collectedRules;
 	}
 
 	private NonTerminal newOrExistingNonTerminal(String type) {

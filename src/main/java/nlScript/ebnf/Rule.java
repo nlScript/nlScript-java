@@ -2,6 +2,7 @@ package nlScript.ebnf;
 
 import nlScript.Autocompleter;
 import nlScript.Evaluator;
+import nlScript.JsonSerializer;
 import nlScript.core.*;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 
 	private Evaluator evaluator;
 	private Autocompleter autocompleter;
+	private JsonSerializer json;
 	private ParseListener onSuccessfulParsed;
 
 	protected final ArrayList<EBNFProduction> productions = new ArrayList<>();
@@ -61,6 +63,15 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 
 	public Rule setEvaluator(Evaluator evaluator) {
 		this.evaluator = evaluator;
+		return this;
+	}
+
+	public JsonSerializer getJsonSerializer() {
+		return json;
+	}
+
+	public Rule setJsonSerializer(JsonSerializer json) {
+		this.json = json;
 		return this;
 	}
 

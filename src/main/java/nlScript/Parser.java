@@ -2,6 +2,9 @@ package nlScript;
 
 import nlScript.core.*;
 import nlScript.ebnf.*;
+import nlScript.util.Json;
+import nlScript.util.JsonReader;
+import nlScript.util.JsonWriter;
 import nlScript.util.Range;
 import nlScript.core.GeneratorHints.Key;
 
@@ -9,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Parser {
@@ -93,6 +97,8 @@ public class Parser {
 		return defineType(type, pattern, evaluator, autocompleter);
 	}
 
+	private final HashMap<String, Rule> patternToRule = new HashMap<>();
+
 	public NamedRule defineType(String type, String pattern, Evaluator evaluator, Autocompleter autocompleter) {
 		grammar.compile(EXPRESSION.getTarget());
 		RDParser parser = new RDParser(
@@ -105,25 +111,30 @@ public class Parser {
 		} catch (ParseException e) {
 			throw new RuntimeException("Parsing failed", e);
 		}
-		if(pn.getMatcher().state != ParsingState.SUCCESSFUL)
+		if (pn.getMatcher().state != ParsingState.SUCCESSFUL)
 			throw new RuntimeException("Parsing failed");
 		final Named<?>[] rhs = (Named<?>[]) pn.evaluate();
 
 		final Rule newRule = targetGrammar.sequence(type, rhs);
-		if(evaluator != null)
+		if (evaluator != null)
 			newRule.setEvaluator(evaluator);
-		if(autocompleter != null)
+		if (autocompleter != null)
 			newRule.setAutocompleter(autocompleter);
 
-		if(type.equals("sentence"))
+		if (type.equals("sentence"))
 			newRule.setGenerator(new SentenceGenerator(newRule));
 
-		return newRule.withName(type);
+		final String escapedPattern = Json.removeControlCharacters(type + "::" + pattern);
+
+		newRule.setJsonSerializer(e -> JsonWriter.writeSentence((Sequence) newRule, e, escapedPattern));
+		patternToRule.put(escapedPattern, newRule);
+		return newRule.withName(escapedPattern);
 	}
 
 	public void undefineType(String type) {
 		NonTerminal unitsSymbol = (NonTerminal) targetGrammar.getSymbol(type);
-		targetGrammar.removeRules(unitsSymbol);
+		Set<Rule> rulesToRemove = targetGrammar.removeRules(unitsSymbol);
+		patternToRule.keySet().removeIf(s -> rulesToRemove.contains(patternToRule.get(s)));
 		compiled = false;
 	}
 
@@ -152,6 +163,38 @@ public class Parser {
 		}
 		rdParser.addParseStartListener(this::fireParsingStarted);
 		return (ParsedNode) rdParser.parse(autocompletions);
+	}
+
+	public Json.JsonThing toJson(String text) {
+		if(!compiled)
+			compile();
+		symbol2Autocompletion.clear();
+		BNF grammar = targetGrammar.getBNF();
+		EBNFParser rdParser = new EBNFParser(grammar, new Lexer(text));
+		rdParser.addParseStartListener(this::fireParsingStarted);
+		try {
+			ParsedNode root = (ParsedNode) rdParser.parse(null).getChild(0);
+			return root.getRule().getJsonSerializer().toJSON(root);
+		} catch(ParseException e) {
+			throw new RuntimeException("Parsing error while converting to JSON", e);
+		}
+	}
+
+	public String fromJson(Json.JsonThing json) {
+		// json must be a JsonArray
+		// get elements in turn, these are sentences
+		// get the pattern of the sentence.
+		// search the target grammar's rules
+		JsonReader reader = new JsonReader(patternToRule, targetGrammar);
+		Json.JsonArray sentences = (Json.JsonArray) json;
+		StringBuilder ret = new StringBuilder();
+		for(int si = 0; si < sentences.size(); si++) {
+			Json.JsonObject sentence = (Json.JsonObject) sentences.get(si);
+			String pattern = sentence.getAsString("signature");
+			Rule rule = patternToRule.get(pattern);
+			ret.append(reader.fromJson(rule.withName(pattern), sentence));
+		}
+		return ret.toString();
 	}
 
 	private class SentenceGenerator extends Sequence.SequenceGenerator {
@@ -577,12 +620,29 @@ public class Parser {
 	}
 
 	private Rule program() {
-		return targetGrammar.join("program",
+		Rule join = targetGrammar.join("program",
 				new NonTerminal("sentence").withName("sentence"),
 				LINEBREAK_STAR.withName("open"),
 				LINEBREAK_STAR.withName("close"),
 				LINEBREAK_STAR.withName("delimiter"),
 				Range.STAR);
+
+		join.setJsonSerializer(e -> {
+			Json.JsonArray json = new Json.JsonArray();
+			for (int j = 0; j < e.numChildren(); j++) {
+				ParsedNode joinChild = (ParsedNode) e.getChild(j);
+				JsonSerializer serializer = joinChild.getRule().getJsonSerializer();
+				if (serializer != null) {
+					Json.JsonThing js = serializer.toJSON(joinChild);
+					json.addIfNotNull(js);
+				}
+				else {
+					json.add(new Json.JsonString(joinChild.getParsedString()));
+				}
+			}
+			return json;
+		});
+		return join;
 	}
 
 	private final ArrayList<EBNFParser.ParseStartListener> parseStartListeners = new ArrayList<>();
