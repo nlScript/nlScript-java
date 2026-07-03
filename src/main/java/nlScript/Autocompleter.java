@@ -63,8 +63,15 @@ public interface Autocompleter {
 
 		private final HashMap<String, ArrayList<Autocompletion>> symbol2Autocompletion;
 
+		private final Rule sequence;
+
 		public EntireSequenceCompleter(EBNFCore ebnf, HashMap<String, ArrayList<Autocompletion>> symbol2Autocompletion) {
+			this(ebnf, null, symbol2Autocompletion);
+		}
+
+		public EntireSequenceCompleter(EBNFCore ebnf, Rule sequence, HashMap<String, ArrayList<Autocompletion>> symbol2Autocompletion) {
 			this.ebnf = ebnf;
+			this.sequence = sequence;
 			this.symbol2Autocompletion = symbol2Autocompletion;
 		}
 
@@ -72,10 +79,12 @@ public interface Autocompleter {
 		public Autocompletion[] getAutocompletion(DefaultParsedNode pn, boolean justCheck) {
 			String alreadyEntered = pn.getParsedString();
 
-			Rule sequence = ((ParsedNode) pn).getRule();
+			Rule sequence = this.sequence != null ? this.sequence : ((ParsedNode) pn).getRule();
 			Named<?>[] children = sequence.getChildren();
 
-			Autocompletion.EntireSequence entireSequenceCompletion = new Autocompletion.EntireSequence(pn);
+			// Autocompletion.EntireSequence entireSequenceCompletion = new Autocompletion.EntireSequence(pn);
+			Autocompletion.EntireSequence entireSequenceCompletion = new Autocompletion.EntireSequence(
+					sequence.getTarget(), "name-TODO", sequence);
 
 			for (Named<?> child : children) {
 				String key = child.getSymbol() + ":" + child.getName();

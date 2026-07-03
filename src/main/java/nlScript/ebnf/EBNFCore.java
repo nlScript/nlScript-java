@@ -1,5 +1,6 @@
 package nlScript.ebnf;
 
+import nlScript.Autocompleter;
 import nlScript.Evaluator;
 import nlScript.core.Autocompletion;
 import nlScript.core.BNF;
@@ -133,8 +134,15 @@ public class EBNFCore {
 				wsStar,
 				Terminal.literal(",").withName(),
 				wsStar);
-		delimiter.setAutocompleter((pn, justCheck) ->
-				Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? ", " : ""));
+
+		Rule delimiterAndNextChild = new Sequence(null,
+				Terminal.literal(", ").withName(),
+				child);
+		// Cannot just use [delimiter, child], because we set the autocompleter to the delimiter
+		// so this would result in a recursive call to getAutocompletion() and finally
+		// fail with a StackOverflowException.
+		Autocompleter compl = new Autocompleter.EntireSequenceCompleter(this, delimiterAndNextChild, new HashMap<>());
+		delimiter.setAutocompleter(compl);
 		delimiter.setGenerator((grammar, hints) -> new Generation(", "));
 
 		return join(type, child, null, null, delimiter.withName("delimiter"), Range.STAR);
