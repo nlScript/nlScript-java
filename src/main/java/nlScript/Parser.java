@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -311,6 +312,16 @@ public class Parser {
 
 	public Generation generate() {
 		return PROGRAM.generate(targetGrammar);
+	}
+
+	public Parser generate(NamedRule rule, int atLeastNTimes, int atMostNTimes, List<Generation> ret) {
+		Random random = new Random();
+		int n = atLeastNTimes + random.nextInt(atMostNTimes - atLeastNTimes + 1);
+		for(int i = 0; i < n; i++) {
+			Generation g = generate(rule.get());
+			ret.add(g);
+		}
+		return this;
 	}
 
 	public void setGeneratorHints(NamedRule rule, GeneratorHints hints) {
