@@ -19,6 +19,8 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 	private Autocompleter autocompleter;
 	private JsonSerializer json;
 	private ParseListener onSuccessfulParsed;
+	private GenerationListener generationListener;
+	private HashMap<String, GenerationListener> childGenerationListener;
 
 	protected final ArrayList<EBNFProduction> productions = new ArrayList<>();
 
@@ -101,6 +103,28 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 		return this.onSuccessfulParsed;
 	}
 
+	public Rule setGenerationListener(GenerationListener listener) {
+		this.generationListener = listener;
+		return this;
+	}
+
+	public Rule setChildGenerationListener(String child, GenerationListener listener) {
+		if(childGenerationListener == null)
+			childGenerationListener = new HashMap<>();
+		childGenerationListener.put(child, listener);
+		return this;
+	}
+
+	public GenerationListener getGenerationListener() {
+		return generationListener;
+	}
+
+	public GenerationListener getChildGenerationListener(String child) {
+		if(childGenerationListener == null)
+			return null;
+		return childGenerationListener.get(child);
+	}
+
 	public static EBNFProduction addProduction(BNF grammar, Rule rule, NonTerminal left, Symbol... right) {
 		EBNFProduction production = new EBNFProduction(rule, left, right);
 		rule.productions.add(production);
@@ -151,20 +175,30 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 		String generationDescription = hints.getAs(GeneratorHints.Key.DESCRIPTION);
 		if(generationDescription != null)
 			generation.setDescription(generation.processText(generationDescription));
+		if(generationListener != null)
+			generationListener.generated(generation);
 		return generation;
 	}
 
 	public Generation generateChild(String childName, EBNFCore ebnf, Symbol otherwise) {
+		GenerationListener listener = childGenerationListener == null ? null : childGenerationListener.get(childName);
 
 		if(childGenerators != null && childGenerators.get(childName) != null) {
 			Generator childGenerator = childGenerators.get(childName);
 			GeneratorHints cHints = getChildGeneratorHints(childName);
-			return childGenerator.generate(ebnf, cHints);
+			Generation generation = childGenerator.generate(ebnf, cHints);
+			if(listener != null)
+				listener.generated(generation);
+			return generation;
 		}
 
 		// no dedicated child generator:
-		if(otherwise instanceof Terminal)
-			return ((Terminal) otherwise).generate();
+		if(otherwise instanceof Terminal) {
+			Generation generation = ((Terminal) otherwise).generate();
+			if(listener != null)
+				listener.generated(generation);
+			return generation;
+		}
 		else if(otherwise instanceof NonTerminal) {
 			ArrayList<Rule> rules = ebnf.getRules((NonTerminal) otherwise);
 			Rule randomRule = rules.get(new Random().nextInt(rules.size()));
@@ -175,6 +209,8 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 			String generationDescription = (String) cHints.get(GeneratorHints.Key.DESCRIPTION);
 			if(generationDescription != null)
 				childGeneration.setDescription(childGeneration.processText(generationDescription));
+			if(listener != null)
+				listener.generated(childGeneration);
 			return childGeneration;
 		} else {
 			throw new RuntimeException("Don't know how to create a Generator for " + otherwise);

@@ -1,5 +1,6 @@
 package nlScript.ebnf;
 
+import nlScript.core.GenerationListener;
 import nlScript.core.Generator;
 import nlScript.core.GeneratorHints;
 import nlScript.core.Named;
@@ -15,6 +16,14 @@ public class NamedRule extends Named<Rule> {
 
 	public void onSuccessfulParsed(ParseListener listener) {
 		get().onSuccessfulParsed(listener);
+	}
+
+	public void setGenerationListener(GenerationListener listener) {
+		get().setGenerationListener(listener);
+	}
+
+	public void setChildGenerationListener(String childName, GenerationListener listener) {
+		get().setChildGenerationListener(childName, listener);
 	}
 
 	public NamedRule setGenerator(Generator g) {
