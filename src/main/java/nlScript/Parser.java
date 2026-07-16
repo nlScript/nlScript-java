@@ -180,6 +180,24 @@ public class Parser {
 		}
 	}
 
+	public Json.JsonThing toJson(String context, String text) {
+		if(!compiled)
+			compile();
+		symbol2Autocompletion.clear();
+		BNF grammar = targetGrammar.getBNF();
+		EBNFParser rdParser = new EBNFParser(grammar, new Lexer(context));
+		rdParser.addParseStartListener(this::fireParsingStarted);
+		try {
+			rdParser.parse(null); // this eventually modifies the grammar from parsing the context.
+			rdParser = new EBNFParser(grammar, new Lexer(text));
+			// don't call fireParsingStarted, to avoid the grammar being reset
+			ParsedNode root = (ParsedNode) rdParser.parse(null).getChild(0);
+			return root.getRule().getJsonSerializer().toJSON(root);
+		} catch(ParseException e) {
+			throw new RuntimeException("Parsing error while converting to JSON", e);
+		}
+	}
+
 	public String fromJson(Json.JsonThing json) {
 		// json must be a JsonArray
 		// get elements in turn, these are sentences
