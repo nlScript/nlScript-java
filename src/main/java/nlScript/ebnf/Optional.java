@@ -52,4 +52,9 @@ public class Optional extends Rule {
 	public Generator getDefaultGenerator() {
 		return DEFAULT_GENERATOR;
 	}
+
+	@Override
+	public String rhsToString() {
+		return getEntry().toString() + "?";
+	}
 }

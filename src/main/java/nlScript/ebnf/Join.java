@@ -280,4 +280,18 @@ public class Join extends Rule {
 	public Generator getDefaultGenerator() {
 		return DEFAULT_GENERATOR;
 	}
+
+	@Override
+	public String rhsToString() {
+		String ret = "";
+		if(hasOpen())
+			ret += open.toString() + " ";
+		ret += getEntry().toString();
+		if(hasDelimiter())
+			ret += delimiter.toString();
+		ret += "...";
+		if(hasClose())
+			ret += close.toString();
+		return ret + cardinality.toString();
+	}
 }

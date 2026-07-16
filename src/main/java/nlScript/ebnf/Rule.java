@@ -226,4 +226,10 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 			ret = new GeneratorHints();
 		return ret;
 	}
+
+	public abstract String rhsToString();
+
+	public String toString() {
+		return String.format("%50s", getTarget().toString()) + " -> " + rhsToString();
+	}
 }

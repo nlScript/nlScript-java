@@ -10,7 +10,9 @@ import nlScript.core.NonTerminal;
 import nlScript.core.Production;
 import nlScript.core.Symbol;
 
+import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class Or extends Rule {
 	public Or(NonTerminal tgt, Named<?>... children) {
@@ -44,5 +46,10 @@ public class Or extends Rule {
 	@Override
 	public Generator getDefaultGenerator() {
 		return DEFAULT_GENERATOR;
+	}
+
+	@Override
+	public String rhsToString() {
+		return Arrays.stream(children).map(Named::toString).collect(Collectors.joining(" | "));
 	}
 }

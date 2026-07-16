@@ -9,6 +9,9 @@ import nlScript.core.Named;
 import nlScript.core.NonTerminal;
 import nlScript.core.Production;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class Sequence extends Rule {
 
 	private final SequenceGenerator defaultGenerator;
@@ -57,5 +60,10 @@ public class Sequence extends Rule {
 	@Override
 	public Generator getDefaultGenerator() {
 		return defaultGenerator;
+	}
+
+	@Override
+	public String rhsToString() {
+		return Arrays.stream(children).map(Named::toString).collect(Collectors.joining(" + "));
 	}
 }
