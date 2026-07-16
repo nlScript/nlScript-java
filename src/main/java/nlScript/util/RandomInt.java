@@ -13,6 +13,8 @@ public class RandomInt {
 	 * @return
 	 */
 	public static int next(int from, int to) {
+		if(from == to)
+			return from;
 		long origin = (long) from;
 		long bound = (long) to + 1l;
 		return (int) boundedNextLong(origin, bound);
