@@ -29,4 +29,8 @@ public class Named<T extends RepresentsSymbol> {
 	public Symbol getSymbol() {
 		return object.getRepresentedSymbol();
 	}
+
+	public String toString() {
+		return "(" + name + ": " + getSymbol() + ")";
+	}
 }

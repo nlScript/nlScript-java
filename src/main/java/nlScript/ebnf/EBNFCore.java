@@ -221,4 +221,12 @@ public class EBNFCore {
 			s = new NonTerminal(type);
 		return (NonTerminal) s;
 	}
+
+	public String toString() {
+		String ret = "";
+		for(Rule rule : rules) {
+			ret = ret + rule.toString() + "\n";
+		}
+		return ret;
+	}
 }
