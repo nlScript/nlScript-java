@@ -2,6 +2,7 @@ package nlScript.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +27,19 @@ public class BNF {
 		this();
 		symbols.putAll(other.symbols);
 		productions.addAll(other.productions);
+	}
+
+	public int hashCode() {
+		return Objects.hash(symbols, productions);
+	}
+
+	public boolean equals(Object o) {
+		if(this == o)
+			return true;
+		if(!(o instanceof BNF))
+			return false;
+		BNF other = (BNF) o;
+		return Objects.equals(symbols, other.symbols) && Objects.equals(productions, other.productions);
 	}
 
 	public void reset() {

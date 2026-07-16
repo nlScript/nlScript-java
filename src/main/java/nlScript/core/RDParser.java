@@ -40,15 +40,29 @@ public class RDParser {
 	}
 
 	public DefaultParsedNode parse(ArrayList<Autocompletion> autocompletions) throws ParseException {
-		SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
-		ArrayList<SymbolSequence> endOfInput = new ArrayList<>();
-		if(parseDebugger != null)
-			parseDebugger.reset(seq, lexer.substring(0));
-		SymbolSequence parsedSequence = parseNotRecursive(seq, endOfInput);
-		if(autocompletions != null)
-			collectAutocompletions(endOfInput, autocompletions);
-		DefaultParsedNode[] last = new DefaultParsedNode[1];
-		DefaultParsedNode ret = createParsedTree(parsedSequence, last);
+		BNF orig;
+		DefaultParsedNode ret;
+		DefaultParsedNode[] last;
+		while(true) {
+			SymbolSequence seq = new SymbolSequence(BNF.ARTIFICIAL_START_SYMBOL);
+			ArrayList<SymbolSequence> endOfInput = new ArrayList<>();
+			lexer.setPosition(0);
+			if (parseDebugger != null)
+				parseDebugger.reset(seq, lexer.substring(0));
+			SymbolSequence parsedSequence = parseNotRecursive(seq, endOfInput);
+			if (autocompletions != null)
+				collectAutocompletions(endOfInput, autocompletions);
+			last = new DefaultParsedNode[1];
+			orig = new BNF(grammar);
+			ret = createParsedTree(parsedSequence, last);
+
+			if(grammar.equals(orig))
+				break;
+
+			System.out.println("Repeat parsing because grammar changed:");
+//			System.out.println(Diff.diff(new HashSet<>(orig.getProductions()), new HashSet<>(grammar.getProductions())));
+		}
+
 		// System.out.println(GraphViz.toVizDotLink(ret));
 		// TODO first call buildAst (and remove it from Parser)
 		ret = buildAst(ret);
