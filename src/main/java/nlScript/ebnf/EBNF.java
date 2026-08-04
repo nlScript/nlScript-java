@@ -1,5 +1,6 @@
 package nlScript.ebnf;
 
+import nlScript.core.Generator;
 import nlScript.core.Generation;
 import nlScript.core.GeneratorHints;
 import nlScript.core.Terminal;
@@ -86,8 +87,8 @@ public class EBNF extends EBNFCore {
 		ret.setEvaluator(pn -> Integer.parseInt(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		ret.setGenerator((grammar, hints) -> {
-			int min = (int) hints.get(GeneratorHints.Key.MIN_VALUE, Integer.MIN_VALUE);
-			int max = (int) hints.get(GeneratorHints.Key.MAX_VALUE, Integer.MAX_VALUE);
+			int min = (int) hints.get(GeneratorHints.Key.MIN_VALUE, Generator.DEFAULT_INT_MIN);
+			int max = (int) hints.get(GeneratorHints.Key.MAX_VALUE, Generator.DEFAULT_INT_MAX);
 			return new Generation(Integer.toString(RandomInt.next(min, max)));
 		});
 		return ret;
@@ -123,29 +124,12 @@ public class EBNF extends EBNFCore {
 		ret.setEvaluator(pn -> Double.parseDouble(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
 		ret.setGenerator((grammar, hints) -> {
-			float min = (float) hints.get(GeneratorHints.Key.MIN_VALUE, Float.MIN_VALUE);
-			float max = (float) hints.get(GeneratorHints.Key.MAX_VALUE, Float.MAX_VALUE);
-			float f = min + (max - min) * (float) Math.random();
-			int decimalPlaces = (int) hints.get(GeneratorHints.Key.DECIMAL_PLACES, -1);
-			String fStr = decimalPlaces == -1 ? Float.toString(f) : format(f, decimalPlaces);
-			return new Generation(fStr);
+			double min = (float) hints.get(GeneratorHints.Key.MIN_VALUE, Generator.DEFAULT_FLOAT_MIN);
+			double max = (float) hints.get(GeneratorHints.Key.MAX_VALUE, Generator.DEFAULT_FLOAT_MAX);
+			int decimalPlaces = (int) hints.get(GeneratorHints.Key.DECIMAL_PLACES, Generator.DEFAULT_FLOAT_N_DECIMALS);
+			return Generator.doubleNumber(min, max, decimalPlaces).generate(grammar, hints);
 		});
 		return ret;
-	}
-
-	private String format(float f, int decimalDigits) {
-		StringBuilder sb = new StringBuilder("#");
-		if(decimalDigits > 0)
-			sb.append('.');
-		for(int i = 0; i < decimalDigits; i++)
-			sb.append('#');
-
-		DecimalFormat df = new DecimalFormat(sb.toString());
-		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-		dfs.setDecimalSeparator('.');
-		df.setDecimalFormatSymbols(dfs);
-		df.setGroupingUsed(false);
-		return df.format(f);
 	}
 
 	private Rule makeWhitespaceStar() {

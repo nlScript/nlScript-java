@@ -237,6 +237,12 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 
 	public abstract Generator getDefaultGenerator();
 
+	public void setChildGenerator(String childName, Generator generator) {
+		if(childGenerators == null)
+			childGenerators = new HashMap<>();
+		childGenerators.put(childName, generator);
+	}
+
 	public void setChildGeneratorHints(String childName, GeneratorHints hints) {
 		if(childGeneratorHints == null)
 			childGeneratorHints = new HashMap<>();

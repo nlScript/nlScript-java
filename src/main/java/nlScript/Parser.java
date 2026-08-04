@@ -348,6 +348,25 @@ public class Parser {
 			throw new RuntimeException("Cannot set generator hints for child " + Arrays.toString(child) + " (no child with that name)");
 	}
 
+	public void setGenerator(NamedRule rule, Generator generator, String... child) {
+		if(child.length == 0)
+			rule.setGenerator(generator);
+
+		String[] allButLast = new String[child.length - 1];
+		String lastChildName = child[child.length - 1];
+		System.arraycopy(child, 0, allButLast, 0, allButLast.length);
+		List<Rule> parents = getChildRules(rule.get(), allButLast);
+		boolean atLeastOne = false;
+		for(Rule parent : parents) {
+			if(parent.hasParsedName(lastChildName)) {
+				atLeastOne = true;
+				parent.setChildGenerator(lastChildName, generator);
+			}
+		}
+		if(!atLeastOne)
+			throw new RuntimeException("Cannot set generator for child " + Arrays.toString(child) + " (no child with that name)");
+	}
+
 	private List<Rule> getChildRules(Rule rule, String... children) {
 		List<Rule> currentLevel = new ArrayList<>();
 		currentLevel.add(rule);
