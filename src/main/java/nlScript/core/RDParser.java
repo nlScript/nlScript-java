@@ -49,11 +49,15 @@ public class RDParser {
 			lexer.setPosition(0);
 			if (parseDebugger != null)
 				parseDebugger.reset(seq, lexer.substring(0));
-			SymbolSequence parsedSequence = parseNotRecursive(seq, endOfInput);
-			if (autocompletions != null)
-				collectAutocompletions(endOfInput, autocompletions);
-			last = new DefaultParsedNode[1];
+			// capture the original grammar here because collectAutocompletions()
+			// calls createParsedTree(), which might modify it.
 			orig = new BNF(grammar);
+			SymbolSequence parsedSequence = parseNotRecursive(seq, endOfInput);
+			if (autocompletions != null) {
+				autocompletions.clear();
+				collectAutocompletions(endOfInput, autocompletions);
+			}
+			last = new DefaultParsedNode[1];
 			ret = createParsedTree(parsedSequence, last);
 
 			if(grammar.equals(orig))

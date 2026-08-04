@@ -14,6 +14,8 @@ import nlScript.core.RDParser;
 import nlScript.core.Terminal;
 import nlScript.ebnf.EBNFCore;
 import nlScript.ebnf.EBNFParsedNodeFactory;
+import nlScript.ebnf.NamedRule;
+import nlScript.ebnf.ParseListener;
 import nlScript.ebnf.Rule;
 import nlScript.ui.ACEditor;
 import org.junit.jupiter.api.Test;
@@ -280,6 +282,49 @@ public class TestAutocompletion {
 		}
 		assertEquals("${well}, ${range},  ", autocompletions.stream().map(a -> a.getCompletion(Autocompletion.Purpose.FOR_MENU)).collect(Collectors.joining(", ")));
 		assertEquals("${row}/${column}, ${row}/${column}-${row}/${column},  ", autocompletions.stream().map(a -> a.getCompletion(Autocompletion.Purpose.FOR_INSERTION)).collect(Collectors.joining(", ")));
+	}
+
+	@Test
+	public void test11() {
+		Parser parser = new Parser();
+		parser.addParseStartListener(() -> parser.undefineType("available-channel"));
+
+		parser.defineType("name",
+				"'{name:[A-Za-z0-9-]:+}'",
+				pn -> pn.getParsedString("name"),
+				true);
+
+		parser.defineType("available-channel", "default", pn -> "default");
+
+		NamedRule rule = parser.defineSentence("Define channel {channel-name:name}.", pn -> null);
+		rule.onSuccessfulParsed(n -> {
+			if(n.getMatcher().state == ParsingState.SUCCESSFUL) {
+				final String name = (String) n.evaluate("channel-name");
+				parser.defineType("available-channel", name, pn -> name);
+				System.out.println("define type available-channel -> " + name);
+			}
+		});
+
+		parser.defineSentence("Use channel(s) {channels:list<available-channel>}.", pn -> null);
+
+		String input =
+				"Define channel 'DAPI'.\n" +
+				"Define channel 'A488'.\n" +
+				"Use channel(s) ";
+
+		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
+		try {
+			ParsedNode pn = parser.parse(input, autocompletions);
+			assertEquals(ParsingState.END_OF_INPUT, pn.getMatcher().state);
+			System.out.println(
+					autocompletions.stream()
+							.map(a -> a.getCompletion(Autocompletion.Purpose.FOR_MENU))
+							.collect(Collectors.joining(", "))
+			);
+			assertArrayEquals(new String[] { "DAPI ()", "A488 ()", ". ()" }, getCompletionStrings(autocompletions));
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private void test(String input, String... expectedCompletion) throws ParseException {
