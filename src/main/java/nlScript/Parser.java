@@ -357,7 +357,7 @@ public class Parser {
 			// get the rules of the current level
 			for(Rule r : currentLevel) {
 				// check all of its right hand side,
-				// for heach non-terminal, get the rules that produce them
+				// for each non-terminal, get the rules that produce them
 				// add those rules that contain 'childName' in their parsed names
 				if(!r.hasParsedName(childName))
 					continue;
