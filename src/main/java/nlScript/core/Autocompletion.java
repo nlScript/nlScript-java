@@ -86,6 +86,11 @@ public abstract class Autocompletion {
 		return new Autocompletion[] { this };
 	}
 
+	@Override
+	public String toString() {
+		return getCompletion(Purpose.FOR_MENU);
+	}
+
 	public static class Literal extends Autocompletion {
 
 		private final String literal;
@@ -151,6 +156,11 @@ public abstract class Autocompletion {
 		public String getCompletion(Purpose purpose) {
 			return VETO;
 		}
+
+		@Override
+		public String toString() {
+			return "<veto>";
+		}
 	}
 
 	public static class DoesAutocomplete extends Autocompletion {
@@ -165,6 +175,11 @@ public abstract class Autocompletion {
 		@Override
 		public String getCompletion(Purpose purpose) {
 			return "Something"; // the return value for DoesAutocomplete shouldn't matter
+		}
+
+		@Override
+		public String toString() {
+			return "<does autocomplete>";
 		}
 	}
 
