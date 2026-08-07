@@ -131,6 +131,25 @@ public class Parser {
 		return newRule.withName(escapedPattern);
 	}
 
+	public void enableLineComments(String commentLinePrefix) {
+		this.commentLinePrefix = commentLinePrefix + " ";
+		NamedRule rule = defineSentence("{" + commentLinePrefix + "}{comment:[^\r\n]:*}{\n}",
+				e -> null,
+				new Autocompleter.EntireSequenceCompleter(targetGrammar, new HashMap<>()) {
+					@Override
+					public Autocompletion[] getAutocompletion(DefaultParsedNode pn, boolean justCheck) {
+						if(pn.getParsedString().length() < commentLinePrefix.length()) {
+							Autocompletion.EntireSequence es = new Autocompletion.EntireSequence(pn);
+							es.addLiteral(pn.getChild(0).getSymbol(), null, Parser.this.commentLinePrefix);
+							es.addParameterized(pn.getChild(1).getSymbol(), "comment", "comment");
+							return es.asArray();
+						}
+						return Autocompletion.veto(pn);
+					}
+				});
+		rule.get().setJsonSerializer(pn -> null);
+	}
+
 	public void undefineType(String type) {
 		NonTerminal unitsSymbol = (NonTerminal) targetGrammar.getSymbol(type);
 		Set<Rule> rulesToRemove = targetGrammar.removeRules(unitsSymbol);
