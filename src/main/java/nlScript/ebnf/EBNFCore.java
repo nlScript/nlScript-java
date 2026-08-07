@@ -143,7 +143,7 @@ public class EBNFCore {
 		// fail with a StackOverflowException.
 		Autocompleter compl = new Autocompleter.EntireSequenceCompleter(this, delimiterAndNextChild, new HashMap<>());
 		delimiter.setAutocompleter(compl);
-		delimiter.setGenerator((grammar, hints) -> new Generation(", "));
+		delimiter.setGenerator(grammar -> new Generation(", "));
 
 		return join(type, child, null, null, delimiter.withName("delimiter"), Range.STAR);
 	}
@@ -154,9 +154,9 @@ public class EBNFCore {
 		Rule open      = sequence(null, Terminal.literal("(").withName("open"), wsStar);
 		Rule close     = sequence(null, wsStar, Terminal.literal(")").withName("close"));
 		Rule delimiter = sequence(null, wsStar, Terminal.literal(",").withName("delimiter"), wsStar);
-		open     .setGenerator((grammar, hints) -> new Generation("("));
-		close    .setGenerator((grammar, hints) -> new Generation(")"));
-		delimiter.setGenerator((grammar, hints) -> new Generation(", "));
+		open     .setGenerator(grammar -> new Generation("("));
+		close    .setGenerator(grammar -> new Generation(")"));
+		delimiter.setGenerator(grammar -> new Generation(", "));
 
 		Rule ret = join(type, child, open.withName("open"), close.withName("close"), delimiter.withName("delimiter"), names);
 		ret.setAutocompleter((pn, justCheck) -> {

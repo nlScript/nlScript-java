@@ -2,7 +2,6 @@ package nlScript.ebnf;
 
 import nlScript.core.GenerationListener;
 import nlScript.core.Generator;
-import nlScript.core.GeneratorHints;
 import nlScript.core.Named;
 
 public class NamedRule extends Named<Rule> {
@@ -36,7 +35,7 @@ public class NamedRule extends Named<Rule> {
 	}
 
 	public NamedRule setGeneratorDescription(String desc) {
-		get().setGeneratorHints(GeneratorHints.from(GeneratorHints.Key.DESCRIPTION, desc));
+		get().setGenerationDescription(desc);
 		return this;
 	}
 

@@ -34,7 +34,7 @@ public class Or extends Rule {
 		}
 	}
 
-	private final Generator DEFAULT_GENERATOR = (grammar, hints) -> {
+	private final Generator DEFAULT_GENERATOR = grammar -> {
 		int n = children.length;
 		int r = new Random().nextInt(n);
 		String name = getParsedNameForChild(r);

@@ -5,7 +5,6 @@ import nlScript.ParsedNode;
 import nlScript.core.BNF;
 import nlScript.core.Generation;
 import nlScript.core.Generator;
-import nlScript.core.GeneratorHints;
 import nlScript.core.Named;
 import nlScript.core.NonTerminal;
 import nlScript.core.Production;
@@ -43,9 +42,9 @@ public class Star extends Rule {
 		});
 	}
 
-	private final Generator DEFAULT_GENERATOR = (grammar, hints) -> {
-		int nMin = (int) hints.get(GeneratorHints.Key.MIN_NUMBER, 0);
-		int nMax = (int) hints.get(GeneratorHints.Key.MAX_NUMBER, Integer.MAX_VALUE);
+	private final Generator DEFAULT_GENERATOR = grammar -> {
+		int nMin = Generator.DEFAULT_MIN_COUNT;
+		int nMax = Generator.DEFAULT_MAX_COUNT;
 		int n = RandomInt.next(nMin, nMax);
 		StringBuilder generatedString = new StringBuilder();
 		Generation[] generations = new Generation[n];

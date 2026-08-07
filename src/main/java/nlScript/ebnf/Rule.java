@@ -165,14 +165,20 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 
 	private Generator generator;
 	private HashMap<String, Generator> childGenerators;
-	private GeneratorHints generatorHints;
-	private HashMap<String, GeneratorHints> childGeneratorHints;
+	private String generationDescription;
+
+	public String getGenerationDescription() {
+		return generationDescription;
+	}
+
+	public Rule setGenerationDescription(String generationDescription) {
+		this.generationDescription = generationDescription;
+		return this;
+	}
 
 	@Override
 	public Generation generate(EBNFCore grammar) {
-		GeneratorHints hints = getGeneratorHints();
-		Generation generation =  getGenerator().generate(grammar, getGeneratorHints());
-		String generationDescription = hints.getAs(GeneratorHints.Key.DESCRIPTION);
+		Generation generation =  getGenerator().generate(grammar);
 		if(generationDescription != null)
 			generation.setDescription(generation.processText(generationDescription));
 		if(generationListener != null)
@@ -185,8 +191,7 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 
 		if(childGenerators != null && childGenerators.get(childName) != null) {
 			Generator childGenerator = childGenerators.get(childName);
-			GeneratorHints cHints = getChildGeneratorHints(childName);
-			Generation generation = childGenerator.generate(ebnf, cHints);
+			Generation generation = childGenerator.generate(ebnf);
 			if(listener != null)
 				listener.generated(generation);
 			return generation;
@@ -201,12 +206,12 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 		}
 		else if(otherwise instanceof NonTerminal) {
 			ArrayList<Rule> rules = ebnf.getRules((NonTerminal) otherwise);
+			if(rules.isEmpty())
+				throw new RuntimeException("No rule exists for " + otherwise.getSymbol());
 			Rule randomRule = rules.get(new Random().nextInt(rules.size()));
 			Generator childGenerator = randomRule.getGenerator();
-			GeneratorHints cHints = getChildGeneratorHints(childName);
-			cHints = GeneratorHints.combine(randomRule.getGeneratorHints(), cHints, true);
-			Generation childGeneration = childGenerator.generate(ebnf, cHints);
-			String generationDescription = (String) cHints.get(GeneratorHints.Key.DESCRIPTION);
+			Generation childGeneration = childGenerator.generate(ebnf);
+			String generationDescription = randomRule.generationDescription; // TODO not sure if we need a childGenerationDescription
 			if(generationDescription != null)
 				childGeneration.setDescription(childGeneration.processText(generationDescription));
 			if(listener != null)
@@ -221,18 +226,8 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 		this.generator = generator;
 	}
 
-	public void setGeneratorHints(GeneratorHints hints) {
-		this.generatorHints = hints;
-	}
-
 	public Generator getGenerator() {
 		return this.generator != null ? this.generator : getDefaultGenerator();
-	}
-
-	public GeneratorHints getGeneratorHints() {
-		if(this.generatorHints == null)
-			this.generatorHints = new GeneratorHints();
-		return this.generatorHints;
 	}
 
 	public abstract Generator getDefaultGenerator();
@@ -241,12 +236,6 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 		if(childGenerators == null)
 			childGenerators = new HashMap<>();
 		childGenerators.put(childName, generator);
-	}
-
-	public void setChildGeneratorHints(String childName, GeneratorHints hints) {
-		if(childGeneratorHints == null)
-			childGeneratorHints = new HashMap<>();
-		childGeneratorHints.put(childName, hints);
 	}
 
 	public boolean hasParsedName(String name) {
@@ -260,13 +249,6 @@ public abstract class Rule implements RepresentsSymbol, Generatable {
 			if(parsedName.equals(name))
 				return true;
 		return false;
-	}
-
-	public GeneratorHints getChildGeneratorHints(String childName) {
-		GeneratorHints ret = childGeneratorHints != null ? childGeneratorHints.get(childName) : null;
-		if(ret == null)
-			ret = new GeneratorHints();
-		return ret;
 	}
 
 	public abstract String rhsToString();

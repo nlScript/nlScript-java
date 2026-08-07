@@ -235,15 +235,17 @@ public class Join extends Rule {
 		}
 	}
 
-	private final Generator DEFAULT_GENERATOR = (grammar, hints) -> {
+	private final Generator DEFAULT_GENERATOR = grammar -> {
 		final boolean hasOpen = getOpen() != null && !getOpen().getSymbol().isEpsilon();
 		final boolean hasClose = getClose() != null && !getClose().getSymbol().isEpsilon();
 		final boolean hasDelimiter = getDelimiter() != null && !getDelimiter().getSymbol().isEpsilon();
 
-		int lower = getCardinality().getLower();
 		int upper = getCardinality().getUpper();
 		if(upper == Integer.MAX_VALUE)
-			upper = (int) hints.get(GeneratorHints.Key.MAX_NUMBER, upper);
+			upper = Generator.DEFAULT_MAX_COUNT;
+		int lower = getCardinality().getLower();
+		if(lower == 0)
+			lower = Math.min(Generator.DEFAULT_MIN_COUNT, upper);
 		int n = RandomInt.next(lower, upper);
 		StringBuilder generatedString = new StringBuilder();
 		List<Generation> generations = new ArrayList<>();

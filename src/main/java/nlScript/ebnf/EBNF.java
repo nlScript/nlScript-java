@@ -2,7 +2,6 @@ package nlScript.ebnf;
 
 import nlScript.core.Generator;
 import nlScript.core.Generation;
-import nlScript.core.GeneratorHints;
 import nlScript.core.Terminal;
 import nlScript.Evaluator;
 import nlScript.core.Autocompletion;
@@ -11,8 +10,6 @@ import nlScript.util.RandomInt;
 import nlScript.util.Range;
 import nlScript.Autocompleter;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -86,11 +83,7 @@ public class EBNF extends EBNFCore {
 		);
 		ret.setEvaluator(pn -> Integer.parseInt(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
-		ret.setGenerator((grammar, hints) -> {
-			int min = (int) hints.get(GeneratorHints.Key.MIN_VALUE, Generator.DEFAULT_INT_MIN);
-			int max = (int) hints.get(GeneratorHints.Key.MAX_VALUE, Generator.DEFAULT_INT_MAX);
-			return new Generation(Integer.toString(RandomInt.next(min, max)));
-		});
+		ret.setGenerator(Generator.intGenerator());
 		return ret;
 	}
 
@@ -123,26 +116,21 @@ public class EBNF extends EBNFCore {
 		 */
 		ret.setEvaluator(pn -> Double.parseDouble(pn.getParsedString()));
 		ret.setAutocompleter(Autocompleter.DEFAULT_INLINE_AUTOCOMPLETER);
-		ret.setGenerator((grammar, hints) -> {
-			double min = (float) hints.get(GeneratorHints.Key.MIN_VALUE, Generator.DEFAULT_FLOAT_MIN);
-			double max = (float) hints.get(GeneratorHints.Key.MAX_VALUE, Generator.DEFAULT_FLOAT_MAX);
-			int decimalPlaces = (int) hints.get(GeneratorHints.Key.DECIMAL_PLACES, Generator.DEFAULT_FLOAT_N_DECIMALS);
-			return Generator.doubleNumber(min, max, decimalPlaces).generate(grammar, hints);
-		});
+		ret.setGenerator(Generator.doubleGenerator());
 		return ret;
 	}
 
 	private Rule makeWhitespaceStar() {
 		Rule ret = star(WHITESPACE_STAR_NAME, Terminal.WHITESPACE.withName());
 		ret.setAutocompleter((pn, justCheck) -> Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? " " : ""));
-		ret.setGenerator((grammar, hints) -> new Generation(" "));
+		ret.setGenerator(grammar -> new Generation(" "));
 		return ret;
 	}
 
 	private Rule makeWhitespacePlus() {
 		Rule ret = plus(WHITESPACE_PLUS_NAME, Terminal.WHITESPACE.withName());
 		ret.setAutocompleter((pn, justCheck) -> Autocompletion.literal(pn, pn.getParsedString().isEmpty() ? " " : ""));
-		ret.setGenerator((grammar, hints) -> new Generation(" "));
+		ret.setGenerator(grammar -> new Generation(" "));
 		return ret;
 	}
 
@@ -161,7 +149,7 @@ public class EBNF extends EBNFCore {
 				(Integer) pn.evaluate(0),
 				(Integer) pn.evaluate(1)));
 		return ret;
-		// TODO set autocompleter
+		// TODO set autocompleter and generator
 	}
 
 	private Rule makeColor() {
@@ -188,7 +176,7 @@ public class EBNF extends EBNFCore {
 			int b = (Integer) pn.evaluate("blue");
 			return rgb2int(r, g, b);
 		});
-		custom.setGenerator((grammar, hints) -> {
+		custom.setGenerator(grammar -> {
 			int r = RandomInt.next(0, 255);
 			int g = RandomInt.next(0, 255);
 			int b = RandomInt.next(0, 255);
@@ -234,7 +222,7 @@ public class EBNF extends EBNFCore {
 				Terminal.literal(":").withName(),
 				minute.withName("MM"));
 
-		ret.setGenerator((grammar, hints) -> {
+		ret.setGenerator(grammar -> {
 			Random random = new Random();
 			int h = random.nextInt(24);
 			int m = random.nextInt(60);

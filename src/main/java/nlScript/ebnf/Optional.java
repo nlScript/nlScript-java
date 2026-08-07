@@ -34,7 +34,7 @@ public class Optional extends Rule {
 		p1.setAstBuilder(Production.AstBuilder.DEFAULT);
 	}
 
-	private final Generator DEFAULT_GENERATOR = (grammar, hints) -> {
+	private final Generator DEFAULT_GENERATOR = grammar -> {
 		int n = RandomInt.next(0, 1);
 		StringBuilder generatedString = new StringBuilder();
 		Generation[] generations = new Generation[n];

@@ -4,7 +4,6 @@ import nlScript.ParsedNode;
 import nlScript.core.BNF;
 import nlScript.core.Generation;
 import nlScript.core.Generator;
-import nlScript.core.GeneratorHints;
 import nlScript.core.Named;
 import nlScript.core.NonTerminal;
 import nlScript.core.Production;
@@ -42,7 +41,7 @@ public class Sequence extends Rule {
 		}
 
 		@Override
-		public Generation generate(EBNFCore grammar, GeneratorHints hints) {
+		public Generation generate(EBNFCore grammar) {
 			int n = sequence.getChildren().length;
 			StringBuilder generatedString = new StringBuilder();
 			Generation[] generations = new Generation[n];

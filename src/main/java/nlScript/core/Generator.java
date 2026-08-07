@@ -19,29 +19,40 @@ public interface Generator {
 	int   DEFAULT_FLOAT_N_DECIMALS = 2;
 	int   DEFAULT_INT_MIN          = -1000;
 	int   DEFAULT_INT_MAX          = 1000;
+	int   DEFAULT_MIN_COUNT        = 1;
+	int   DEFAULT_MAX_COUNT        = 5;
 
-	Generation generate(EBNFCore grammar, GeneratorHints hints);
+	Generation generate(EBNFCore grammar);
 
 	default Generator fromChild(String child) {
 		final Generator myself = this;
-		return  (grammar, hints) -> myself.generate(grammar, hints).getChild(child);
+		return  grammar -> myself.generate(grammar).getChild(child);
 	}
 
-	static Generator doubleNumber(double min, double max, int decimals) {
-		return (grammar, hints) -> {
-			double f = min + (max - min) * (float) Math.random();
-			String fStr = decimals == -1 ? Double.toString(f) : format(f, decimals);
-			return new Generation(fStr);
-		};
+	static Generator doubleGenerator() {
+		return grammar -> new Generation(generateDouble(DEFAULT_FLOAT_MIN, DEFAULT_FLOAT_MAX, DEFAULT_FLOAT_N_DECIMALS));
 	}
 
-	static Generator intNumber(int min, int max) {
-		return (grammar, hints) ->
-				new Generation(Integer.toString(RandomInt.next(min, max)));
+	static Generator doubleGenerator(double min, double max, int decimals) {
+		return grammar -> new Generation(generateDouble(min, max, decimals));
 	}
 
-	static Generator string(String... patternsWithRange) {
-		return (grammar, hints) -> {
+	static String generateDouble(double min, double max, int decimals) {
+		double f = min + (max - min) * (float) Math.random();
+		return decimals == -1 ? Double.toString(f) : format(f, decimals);
+	}
+
+	static Generator intGenerator() {
+		return grammar ->
+				new Generation(Integer.toString(RandomInt.next(DEFAULT_INT_MIN, DEFAULT_INT_MAX)));
+	}
+
+	static Generator intGenerator(int min, int max) {
+		return grammar -> new Generation(Integer.toString(RandomInt.next(min, max)));
+	}
+
+	static Generator stringGenerator(String... patternsWithRange) {
+		return grammar -> {
 			String s = "";
 			for(String patternWithRange : patternsWithRange)
 				s += randomString(patternWithRange);
@@ -149,8 +160,8 @@ public interface Generator {
 		ALPHABETICAL
 	}
 
-	static <T> Generator fromList(List<T> items, int minNo, int maxNo, Order order, boolean withRepeats) {
-		return (grammar, hints) -> {
+	static <T> Generator listGenerator(List<T> items, int minNo, int maxNo, Order order, boolean withRepeats) {
+		return grammar -> {
 			if (items == null || items.isEmpty())
 				throw new IllegalArgumentException("items must not be null or empty");
 

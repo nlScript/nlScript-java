@@ -6,7 +6,6 @@ import nlScript.util.Json;
 import nlScript.util.JsonReader;
 import nlScript.util.JsonWriter;
 import nlScript.util.Range;
-import nlScript.core.GeneratorHints.Key;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -223,9 +222,9 @@ public class Parser {
 		}
 
 		@Override
-		public Generation generate(EBNFCore grammar, GeneratorHints hints) {
-			Generation gen = super.generate(grammar, hints);
-			String generationDescription = hints.getAs(Key.DESCRIPTION);
+		public Generation generate(EBNFCore grammar) {
+			Generation gen = super.generate(grammar);
+			String generationDescription = super.sequence.getGenerationDescription();
 			if(generateComments && generationDescription != null) {
 				generationDescription = gen.processText(generationDescription);
 				String comment = formatComment(generationDescription, commentLinePrefix, 85);
@@ -294,14 +293,6 @@ public class Parser {
 		}
 	}
 
-	public Generation getDefaultGeneration(Rule rule) {
-		return rule.getDefaultGenerator().generate(targetGrammar, rule.getGeneratorHints());
-	}
-
-	public Generation getDefaultGeneration(NamedRule rule) {
-		return rule.get().getDefaultGenerator().generate(targetGrammar, rule.get().getGeneratorHints());
-	}
-
 	public Generation generate(Rule rule) {
 		return rule.generate(targetGrammar);
 	}
@@ -322,30 +313,6 @@ public class Parser {
 			ret.add(g);
 		}
 		return this;
-	}
-
-	public void setGeneratorHints(NamedRule rule, GeneratorHints hints) {
-		rule.get().setGeneratorHints(hints);
-	}
-
-	/**
-	 * Separate generations with <code>"::"</code>
-	 */
-	public void setGeneratorHints(NamedRule rule, String children, GeneratorHints hints) {
-		String[] child = children.split("::");
-		String[] allButLast = new String[child.length - 1];
-		String lastChildName = child[child.length - 1];
-		System.arraycopy(child, 0, allButLast, 0, allButLast.length);
-		List<Rule> parents = getChildRules(rule.get(), allButLast);
-		boolean atLeastOne = false;
-		for(Rule parent : parents) {
-			if(parent.hasParsedName(lastChildName)) {
-				atLeastOne = true;
-				parent.setChildGeneratorHints(lastChildName, hints);
-			}
-		}
-		if(!atLeastOne)
-			throw new RuntimeException("Cannot set generator hints for child " + Arrays.toString(child) + " (no child with that name)");
 	}
 
 	public void setGenerator(NamedRule rule, Generator generator, String... child) {
