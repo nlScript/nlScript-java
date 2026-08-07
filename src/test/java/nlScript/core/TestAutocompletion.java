@@ -53,7 +53,7 @@ public class TestAutocompletion {
 		ArrayList<Autocompletion> autocompletions = new ArrayList<>();
 		parser.parse("", autocompletions);
 		assertEquals(2, autocompletions.size());
-		assertEquals("Define the output path", autocompletions.get(1).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
+		assertEquals("Define the output path ", autocompletions.get(1).getCompletion(Autocompletion.Purpose.FOR_INSERTION));
 	}
 
 	@Test
@@ -280,8 +280,8 @@ public class TestAutocompletion {
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
-		assertEquals("${well}, ${range},  ", autocompletions.stream().map(a -> a.getCompletion(Autocompletion.Purpose.FOR_MENU)).collect(Collectors.joining(", ")));
-		assertEquals("${row}/${column}, ${row}/${column}-${row}/${column},  ", autocompletions.stream().map(a -> a.getCompletion(Autocompletion.Purpose.FOR_INSERTION)).collect(Collectors.joining(", ")));
+		assertEquals("${well}, ${range},  carefully.", autocompletions.stream().map(a -> a.getCompletion(Autocompletion.Purpose.FOR_MENU)).collect(Collectors.joining(", ")));
+		assertEquals("${row}/${column}, ${row}/${column}-${row}/${column},  carefully.", autocompletions.stream().map(a -> a.getCompletion(Autocompletion.Purpose.FOR_INSERTION)).collect(Collectors.joining(", ")));
 	}
 
 	@Test

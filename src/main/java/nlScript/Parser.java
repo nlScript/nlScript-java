@@ -587,16 +587,8 @@ public class Parser {
 	 * Evaluates to a literal
 	 */
 	private Rule noVariable() {
-		return grammar.sequence("no-variable",
-				Terminal.characterClass("[^ \t{]").withName(),
-				grammar.optional("no-var-tail-opt",
-						grammar.sequence("no-var-tail-opt-seq",
-								grammar.star("no-var-tail-opt-seq-star",
-										Terminal.characterClass("[^{]").withName()
-								).withName("middle"),
-								Terminal.characterClass("[^ \t{]").withName()
-						).withName("seq")
-				).withName("tail")
+		return grammar.plus("no-variable",
+				Terminal.characterClass("[^{]").withName("character")
 		).setEvaluator(pn -> Terminal.literal(pn.getParsedString()).withName());
 	}
 
@@ -608,7 +600,7 @@ public class Parser {
 				).withName("or"),
 				null,
 				null,
-				grammar.WHITESPACE_STAR.withName("delimiter"),
+				null,
 				false,
 				Range.PLUS
 		).setEvaluator(parsedNode -> {
@@ -619,14 +611,7 @@ public class Parser {
 			rhsList.add((Named<?>) parsedNode.evaluate(0));
 			for(int i = 1; i < nChildren; i++) {
 				DefaultParsedNode child = parsedNode.getChild(i);
-				if(i % 2 == 0) { // or
-					rhsList.add((Named<?>) child.evaluate());
-				}
-				else { // ws*
-					boolean hasWS = child.numChildren() > 0;
-					if(hasWS)
-						rhsList.add(targetGrammar.WHITESPACE_PLUS.withName("ws+"));
-				}
+				rhsList.add((Named<?>) child.evaluate());
 			}
 			Named<?>[] rhs = new Named[rhsList.size()];
 			rhsList.toArray(rhs);
