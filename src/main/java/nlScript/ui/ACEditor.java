@@ -101,6 +101,10 @@ public class ACEditor {
 		return frame;
 	}
 
+	public Parser getParser() {
+		return parser;
+	}
+
 	public void setMenuBar(JMenuBar menuBar) {
 		frame.setJMenuBar(menuBar);
 		frame.pack();
