@@ -3,6 +3,7 @@ package nlScript.ui;
 import nlScript.ParseException;
 import nlScript.ParsedNode;
 import nlScript.Parser;
+import nlScript.ai.InstallAI;
 import nlScript.core.GraphViz;
 
 import javax.swing.*;
@@ -14,6 +15,7 @@ import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.function.BiFunction;
 
 public class ACEditor {
 
@@ -35,6 +37,14 @@ public class ACEditor {
 	private Runnable afterRun = () -> {};
 
 	public ACEditor(Parser parser) {
+		this(parser, null, null, null);
+	}
+
+	public ACEditor(
+			final Parser parser,
+			final String modelName,
+			final String modelResourcePath,
+			final BiFunction<String, String, String> makePrompt) {
 		this.parser = parser;
 		textArea = new JTextArea(20, 60);
 		textArea.setFont(new Font("monospaced", Font.BOLD, 12));
@@ -65,6 +75,9 @@ public class ACEditor {
 
 		frame.pack();
 		autocompletionContext = new AutocompletionContext(textArea, new ACProvider(parser));
+
+		if(modelName != null && modelResourcePath != null)
+			InstallAI.installAI(this, modelName, modelResourcePath, makePrompt);
 
 //		textArea.addMouseListener(new MouseAdapter() {
 //			public void mouseClicked(MouseEvent e) {
