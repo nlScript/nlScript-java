@@ -251,6 +251,17 @@ public class Parser {
 					comment += "\n";
 				gen = gen.withPrependedText(comment, true);
 			}
+			String generatedText = gen.getGeneratedText();
+			// parsing will modify the grammar, if needed
+			try {
+				if(!compiled)
+					compile();
+				symbol2Autocompletion.clear();
+				EBNFParser rdParser = new EBNFParser(grammar.getBNF(), new Lexer(generatedText));
+				rdParser.parse(null);
+			} catch (ParseException e) {
+				throw new RuntimeException("Error parsing generated text: \n" + generatedText, e);
+			}
 			return gen;
 		}
 
@@ -321,6 +332,7 @@ public class Parser {
 	}
 
 	public Generation generate() {
+		fireParsingStarted();
 		return PROGRAM.generate(targetGrammar);
 	}
 
